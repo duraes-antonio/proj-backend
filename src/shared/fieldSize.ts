@@ -7,10 +7,16 @@ export const fieldSize = {
 };
 
 export const addressSizes = {
-	cityMaxLen: 64,
+	cityMax: 64,
 	numberMax: Number.MAX_SAFE_INTEGER,
-	neighborhoodMaxLen: 64,
-	stateMaxLen: 64,
-	streetMaxLen: 128,
-	zipCodeMaxLen: 9
+	neighborhoodMax: 64,
+	stateMax: 64,
+	streetMax: 128,
+	zipCodeMax: 9
+};
+
+export const userSizes = {
+	emailMax: 128,
+	nameMax: 128,
+	passwordMax: 128
 };

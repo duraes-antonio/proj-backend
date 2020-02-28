@@ -1,21 +1,20 @@
 'use strict';
-
-import * as mongoose from 'mongoose';
-import { Schema } from 'mongoose';
-import { addressSizes } from '../shared/fieldSize';
+import { model, Model, Schema } from 'mongoose';
+import { addressSizes } from '../../shared/fieldSize';
+import { IAddress } from '../../domain/interfaces/address.interface';
 
 const addressSchema = new Schema({
 	city: {
 		type: String,
 		required: true,
 		trim: true,
-		maxlength: addressSizes.cityMaxLen
+		maxlength: addressSizes.cityMax
 	},
 	neighborhood: {
 		type: String,
 		required: true,
 		trim: true,
-		maxlength: addressSizes.neighborhoodMaxLen
+		maxlength: addressSizes.neighborhoodMax
 	},
 	number: {
 		type: Number,
@@ -26,20 +25,20 @@ const addressSchema = new Schema({
 		type: String,
 		required: true,
 		trim: true,
-		maxlength: addressSizes.stateMaxLen
+		maxlength: addressSizes.stateMax
 	},
 	street: {
 		type: String,
 		required: true,
 		trim: true,
-		maxlength: addressSizes.streetMaxLen
+		maxlength: addressSizes.streetMax
 	},
 	zipCode: {
 		type: String,
 		required: true,
 		trim: true,
-		maxlength: addressSizes.zipCodeMaxLen
+		maxlength: addressSizes.zipCodeMax
 	}
 });
 
-module.exports = mongoose.model('Address', addressSchema);
+export const Address: Model<IAddress> = model<IAddress>('Address', addressSchema);

@@ -5,7 +5,10 @@ import express from 'express';
 import cors from 'cors';
 // @ts-ignore
 import mongoose from 'mongoose';
-import routes from './routes';
+import { indexRoutes } from './routes/index.route';
+import { addressRoutes } from './routes/address.route';
+import { config } from './config';
+import { userRoutes } from './routes/user.route';
 
 class App {
 	express: express.Application;
@@ -24,13 +27,15 @@ class App {
 
 	private database(): void {
 		mongoose.connect(
-		  `mongodb+srv://teste:teste@yugishop-ywmam.mongodb.net/test?retryWrites=true&w=majority`,
+		  config.connectionString,
 		  { useNewUrlParser: true }
 		);
 	}
 
 	private routes(): void {
-		this.express.use(routes);
+		this.express.use(indexRoutes);
+		this.express.use('/address', addressRoutes);
+		this.express.use('/user', userRoutes);
 	}
 }
 
