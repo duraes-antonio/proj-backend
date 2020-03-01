@@ -28,16 +28,43 @@ export const serviceDataMsg = {
 	deniedAccess(): string {
 		return `Acesso negado`;
 	},
-	invalidToken(): string {
-		return `O token atual é inválido`;
+	deniedAccessItem(): { message: string } {
+		return { message: `O usuário atual não possui acesso ao item solicitado` };
 	},
-	onSave(entityName: string): string {
-		return `Houve um erro ao tentar salvar o objeto ${entityName}`;
+	duplicate(entity: string, propName: string, propValue: string | number): { message: string } {
+		return {
+			message:
+			  `O item ${entity}, de ${propName} '${propValue}' já existe`
+		};
 	},
-	notFound(entityName: string, propName: string, propValue: string | number): string {
-		return `O item ${entityName}, de ${propName} '${propValue}' não foi encontrado`;
+	onSave(entityName: string): { message: string } {
+		return { message: `Houve um erro ao tentar salvar o objeto ${entityName}` };
 	},
-	unknown(): string {
-		return `Houve um erro desconhecido ao tentar realizar a operação. Contate o Administrador do sistema`;
+	notFound(entity: string, propName: string, propValue: string | number): { message: string } {
+		return {
+			message: `O item ${entity}, de ${propName} '${propValue}' não foi encontrado`
+		};
+	},
+	tokenEmpty(): string {
+		return `Não foi possível encontrar o token de acesso`;
+	},
+	tokenExpired(): { message: string } {
+		return { message: `O token atual está expirado. Realize o login novamente.` };
+	},
+	tokenInvalid(): { message: string } {
+		return { message: `O token atual é inválido` };
+	},
+	unknown(): { message: string } {
+		return {
+			message: `Houve um erro desconhecido ao tentar realizar a operação. Contate o Administrador do sistema`
+		};
+	},
+	userNotFound(): { message: string } {
+		return {
+			message: `Não foi possível encontrar uma conta com email e senha informados`
+		};
+	},
+	wrongPassword(): { message: string } {
+		return { message: `A senha digitada está incorreta` };
 	}
 };

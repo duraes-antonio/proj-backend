@@ -49,6 +49,13 @@ export class PipelineValidation {
 		return !this.errors.length;
 	}
 
+	hasValue(field: string, value: string) {
+		if (!validation.hasValue(value)) {
+			this.errors.push(this.fnEmpty(field));
+		}
+		return this;
+	}
+
 	atMaxLen(
 	  field: string, value: string, maxLenght: number,
 	  fnMsg: (field: string, max: number) => string

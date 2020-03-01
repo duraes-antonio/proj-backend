@@ -1,14 +1,15 @@
 'use strict';
 // @ts-ignore
 import express from 'express';
-// @ts-ignore
-import cors from 'cors';
-// @ts-ignore
-import mongoose from 'mongoose';
 import { indexRoutes } from './routes/index.route';
 import { addressRoutes } from './routes/address.route';
 import { config } from './config';
 import { userRoutes } from './routes/user.route';
+import { authRoutes } from './routes/auth.route';
+
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
 
 class App {
 	express: express.Application;
@@ -16,7 +17,7 @@ class App {
 	constructor() {
 		this.express = express();
 		this.middlewares();
-		this.database();
+		App.database(config.connectionString);
 		this.routes();
 	}
 
@@ -25,16 +26,22 @@ class App {
 		this.express.use(cors());
 	}
 
-	private database(): void {
+	private static database(connectionString: string): void {
 		mongoose.connect(
-		  config.connectionString,
-		  { useNewUrlParser: true }
+		  connectionString,
+		  {
+			  useNewUrlParser: true,
+			  useCreateIndex: true,
+			  useUnifiedTopology: true,
+			  useFindAndModify: false
+		  }
 		);
 	}
 
 	private routes(): void {
 		this.express.use(indexRoutes);
 		this.express.use('/address', addressRoutes);
+		this.express.use('/auth', authRoutes);
 		this.express.use('/user', userRoutes);
 	}
 }

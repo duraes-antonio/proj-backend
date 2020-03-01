@@ -2,25 +2,28 @@
 import { IAddress } from '../../domain/interfaces/address.interface';
 import { Address } from '../schemas/address.schema';
 
-async function delete_(id: string) {
-	return await Address.findByIdAndRemove(id);
+async function delete_(id: string): Promise<IAddress> {
+	return await Address.findByIdAndDelete(id);
 }
 
-async function get() {
-	return await Address.find();
+async function find(userId: string): Promise<IAddress[]> {
+	return await Address.find(
+	  { userId: userId },
+	  'street number zipCode neighborhood city state userId'
+	).populate(['userId']);
 }
 
-async function getById(id: string) {
-	return await Address.findById(id);
+async function findById(id: string): Promise<IAddress> {
+	return await Address.findById(
+	  id, 'street number zipCode neighborhood city state userId'
+	);
 }
 
-/*TODO: Finalizar e padronizar messagens de erro*/
-async function post(addr: IAddress) {
+async function create(addr: IAddress): Promise<IAddress> {
 	return await new Address(addr).save();
 }
 
-/*TODO: Finalizar e padronizar messagens de erro*/
-async function put(id: string, addr: IAddress) {
+async function update(id: string, addr: IAddress): Promise<IAddress> {
 	return await Address.findByIdAndUpdate(
 	  id,
 	  {
@@ -29,16 +32,17 @@ async function put(id: string, addr: IAddress) {
 			  state: addr.state,
 			  city: addr.city,
 			  number: addr.number,
-			  street: addr.state,
+			  street: addr.street,
 			  neighborhood: addr.neighborhood
 		  }
-	  });
+	  }
+	);
 }
 
 export const addressRepository = {
 	delete: delete_,
-	get: get,
-	getBydId: getById,
-	post: post,
-	put: put
+	find: find,
+	findBydId: findById,
+	create: create,
+	put: update
 };

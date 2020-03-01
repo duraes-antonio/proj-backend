@@ -1,10 +1,12 @@
 'use strict';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { PipelineValidation } from '../shared/validations';
 import { addressSizes as addrSize } from '../shared/fieldSize';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
 import { IAddress } from '../domain/interfaces/address.interface';
 import { addressRepository as addrRepo } from '../data/repository/address.repository';
+import { tokenService as tokenS } from '../services/tokenService';
+import { ITokenData } from '../services/interfaces/tokenData.interface';
 
 function validateAddress(addr: IAddress): PipelineValidation {
 	return new PipelineValidation(msg.empty)
@@ -16,64 +18,107 @@ function validateAddress(addr: IAddress): PipelineValidation {
 	  .validCEP('CEP', addr.zipCode, msg.invalidFormat);
 }
 
-export const addressController = {
-	delete: async (req: Request, res: Response, next: NextFunction) => {
-		await addrRepo.delete(req.params.id)
-		  .then(re => {
-			  res.status(200).send();
-		  })
-		  .catch(err => {
-			  res.status(400).send(err);
-		  });
-	},
+async function delete_(req: Request, res: Response) {
+	const uInfo: ITokenData = await tokenS.decodeFromReq(req);
 
-	get: async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const data = await addrRepo.get();
-			res.status(200).send(data);
-		} catch (err) {
-			res.status(500).send(serviceDataMsg.unknown());
-		}
-	},
+	try {
+		const addr: IAddress = await addrRepo.findBydId(req.params.id);
 
-	getById: async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const data = await addrRepo.getBydId(req.params.id);
-			res.status(200).send(data);
-		} catch (err) {
-			res.status(500).send(serviceDataMsg.unknown());
-		}
-	},
-
-	post: async (req: Request, res: Response, next: NextFunction) => {
-
-		const pipe = validateAddress(req.body);
-
-		if (!pipe.valid) {
-			res.status(400).send(pipe.errors);
+		if (!addr) {
+			res.status(404).send(
+			  serviceDataMsg.notFound('Endereço', 'id', req.params.id)
+			);
+		} else if (addr.userId.toString() !== uInfo.id) {
+			res.status(403).send(serviceDataMsg.deniedAccessItem());
 		}
 
-		try {
-			const data = await addrRepo.post(req.body);
-			res.status(201).send(data);
-		} catch (err) {
-			res.status(500).send(serviceDataMsg.unknown());
-		}
-	},
-
-	/*TODO: Finalizar e padronizar messagens de erro*/
-	put: async (req: Request, res: Response, next: NextFunction) => {
-		const pipe = validateAddress(req.body);
-
-		if (!pipe.valid) {
-			res.status(400).send(pipe.errors);
-		}
-
-		try {
-			const data = await addrRepo.put(req.params.id, req.body);
-			res.status(200).send(data);
-		} catch (err) {
-			res.status(500).send(serviceDataMsg.unknown());
-		}
+		await addrRepo.delete(req.params.id);
+		res.status(200).send();
+	} catch (err) {
+		res.status(500).send(serviceDataMsg.unknown());
 	}
+}
+
+async function get(req: Request, res: Response) {
+	const uInfo: ITokenData = await tokenS.decodeFromReq(req);
+
+	try {
+		const data = await addrRepo.find(uInfo.id);
+		res.status(200).send(data);
+	} catch (err) {
+		res.status(500).send(serviceDataMsg.unknown());
+	}
+}
+
+async function getById(req: Request, res: Response) {
+	const uInfo: ITokenData = await tokenS.decodeFromReq(req);
+
+	try {
+		const addr: IAddress = await addrRepo.findBydId(req.params.id);
+
+		if (!addr) {
+			res.status(404).send(
+			  serviceDataMsg.notFound('Endereço', 'id', req.params.id)
+			);
+		} else if (addr.userId.toString() !== uInfo.id) {
+			res.status(403).send(serviceDataMsg.deniedAccessItem());
+		}
+
+		res.status(200).send(addr);
+	} catch (err) {
+		res.status(500).send(serviceDataMsg.unknown());
+	}
+}
+
+async function post(req: Request, res: Response) {
+	const pipe = validateAddress(req.body);
+
+	if (!pipe.valid) {
+		res.status(400).send(pipe.errors);
+	}
+
+	const tokenData: ITokenData = await tokenS.decodeFromReq(req);
+
+	try {
+		const data = await addrRepo.create({ ...req.body, userId: tokenData.id });
+		res.status(201).send(data);
+	} catch (err) {
+		res.status(500).send(serviceDataMsg.unknown());
+	}
+}
+
+async function put(req: Request, res: Response) {
+	const uInfo: ITokenData = await tokenS.decodeFromReq(req);
+
+	try {
+		const addr: IAddress = await addrRepo.findBydId(req.params.id);
+
+		if (!addr) {
+			res.status(404).send(
+			  serviceDataMsg.notFound('Endereço', 'id', req.params.id)
+			);
+		} else if (addr.userId.toString() !== uInfo.id) {
+			res.status(403).send(serviceDataMsg.deniedAccessItem());
+		}
+
+		const pipe = validateAddress(req.body);
+
+		if (!pipe.valid) {
+			res.status(400).send(pipe.errors);
+		}
+
+		await addrRepo.put(req.params.id, req.body);
+		res.status(200).send();
+
+	} catch (err) {
+		res.status(500).send(serviceDataMsg.unknown());
+	}
+}
+
+export const addressController = {
+	delete: delete_,
+	get: get,
+	getById: getById,
+	post: post,
+	put: put
 };

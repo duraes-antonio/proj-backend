@@ -1,35 +1,23 @@
 'use strict';
-import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
 import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
-import { User } from '../data/schemas/user.schema';
 import { IUser } from '../domain/interfaces/user.interface';
 import { userRepository } from '../data/repository/user.repository';
-import bcrypt from 'bcrypt';
-import { config } from '../config';
+import { cryptService as cryptS } from '../services/crypt.service';
+import { tokenService as tokenS } from '../services/tokenService';
+import { Request, Response } from 'express';
 
 
 function validateUser(user: IUser): PipelineValidation {
 	return new PipelineValidation(msg.empty)
 	  .atMaxLen('Nome', user.name, userSizes.nameMax, msg.maxLen)
 	  .validEmail('Email', user.email, msg.invalidFormat)
-	  .atMaxLen('Email', user.email, userSizes.emailMax, msg.maxLen);
+	  .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
 }
 
 export const userController = {
-	authenticate: async (data: { email: string, password: string }) => {
-		const re = await User.find({
-			email: data.email,
-			password: data.password
-		});
-	},
-
-	// get: async (req: Request, res: Response, next: NextFunction) => {
-	//
-	// },
-
-	post: async (req: Request, res: Response, next: NextFunction) => {
+	post: async (req: Request, res: Response) => {
 		const pipe = validateUser(req.body);
 
 		if (!pipe.valid) {
@@ -37,16 +25,26 @@ export const userController = {
 		}
 
 		try {
-			console.log(req.body);
-			const pass = await bcrypt.hash(req.body.password, config.saltKey);
-			const userPassCrypt = {
+			if (await userRepository.hasWithEmail(req.body.email)) {
+				res.status(409).send(
+				  serviceDataMsg.duplicate('Usuário', 'email', req.body.email)
+				);
+			}
+
+			const user = await userRepository.create({
 				...req.body,
-				password: pass
-			};
-			const data = await userRepository.post(userPassCrypt);
-			res.status(201).send(data);
+				password: cryptS.encrypt(req.body.password)
+			});
+
+			const token = await tokenS.generate(user);
+			res.status(201).send({
+				token: token,
+				user: {
+					email: user.email,
+					name: user.name
+				}
+			});
 		} catch (err) {
-			console.log(err);
 			res.status(500).send(serviceDataMsg.unknown());
 		}
 	}

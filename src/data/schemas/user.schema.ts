@@ -1,10 +1,8 @@
 'use strict';
-import { Document, Model, model, Schema } from 'mongoose';
 import { userSizes } from '../../shared/fieldSize';
-import { IUser } from '../../domain/interfaces/user.interface';
 
-interface IUserSchema extends IUser, Document {
-}
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
 	avatarUrl: {
@@ -30,7 +28,12 @@ const userSchema = new Schema({
 		required: true,
 		trim: true,
 		type: String
+	},
+	createDate: {
+		type: Date,
+		required: true,
+		default: Date.now
 	}
 });
 
-export const User: Model<IUserSchema> = model<IUserSchema>('User', userSchema);
+export const User = mongoose.model('User', userSchema);

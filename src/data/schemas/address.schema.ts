@@ -33,11 +33,21 @@ const addressSchema = new Schema({
 		trim: true,
 		maxlength: addressSizes.streetMax
 	},
+	userId: {
+		type: Schema.Types.ObjectId,
+		ref: 'User',
+		required: true
+	},
 	zipCode: {
 		type: String,
 		required: true,
 		trim: true,
 		maxlength: addressSizes.zipCodeMax
+	},
+	createDate: {
+		type: Date,
+		required: true,
+		default: Date.now
 	}
 });
 
