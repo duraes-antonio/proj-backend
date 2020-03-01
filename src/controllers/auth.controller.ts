@@ -12,77 +12,75 @@ import { tokenRepository as tokenRepo } from '../data/repository/token.repositor
 
 
 function validateUser(user: IUser): PipelineValidation {
-	return new PipelineValidation(msg.empty)
-	  .validEmail('Email', user.email, msg.invalidFormat)
-	  .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
+    return new PipelineValidation(msg.empty)
+      .validEmail('Email', user.email, msg.invalidFormat)
+      .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
 }
 
 
 async function authenticate(req: Request, res: Response) {
-	const pipe = validateUser(req.body);
+    const pipe = validateUser(req.body);
 
-	if (!pipe.valid) {
-		res.status(400).send(pipe.errors);
-	}
+    if (!pipe.valid) {
+        return res.status(400).send(pipe.errors);
+    }
 
-	try {
-		const user = await userRepository.findByEmail(req.body.email);
+    try {
+        const user = await userRepository.findByEmail(req.body.email);
 
-		if (!user) {
-			res.status(404).send(
-			  serviceDataMsg.notFound('Usuário', 'email', req.body.email)
-			);
-		}
+        if (!user) {
+            return res.status(404).send(
+              serviceDataMsg.notFound('Usuário', 'email', req.body.email)
+            );
+        } else if (!(await cryptS.compare(req.body.password, user.password))) {
+            return res.status(403).send(serviceDataMsg.wrongPassword());
+        }
 
-		if (cryptS.encrypt(req.body.password) !== user.password) {
-			res.status(403).send(serviceDataMsg.wrongPassword());
-		}
-
-		const token = await tokenS.generate(user);
-		res.status(200).send({
-			token: token,
-			user: {
-				email: user.email,
-				name: user.name
-			}
-		});
-	} catch (err) {
-		res.status(500).send(serviceDataMsg.unknown());
-	}
+        const token = tokenS.generate(user);
+        return res.status(200).send({
+            token: token,
+            user: {
+                email: user.email,
+                name: user.name
+            }
+        });
+    } catch (err) {
+        return res.status(500).send(serviceDataMsg.unknown());
+    }
 }
 
 async function refreshToken(req: Request, res: Response) {
-	const uInfo: ITokenData = await tokenS.decodeFromReq(req);
+    const uInfo: ITokenData = await tokenS.decodeFromReq(req);
 
-	try {
-		const token = await tokenS.generate(uInfo);
-		res.status(200).send({
-			token: token,
-			user: {
-				email: uInfo.email,
-				name: uInfo.name
-			}
-		});
-	} catch (err) {
-		res.status(500).send(serviceDataMsg.unknown());
-	}
+    try {
+        const token = await tokenS.generate(uInfo);
+        return res.status(200).send({
+            token: token,
+            user: {
+                email: uInfo.email,
+                name: uInfo.name
+            }
+        });
+    } catch (err) {
+        return res.status(500).send(serviceDataMsg.unknown());
+    }
 }
 
 async function invalidate(req: Request, res: Response) {
-	const token: string = tokenS.extract(req);
-	const uInfo: ITokenData = await tokenS.decode(token);
+    const token: string = tokenS.extract(req);
+    const uInfo: ITokenData = await tokenS.decode(token);
 
-	try {
-		res.status(200).send(
-		  await tokenRepo.create({ token, userId: uInfo.id })
-		);
-	} catch (err) {
-		res.status(500).send(serviceDataMsg.unknown());
-	}
+    try {
+        return res.status(200).send(
+          await tokenRepo.create({ token, userId: uInfo.id })
+        );
+    } catch (err) {
+        return res.status(500).send(serviceDataMsg.unknown());
+    }
 }
 
 export const authController = {
-	authenticate: authenticate,
-	invalidateToken: invalidate,
-	refreshToken: refreshToken
+    authenticate: authenticate,
+    invalidateToken: invalidate,
+    refreshToken: refreshToken
 };

@@ -10,42 +10,43 @@ import { Request, Response } from 'express';
 
 
 function validateUser(user: IUser): PipelineValidation {
-	return new PipelineValidation(msg.empty)
-	  .atMaxLen('Nome', user.name, userSizes.nameMax, msg.maxLen)
-	  .validEmail('Email', user.email, msg.invalidFormat)
-	  .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
+    return new PipelineValidation(msg.empty)
+      .atMaxLen('Nome', user.name, userSizes.nameMax, msg.maxLen)
+      .validEmail('Email', user.email, msg.invalidFormat)
+      .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
 }
 
 export const userController = {
-	post: async (req: Request, res: Response) => {
-		const pipe = validateUser(req.body);
+    post: async (req: Request, res: Response) => {
+        const pipe = validateUser(req.body);
 
-		if (!pipe.valid) {
-			res.status(400).send(pipe.errors);
-		}
+        if (!pipe.valid) {
+            return res.status(400).send(pipe.errors);
+        }
 
-		try {
-			if (await userRepository.hasWithEmail(req.body.email)) {
-				res.status(409).send(
-				  serviceDataMsg.duplicate('Usuário', 'email', req.body.email)
-				);
-			}
+        try {
+            if (await userRepository.hasWithEmail(req.body.email)) {
+                return res.status(409).send(
+                  serviceDataMsg.duplicate('Usuário', 'email', req.body.email)
+                );
+            }
 
-			const user = await userRepository.create({
-				...req.body,
-				password: cryptS.encrypt(req.body.password)
-			});
+            const user = await userRepository.create({
+                ...req.body,
+                password: await cryptS.encrypt(req.body.password)
+            });
 
-			const token = await tokenS.generate(user);
-			res.status(201).send({
-				token: token,
-				user: {
-					email: user.email,
-					name: user.name
-				}
-			});
-		} catch (err) {
-			res.status(500).send(serviceDataMsg.unknown());
-		}
-	}
+            const token = await tokenS.generate(user);
+            return res.status(201).send({
+                token: token,
+                user: {
+                    email: user.email,
+                    name: user.name,
+                    roles: user.roles
+                }
+            });
+        } catch (err) {
+            return res.status(500).send(serviceDataMsg.unknown());
+        }
+    }
 };

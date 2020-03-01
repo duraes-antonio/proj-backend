@@ -1,14 +1,14 @@
 'use strict';
 import { Router } from 'express';
 import { addressController } from '../controllers/address.controller';
-import { tokenService } from '../services/tokenService';
+import { tokenService as tokenS } from '../services/tokenService';
 
 const router = Router();
 
-router.delete('/:id', tokenService.verify, addressController.delete);
-router.get('/', tokenService.verify, addressController.get);
-router.get('/:id', tokenService.verify, addressController.getById);
-router.post('/', tokenService.verify, addressController.post);
-router.put('/:id', tokenService.verify, addressController.put);
+router.delete('/:id', tokenS.verify, addressController.delete);
+router.get('/', tokenS.verify, addressController.get);
+router.get('/:id', tokenS.verify, addressController.getById);
+router.post('/', tokenS.verify, addressController.post);
+router.put('/:id', tokenS.verify, addressController.put);
 
 export { router as addressRoutes };
