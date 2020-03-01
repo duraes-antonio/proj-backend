@@ -37,9 +37,6 @@ export const serviceDataMsg = {
 			  `O item ${entity}, de ${propName} '${propValue}' já existe`
 		};
 	},
-	onSave(entityName: string): { message: string } {
-		return { message: `Houve um erro ao tentar salvar o objeto ${entityName}` };
-	},
 	notFound(entity: string, propName: string, propValue: string | number): { message: string } {
 		return {
 			message: `O item ${entity}, de ${propName} '${propValue}' não foi encontrado`
@@ -57,11 +54,6 @@ export const serviceDataMsg = {
 	unknown(): { message: string } {
 		return {
 			message: `Houve um erro desconhecido ao tentar realizar a operação. Contate o Administrador do sistema`
-		};
-	},
-	userNotFound(): { message: string } {
-		return {
-			message: `Não foi possível encontrar uma conta com email e senha informados`
 		};
 	},
 	wrongPassword(): { message: string } {

@@ -2,13 +2,6 @@
 import { User } from '../schemas/user.schema';
 import { IUser } from '../../domain/interfaces/user.interface';
 
-async function authenticate(data: { email: string, password: string }): Promise<IUser> {
-	return await User.findOne({
-		email: data.email,
-		password: data.password
-	});
-}
-
 async function findByEmail(email): Promise<IUser> {
 	return await User.findOne({ email: email });
 }
@@ -26,7 +19,6 @@ async function create(user: IUser): Promise<IUser> {
 }
 
 export const userRepository = {
-	authenticate: authenticate,
 	create: create,
 	findByEmail: findByEmail,
 	findById: findById,

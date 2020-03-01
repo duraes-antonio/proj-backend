@@ -1,6 +1,7 @@
 // @ts-ignore
 import sendgrid from '@sendgrid/mail';
 import { config } from '../config';
+import { ClientResponse } from '@sendgrid/client/src/response';
 
 export interface IEmailTemplate {
 	from: string,
@@ -9,9 +10,9 @@ export interface IEmailTemplate {
 	body: string
 }
 
-export function sendEmail(template: IEmailTemplate): void {
+export function sendEmail(template: IEmailTemplate): Promise<[ClientResponse, {}]> {
 	sendgrid.setApiKey(config.sendgridApiKey);
-	sendgrid.send({
+	return sendgrid.send({
 		from: template.from,
 		to: template.to,
 		subject: template.subject,
