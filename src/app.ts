@@ -8,6 +8,7 @@ import { userRoutes } from './routes/user.route';
 import { authRoutes } from './routes/auth.route';
 import { Mongoose } from 'mongoose';
 import { productRoutes } from './routes/product.route';
+import { categoryRoutes } from './routes/category.route';
 
 const express = require('express');
 const cors = require('cors');
@@ -21,9 +22,9 @@ export class App {
 
     constructor() {
         this.express = express();
-        this.databaseInstance = this.database(config.connectionString);
         this.middlewares();
         this.routes();
+        this.databaseInstance = this.database(config.connectionString);
     }
 
     private database(connectionString: string): Promise<Mongoose> {
@@ -47,6 +48,7 @@ export class App {
         this.express.use(indexRoutes);
         this.express.use('/address', addressRoutes);
         this.express.use('/auth', authRoutes);
+        this.express.use('/category', categoryRoutes);
         this.express.use('/product', productRoutes);
         this.express.use('/user', userRoutes);
     }

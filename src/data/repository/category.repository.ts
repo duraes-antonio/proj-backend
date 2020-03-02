@@ -1,48 +1,32 @@
 'use strict';
-import { Product } from '../schemas/product.schema';
-import { IProduct, IProductSchema } from '../../domain/interfaces/product.interface';
+import { IRepository } from '../repository.interface';
+import { Category } from '../schemas/category.schema';
+import { ICategory } from '../../domain/interfaces/category.interface';
 
-const projection = 'amountAvailable avgReview categories desc freeDelivery percentOff price priceWithDiscount title urlMainImage';
+const projection = 'title updatedAt createdAt';
 
-async function delete_(id: string): Promise<IProductSchema> {
-    return await Product.findByIdAndDelete(id);
+export class CategoryRepository implements IRepository<ICategory> {
+
+    async create(obj: ICategory): Promise<ICategory> {
+        return await new Category(obj).save({});
+    }
+
+    async delete(id: string): Promise<ICategory | null> {
+        return await Category.findByIdAndDelete(id);
+    }
+
+    async find(): Promise<ICategory[]> {
+        return await Category.find({}, projection);
+    }
+
+    async findById(id: string): Promise<ICategory | null> {
+        return await Category.findById(id, projection);
+    }
+
+    async update(id: string, obj: ICategory): Promise<ICategory | null> {
+        return await Category.findByIdAndUpdate(
+          id,
+          { $set: { title: obj.title } }
+        );
+    }
 }
-
-async function find(): Promise<IProductSchema[]> {
-    return await Product.find({}, projection).populate(['categoriesId']);
-}
-
-async function findById(id: string): Promise<IProductSchema> {
-    return await Product.findById(id, projection);
-}
-
-async function create(prod: IProduct): Promise<IProductSchema> {
-    return await new Product(prod).save();
-}
-
-async function update(id: string, prod: IProduct): Promise<IProductSchema> {
-    return await Product.findByIdAndUpdate(
-      id,
-      {
-          $set: {
-              amountAvailable: prod.amountAvailable,
-              avgReview: prod.avgReview,
-              categoriesId: prod.categoriesId,
-              desc: prod.desc,
-              freeDelivery: prod.freeDelivery,
-              percentOff: prod.percentOff,
-              price: prod.price,
-              title: prod.title,
-              urlMainImage: prod.urlMainImage
-          }
-      }
-    );
-}
-
-export const productRepository = {
-    delete: delete_,
-    find: find,
-    findBydId: findById,
-    create: create,
-    put: update
-};

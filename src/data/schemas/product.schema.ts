@@ -49,11 +49,7 @@ const productSchema = new Schema({
         type: Number
     },
     priceWithDiscount: {
-        default: () => {
-            return this.percentOff && this.price
-              ? this.price * (100 - this.percentOff) / 100
-              : this.price;
-        },
+        default: 0,
         min: 0,
         required: true,
         trim: true,

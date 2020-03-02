@@ -67,7 +67,12 @@ async function refreshToken(req: Request, res: Response) {
 }
 
 async function invalidate(req: Request, res: Response) {
-    const token: string = tokenS.extract(req);
+    const token = tokenS.extract(req);
+
+    if (!token) {
+        return res.status(401).send(serviceDataMsg.tokenEmpty());
+    }
+
     const uInfo: ITokenData = await tokenS.decode(token);
 
     try {

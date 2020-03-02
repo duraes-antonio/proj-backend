@@ -1,14 +1,14 @@
 'use strict';
 
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg as msgS } from '../../shared/buildMsg';
 import { PipelineValidation } from '../../shared/validations';
 import { IRepository } from '../../data/repository.interface';
 
 export abstract class AController<T> {
-    private readonly _entity: string;
-    private readonly _fnValid: (obj: T) => PipelineValidation;
-    private readonly _repo: IRepository<T>;
+    readonly _entity: string;
+    readonly _fnValid: (obj: T) => PipelineValidation;
+    readonly _repo: IRepository<T>;
 
     constructor(
       entity: string, fnValidation: (obj: T) => PipelineValidation,
@@ -19,7 +19,7 @@ export abstract class AController<T> {
         this._repo = repository;
     }
 
-    async delete(req: Request, res: Response) {
+    delete = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
             const obj = await this._repo.findById(req.params.id);
@@ -34,9 +34,9 @@ export abstract class AController<T> {
         } catch (err) {
             return res.status(500).send(msgS.unknown());
         }
-    }
+    };
 
-    async get(req: Request, res: Response) {
+    get = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
             const objs: T[] = await this._repo.find();
@@ -44,12 +44,19 @@ export abstract class AController<T> {
         } catch (err) {
             return res.status(500).send(msgS.unknown());
         }
-    }
+    };
 
-    async getById(req: Request, res: Response) {
+    getById = async (req: Request, res: Response, next: NextFunction) => {
+
+        if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(404).send(
+              msgS.notFound(this._entity, 'id', req.params.id)
+            );
+        }
 
         try {
             const obj = await this._repo.findById(req.params.id);
+            console.log('AAAAAAAAA', obj);
 
             if (!obj) {
                 return res.status(404).send(
@@ -60,9 +67,10 @@ export abstract class AController<T> {
         } catch (err) {
             return res.status(500).send(msgS.unknown());
         }
-    }
+    };
 
-    async post(req: Request, res: Response) {
+    post = async (req: Request, res: Response, next: NextFunction) => {
+
         const pipe = this._fnValid(req.body);
 
         if (!pipe.valid) {
@@ -75,9 +83,9 @@ export abstract class AController<T> {
         } catch (err) {
             return res.status(500).send(msgS.unknown());
         }
-    }
+    };
 
-    async put(req: Request, res: Response) {
+    put = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
             const obj = await this._repo.findById(req.params.id);
@@ -100,5 +108,5 @@ export abstract class AController<T> {
         } catch (err) {
             return res.status(500).send(msgS.unknown());
         }
-    }
+    };
 }

@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
     "prebuild": "rimraf dist",
-    "build": "sucrase ./src -d ./dist --transforms typescript,imports",
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
@@ -45,6 +44,7 @@
     "sucrase": "^3.10.0",
     "supertest": "^4.0.2",
     "ts-jest": "^25.2.1",
+    "ts-node": "^8.6.2",
     "typescript": "^3.8.3"
   }
 }

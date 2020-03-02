@@ -14,7 +14,7 @@ const userRight: IUser = {
     password: '12345678'
 };
 
-let token;
+let token: string;
 
 const productValid: IProduct = {
     title: 'Produto de teste',
@@ -27,7 +27,7 @@ const productValid: IProduct = {
     categoriesId: ['a']
 };
 
-function getErrorRequest(res) {
+function getErrorRequest(res: any) {
     return JSON.parse(res['text']);
 }
 

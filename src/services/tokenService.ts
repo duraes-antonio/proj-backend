@@ -20,7 +20,7 @@ async function verifyToken(req: Request, res: Response, next: NextFunction) {
     const token = extractToken(req);
 
     if (token) {
-        jwt.verify(token, config.saltKey, async (err, data: ITokenData) => {
+        jwt.verify(token, config.saltKey, async (err: Error, data: ITokenData) => {
             if (err) {
                 res.status(401).send(serviceDataMsg.tokenInvalid());
             } else if (await tokenRepo.find(data.id, token)) {

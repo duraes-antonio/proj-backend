@@ -2,7 +2,7 @@
 import { ITokenInvalidSchema } from '../../domain/interfaces/tokenInvalid.interface';
 import { TokenInvalid } from '../schemas/token.schema';
 
-async function find(userId: string, token: string): Promise<ITokenInvalidSchema> {
+async function find(userId: string, token: string): Promise<ITokenInvalidSchema | null> {
     return await TokenInvalid.findOne(
       { userId: userId, token: token },
       'token userId'

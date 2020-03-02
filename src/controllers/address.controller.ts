@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { PipelineValidation } from '../shared/validations';
 import { addressSizes as addrSize } from '../shared/fieldSize';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
-import { IAddress, IAddressSchema } from '../domain/interfaces/address.interface';
+import { IAddress } from '../domain/interfaces/address.interface';
 import { addressRepository as addrRepo } from '../data/repository/address.repository';
 import { tokenService as tokenS } from '../services/tokenService';
 import { ITokenData } from '../services/interfaces/tokenData.interface';
@@ -22,7 +22,7 @@ async function delete_(req: Request, res: Response) {
     const uInfo: ITokenData = await tokenS.decodeFromReq(req);
 
     try {
-        const addr: IAddressSchema = await addrRepo.findBydId(req.params.id);
+        const addr = await addrRepo.findBydId(req.params.id);
 
         if (!addr) {
             return res.status(404).send(
@@ -54,7 +54,7 @@ async function getById(req: Request, res: Response) {
     const uInfo: ITokenData = await tokenS.decodeFromReq(req);
 
     try {
-        const addr: IAddressSchema = await addrRepo.findBydId(req.params.id);
+        const addr = await addrRepo.findBydId(req.params.id);
 
         if (!addr) {
             return res.status(404).send(
@@ -91,7 +91,7 @@ async function put(req: Request, res: Response) {
     const uInfo: ITokenData = await tokenS.decodeFromReq(req);
 
     try {
-        const addr: IAddressSchema = await addrRepo.findBydId(req.params.id);
+        const addr = await addrRepo.findBydId(req.params.id);
 
         if (!addr) {
             return res.status(404).send(

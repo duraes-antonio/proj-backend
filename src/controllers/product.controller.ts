@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import { PipelineValidation } from '../shared/validations';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
-import { IProduct, IProductSchema } from '../domain/interfaces/product.interface';
+import { IProduct } from '../domain/interfaces/product.interface';
 import { productRepository as prodRepo } from '../data/repository/product.repository';
 import { productSizes as prodSizes } from '../shared/fieldSize';
 
@@ -28,7 +28,7 @@ function validateProduct(prod: IProduct): PipelineValidation {
 async function delete_(req: Request, res: Response) {
 
     try {
-        const prod: IProductSchema = await prodRepo.findBydId(req.params.id);
+        const prod = await prodRepo.findBydId(req.params.id);
 
         if (!prod) {
             return res.status(404).send(
@@ -90,7 +90,7 @@ async function post(req: Request, res: Response) {
 async function put(req: Request, res: Response) {
 
     try {
-        const prod: IProductSchema = await prodRepo.findBydId(req.params.id);
+        const prod = await prodRepo.findBydId(req.params.id);
 
         if (!prod) {
             return res.status(404).send(

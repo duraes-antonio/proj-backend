@@ -2,11 +2,11 @@
 import { User } from '../schemas/user.schema';
 import { IUser, IUserSchema } from '../../domain/interfaces/user.interface';
 
-async function findByEmail(email): Promise<IUserSchema> {
+async function findByEmail(email: string): Promise<IUserSchema | null> {
     return await User.findOne({ email: email });
 }
 
-async function hasWithEmail(email): Promise<boolean> {
+async function hasWithEmail(email: string): Promise<boolean> {
     return await User.exists({ email: email });
 }
 
