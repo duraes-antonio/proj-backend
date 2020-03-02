@@ -18,11 +18,11 @@ const productSchema = new Schema({
         required: false,
         type: Number
     },
-    categories: {
+    categoriesId: {
         default: [],
         required: true,
         type: [Schema.Types.ObjectId],
-        ref: 'categories'
+        ref: 'Category'
     },
     desc: {
         maxlength: productSizes.descMax,
@@ -50,7 +50,7 @@ const productSchema = new Schema({
     },
     priceWithDiscount: {
         default: () => {
-            return this.percentOff
+            return this.percentOff && this.price
               ? this.price * (100 - this.percentOff) / 100
               : this.price;
         },

@@ -1,7 +1,6 @@
 'use strict';
 
 import { Document } from 'mongoose';
-import { ICategory } from './category.interface';
 import { IAuditable } from './auditable.interface';
 
 export interface IProduct {
@@ -10,14 +9,14 @@ export interface IProduct {
     readonly urlMainImage?: string;
 
     readonly price: number;
-    readonly priceWithDiscount: number;
     readonly percentOff: number;
 
     readonly freeDelivery: boolean;
-    readonly categories: ICategory[];
+    readonly categoriesId: string[];
     readonly avgReview: number;
     readonly amountAvailable: number;
 }
 
 export interface IProductSchema extends Document, IAuditable, IProduct {
+    readonly priceWithDiscount: number;
 }

@@ -7,6 +7,10 @@ export const addressSizes = {
     zipCodeMax: 9
 };
 
+export const categorySizes = {
+    titleMax: 128
+};
+
 export const productSizes = {
     titleMax: 128,
     descMax: 4000,
