@@ -46,7 +46,16 @@ export const userController = {
                 }
             });
         } catch (err) {
-            return res.status(500).send(serviceDataMsg.unknown());
+            return res.status(500).send({
+                ...serviceDataMsg.unknown(),
+                data: err
+            });
         }
+    },
+    put: async (req: Request, res: Response) => {
+        const user = await userRepository.update(req.params.id, {
+            ...req.body
+        });
+        res.status(200).send();
     }
 };

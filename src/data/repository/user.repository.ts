@@ -10,7 +10,7 @@ async function hasWithEmail(email: string): Promise<boolean> {
     return await User.exists({ email: email });
 }
 
-async function findById(id: string): Promise<IUserSchema> {
+async function findById(id: string): Promise<IUserSchema | null> {
     return await User.findById(id);
 }
 
@@ -18,9 +18,22 @@ async function create(user: IUser): Promise<IUserSchema> {
     return await new User(user).save();
 }
 
+async function update(id: string, user: IUser): Promise<IUserSchema | null> {
+    console.log(user);
+    return await User.findByIdAndUpdate(
+      id,
+      {
+          $set: {
+              name: user.name
+          }
+      }
+    );
+}
+
 export const userRepository = {
     create: create,
     findByEmail: findByEmail,
     findById: findById,
-    hasWithEmail: hasWithEmail
+    hasWithEmail: hasWithEmail,
+    update: update
 };

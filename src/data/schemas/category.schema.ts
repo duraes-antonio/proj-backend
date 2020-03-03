@@ -2,49 +2,31 @@
 import { model, Model, Schema } from 'mongoose';
 import { categorySizes } from '../../shared/fieldSize';
 import { ICategorySchema } from '../../domain/interfaces/category.interface';
+import { ECollectionsName } from '../collectionsName.enum';
 
 const categorySchema = new Schema({
-      title: {
-          maxlength: categorySizes.titleMax,
-          required: true,
-          trim: true,
-          type: String
-      },
-      createdAt: {
-          type: Date,
-          required: true,
-          default: Date.now
-      },
-      updatedAt: {
-          type: Date,
-          required: true,
-          default: Date.now
-      },
-      createdOn: {
-          required: true,
-          type: Date,
-          set: Date.now,
-          default: Date.now
-      },
-      updatedOn: {
-          required: true,
-          type: Date,
-          default: Date.now
-      },
-      created_at: { type: Date, default: Date.now },
-      updated_at: { type: Date, default: Date.now }
-  },
-  {
-      timestamps: true
-  });
+    title: {
+        maxlength: categorySizes.titleMax,
+        required: true,
+        trim: true,
+        type: String
+    },
 
-categorySchema.pre('save', function(next) {
-    const now = new Date();
-    this.updated_at = now;
-    if (!this.created_at) {
-        this.created_at = now;
+    createdAt: {
+        default: Date.now,
+        required: true,
+        type: Date
+    },
+    updatedAt: {
+        default: Date.now,
+        required: true,
+        type: Date
+    },
+    responsibleId: {
+        ref: ECollectionsName.USER,
+        required: true,
+        type: Schema.Types.ObjectId
     }
-    next();
 });
 
-export const Category: Model<ICategorySchema> = model<ICategorySchema>('Category', categorySchema);
+export const Category: Model<ICategorySchema> = model<ICategorySchema>(ECollectionsName.CATEGORY, categorySchema);

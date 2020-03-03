@@ -1,9 +1,9 @@
 'use strict';
 import { userSizes } from '../../shared/fieldSize';
 import { EUserRole } from '../../domain/enum/role.enum';
-
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { ECollectionsName } from '../collectionsName.enum';
+import { model, Model, Schema } from 'mongoose';
+import { IUserSchema } from '../../domain/interfaces/user.interface';
 
 const userSchema = new Schema({
     avatarUrl: {
@@ -35,11 +35,22 @@ const userSchema = new Schema({
         enum: [EUserRole.ADMIN, EUserRole.CUSTOMER],
         type: [String]
     },
-    createDate: {
+
+    createdAt: {
         default: Date.now,
         required: true,
         type: Date
+    },
+    updatedAt: {
+        default: Date.now,
+        required: true,
+        type: Date
+    },
+    responsibleId: {
+        ref: ECollectionsName.USER,
+        required: false,
+        type: Schema.Types.ObjectId
     }
 });
 
-export const User = mongoose.model('User', userSchema);
+export const User: Model<IUserSchema> = model<IUserSchema>(ECollectionsName.USER, userSchema);

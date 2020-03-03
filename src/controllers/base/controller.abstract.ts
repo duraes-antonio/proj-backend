@@ -32,7 +32,8 @@ export abstract class AController<T> {
             await this._repo.delete(req.params.id);
             return res.status(200).send();
         } catch (err) {
-            return res.status(500).send(msgS.unknown());
+            return res.status(500)
+              .send({ ...msgS.unknown(), data: err });
         }
     };
 
@@ -56,7 +57,6 @@ export abstract class AController<T> {
 
         try {
             const obj = await this._repo.findById(req.params.id);
-            console.log('AAAAAAAAA', obj);
 
             if (!obj) {
                 return res.status(404).send(
@@ -65,7 +65,8 @@ export abstract class AController<T> {
             }
             return res.status(200).send(obj);
         } catch (err) {
-            return res.status(500).send(msgS.unknown());
+            return res.status(500)
+              .send({ ...msgS.unknown(), data: err });
         }
     };
 
@@ -78,10 +79,11 @@ export abstract class AController<T> {
         }
 
         try {
-            const obj = await this._repo.create({ ...req.body });
+            const obj = await this._repo.create({ ...req.body }, '5e5dcfb81d624d4ec0712d40');
             return res.status(201).send(obj);
         } catch (err) {
-            return res.status(500).send(msgS.unknown());
+            return res.status(500)
+              .send({ ...msgS.unknown(), data: err });
         }
     };
 
@@ -106,7 +108,8 @@ export abstract class AController<T> {
             return res.status(200).send();
 
         } catch (err) {
-            return res.status(500).send(msgS.unknown());
+            return res.status(500)
+              .send({ ...msgS.unknown(), data: err });
         }
     };
 }

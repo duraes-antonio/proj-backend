@@ -2,6 +2,7 @@
 import { model, Model, Schema } from 'mongoose';
 import { addressSizes } from '../../shared/fieldSize';
 import { IAddressSchema } from '../../domain/interfaces/address.interface';
+import { ECollectionsName } from '../collectionsName.enum';
 
 const addressSchema = new Schema({
     city: {
@@ -35,7 +36,7 @@ const addressSchema = new Schema({
     },
     userId: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: ECollectionsName.USER,
         required: true
     },
     zipCode: {
@@ -44,11 +45,22 @@ const addressSchema = new Schema({
         trim: true,
         maxlength: addressSizes.zipCodeMax
     },
-    createDate: {
-        type: Date,
+
+    createdAt: {
+        default: Date.now,
         required: true,
-        default: Date.now
+        type: Date
+    },
+    updatedAt: {
+        default: Date.now,
+        required: true,
+        type: Date
+    },
+    responsibleId: {
+        required: true,
+        ref: ECollectionsName.USER,
+        type: Schema.Types.ObjectId
     }
 });
 
-export const Address: Model<IAddressSchema> = model<IAddressSchema>('Address', addressSchema);
+export const Address: Model<IAddressSchema> = model<IAddressSchema>(ECollectionsName.ADDRESS, addressSchema);

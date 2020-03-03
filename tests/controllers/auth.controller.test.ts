@@ -92,8 +92,6 @@ describe('Invalidate Token', () => {
           const res = await request(app)
             .post('/auth/invalidate')
             .set('x-access-token', `${validToken + '1'}`);
-
-          // console.log(JSON.parse(res['text']));
           expect(res.status).toBe(401);
       });
 

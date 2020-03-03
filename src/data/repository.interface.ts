@@ -1,5 +1,5 @@
 export interface IRepository<T> {
-    create(obj: T): Promise<T | null>;
+    create(obj: T, responsibleId: string): Promise<T>;
 
     delete(id: string): Promise<T | null>;
 

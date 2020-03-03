@@ -112,13 +112,6 @@ export class CategoryController extends AController<ICategory> {
     constructor() {
         super(entityName, validateCategory, new CategoryRepository());
     }
-
-    // async post(req: Request, res: Response, next: NextFunction) {
-    //     console.log('**** JUNIM');
-    //     const re = await super.post(this, req, res, next);
-    //     console.log(re);
-    //     return res.status(200).send(re);
-    // }
 }
 
 export const categoryController = new CategoryController();

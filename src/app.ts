@@ -6,9 +6,10 @@ import { addressRoutes } from './routes/address.route';
 import { config } from './config';
 import { userRoutes } from './routes/user.route';
 import { authRoutes } from './routes/auth.route';
-import { Mongoose } from 'mongoose';
+import { Model, Mongoose } from 'mongoose';
 import { productRoutes } from './routes/product.route';
 import { categoryRoutes } from './routes/category.route';
+import { IClassAuditable } from './domain/interfaces/auditable.interface';
 
 const express = require('express');
 const cors = require('cors');
@@ -28,7 +29,7 @@ export class App {
     }
 
     private database(connectionString: string): Promise<Mongoose> {
-        return mongoose.connect(
+        const mongo = mongoose.connect(
           connectionString,
           {
               useNewUrlParser: true,
@@ -37,6 +38,11 @@ export class App {
               useFindAndModify: false
           }
         );
+
+        mongo.then((mg: Mongoose) =>
+          this.checkSchemaImplementsAuditable(mg));
+
+        return mongo;
     }
 
     private middlewares(): void {
@@ -51,6 +57,28 @@ export class App {
         this.express.use('/category', categoryRoutes);
         this.express.use('/product', productRoutes);
         this.express.use('/user', userRoutes);
+    }
+
+    private checkSchemaImplementsAuditable(mg: Mongoose) {
+        const props = Object.keys(new IClassAuditable());
+        const schemasPendents: string[] = [];
+
+        mg.modelNames().forEach(modelName => {
+            const model: Model<any> = mg.models[modelName];
+            const modelKeys = Object.keys(model.schema.obj);
+
+            if (!props.every(p => modelKeys.indexOf(p) > -1)) {
+                const ausents = props
+                  .filter(p => modelKeys.indexOf(p) < 0)
+                  .join(', ');
+                schemasPendents.push(`Schema ${modelName} não implementa: ${ausents}`);
+            }
+        });
+
+        if (schemasPendents.length) {
+            const errorMsg = schemasPendents.join('\n');
+            throw new Error(`É necessário que todos Schemas implementem a interface.\n\n${errorMsg}`);
+        }
     }
 }
 

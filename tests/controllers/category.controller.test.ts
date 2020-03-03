@@ -11,7 +11,7 @@ function getErrorRequest(res: any) {
     return JSON.parse(res['text']);
 }
 
-const categoryRight: ICategory = { title: 'Card', createdAt: new Date(), updatedAt: new Date() };
+const categoryRight: ICategory = { title: 'Card' };
 
 describe('POST', () => {
     beforeEach(async () => {
@@ -45,7 +45,6 @@ describe('POST', () => {
           const res = await request(app)
             .post('/category')
             .send(categoryRight);
-          console.log(res.body);
           expect(res.status).toBe(201);
       });
 });
@@ -102,7 +101,6 @@ describe('GET', () => {
         const res = await request(app)
           .post('/category')
           .send(categoryRight);
-        console.log(res.body);
         expect(res.status).toBe(201);
         categSaved = res.body;
     });
@@ -113,7 +111,6 @@ describe('GET', () => {
           const res = await request(app)
             .get(`/category/${categSaved._id}`)
             .send();
-          console.log(res.body);
           expect(res.status).toBe(200);
           expect(res.body).toHaveProperty('_id', categSaved._id);
           expect(res.body).toHaveProperty('title', categSaved.title);

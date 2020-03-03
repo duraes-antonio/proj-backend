@@ -2,6 +2,7 @@
 import { model, Model, Schema } from 'mongoose';
 import { productSizes } from '../../shared/fieldSize';
 import { IProductSchema } from '../../domain/interfaces/product.interface';
+import { ECollectionsName } from '../collectionsName.enum';
 
 const productSchema = new Schema({
     amountAvailable: {
@@ -22,7 +23,7 @@ const productSchema = new Schema({
         default: [],
         required: true,
         type: [Schema.Types.ObjectId],
-        ref: 'Category'
+        ref: ECollectionsName.CATEGORY
     },
     desc: {
         maxlength: productSizes.descMax,
@@ -66,7 +67,23 @@ const productSchema = new Schema({
         required: false,
         trim: true,
         type: String
+    },
+
+    createdAt: {
+        default: Date.now,
+        required: true,
+        type: Date
+    },
+    updatedAt: {
+        default: Date.now,
+        required: true,
+        type: Date
+    },
+    responsibleId: {
+        ref: ECollectionsName.USER,
+        required: true,
+        type: Schema.Types.ObjectId
     }
 });
 
-export const Product: Model<IProductSchema> = model<IProductSchema>('Product', productSchema);
+export const Product: Model<IProductSchema> = model<IProductSchema>(ECollectionsName.PRODUCT, productSchema);
