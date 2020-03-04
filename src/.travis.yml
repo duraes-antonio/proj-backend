@@ -11,11 +11,10 @@ addons:
   sonarcloud:
     organization: "duraes-antonio-github"
     token:
-      secure: ef87e644c79a20fda6d51a36fbfdc3a5d5232074
+      secure: 3402c5dff4b847124516768250e90e3d92ff2575
 
 before_script:
   - yarn install
 
 script:
   - sonar-scanner
-  
