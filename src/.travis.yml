@@ -1,0 +1,20 @@
+language: node_js
+
+node_js:
+  - "12.16"
+
+branches:
+  only:
+    - master
+
+addons:
+  sonarcloud:
+    organization: "duraes-antonio-github"
+    token:
+      secure: ef87e644c79a20fda6d51a36fbfdc3a5d5232074
+
+before_script:
+  - yarn install
+
+script:
+  - sonar-scanner
