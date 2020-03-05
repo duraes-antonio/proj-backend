@@ -38,6 +38,7 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "jest": "^25.1.0",
+    "jest-sonar-reporter": "^2.0.0",
     "nodemon": "^1.18.10",
     "prettier": "^1.16.4",
     "rimraf": "^2.6.3",
@@ -46,5 +47,18 @@
     "ts-jest": "^25.2.1",
     "ts-node": "^8.6.2",
     "typescript": "^3.7"
+  },
+    "jest": {
+    "testResultsProcessor": "jest-sonar-reporter"
+  },
+    "jestSonar": {
+    "reportPath": "reports",
+    "reportFile": "test-reporter.xml",
+    "indent": 4,
+    "env": {
+      "test": {
+        "reportPath": "reports-test"
+      }
+    }
   }
 }
