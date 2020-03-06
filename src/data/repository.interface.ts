@@ -1,9 +1,9 @@
 export interface IRepository<T> {
-    create(obj: T, responsibleId: string): Promise<T>;
+    create(obj: T): Promise<T>;
 
     delete(id: string): Promise<T | null>;
 
-    find(): Promise<T[]>;
+    find(params?: any): Promise<T[]>;
 
     findById(id: string): Promise<T | null>;
 

@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg } from '../shared/buildMsg';
 import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
 import { ITokenData } from './interfaces/tokenData.interface';
-import { IUserSchema } from '../domain/interfaces/user.interface';
+import { IUser, IUserSchema } from '../domain/interfaces/user.interface';
 
 const jwt = require('jsonwebtoken');
 
@@ -48,13 +48,13 @@ async function decodeTokenReq(req: Request): Promise<ITokenData> {
     return await jwt.verify(extractToken(req), config.saltKey);
 }
 
-function generateToken(data: ITokenData | IUserSchema): string {
+function generateToken(data: ITokenData | IUserSchema | IUser): string {
     return jwt.sign({
           id: data.id,
           email: data.email,
           name: data.name,
           roles: data.roles
-      } as ITokenData,
+      },
       process.env.SECRET_KEY,
       { expiresIn: 60 * 15 }
     );

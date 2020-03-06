@@ -28,6 +28,11 @@ export const validationErrorMsg = {
 };
 
 export const serviceDataMsg = {
+    created(entity?: string): { message: string } {
+        return {
+            message: `O item ${entity ? entity : ''} foi criado com êxito!`
+        };
+    },
     deniedAccess(): string {
         return `Acesso negado`;
     },
@@ -48,11 +53,16 @@ export const serviceDataMsg = {
             message: `O item ${entity}, de ${propName} '${propValue}' não foi encontrado`
         };
     },
+    success(): { message: string } {
+        return {
+            message: `Requisição executada com êxito!`
+        };
+    },
     tokenEmpty(): string {
         return `Não foi possível encontrar o token de acesso`;
     },
     tokenExpired(): { message: string } {
-        return { message: `O token atual está expirado. Realize o login novamente.` };
+        return { message: `O token atual está expirado. Realize o login novamente` };
     },
     tokenInvalid(): { message: string } {
         return { message: `O token atual é inválido` };

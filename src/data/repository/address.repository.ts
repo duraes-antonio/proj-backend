@@ -1,48 +1,44 @@
 'use strict';
-import { IAddress, IAddressSchema } from '../../domain/interfaces/address.interface';
+import { IAddress } from '../../domain/interfaces/address.interface';
 import { Address } from '../schemas/address.schema';
+import { IRepository } from '../repository.interface';
 
-async function delete_(id: string): Promise<IAddressSchema | null> {
-    return await Address.findByIdAndDelete(id);
-}
+export class AddressRepository implements IRepository<IAddress> {
 
-async function find(userId: string): Promise<IAddressSchema[]> {
-    return await Address.find(
-      { userId: userId },
-      'street number zipCode neighborhood city state userId'
-    ).populate(['userId']);
-}
+    async delete(id: string): Promise<IAddress | null> {
+        return await Address.findByIdAndDelete(id);
+    }
 
-async function findById(id: string): Promise<IAddressSchema | null> {
-    return await Address.findById(
-      id, 'street number zipCode neighborhood city state userId'
-    );
-}
+    async find(userId: string): Promise<IAddress[]> {
+        return await Address.find(
+          { userId: userId },
+          'street number zipCode neighborhood city state userId'
+        ).populate(['userId']);
+    }
 
-async function create(addr: IAddress): Promise<IAddressSchema> {
-    return await new Address(addr).save();
-}
+    async findById(id: string): Promise<IAddress | null> {
+        return await Address.findById(
+          id, 'street number zipCode neighborhood city state userId'
+        );
+    }
 
-async function update(id: string, addr: IAddress): Promise<IAddressSchema | null> {
-    return await Address.findByIdAndUpdate(
-      id,
-      {
-          $set: {
-              zipCode: addr.zipCode,
-              state: addr.state,
-              city: addr.city,
-              number: addr.number,
-              street: addr.street,
-              neighborhood: addr.neighborhood
+    async create(addr: IAddress): Promise<IAddress> {
+        return await new Address(addr).save();
+    }
+
+    async update(id: string, addr: IAddress): Promise<IAddress | null> {
+        return await Address.findByIdAndUpdate(
+          id,
+          {
+              $set: {
+                  zipCode: addr.zipCode,
+                  state: addr.state,
+                  city: addr.city,
+                  number: addr.number,
+                  street: addr.street,
+                  neighborhood: addr.neighborhood
+              }
           }
-      }
-    );
+        );
+    }
 }
-
-export const addressRepository = {
-    delete: delete_,
-    find: find,
-    findBydId: findById,
-    create: create,
-    put: update
-};

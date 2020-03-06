@@ -14,27 +14,12 @@ const tokenSchema = new Schema({
         ref: ECollectionsName.USER,
         required: true
     },
-    createDate: {
-        type: Date,
-        required: true,
-        default: Date.now
-    },
 
     createdAt: {
         default: Date.now,
         required: true,
         type: Date
     },
-    updatedAt: {
-        default: Date.now,
-        required: true,
-        type: Date
-    },
-    responsibleId: {
-        ref: ECollectionsName.USER,
-        required: true,
-        type: Schema.Types.ObjectId
-    }
 });
 
 export const TokenInvalid: Model<ITokenInvalidSchema> = model<ITokenInvalidSchema>(

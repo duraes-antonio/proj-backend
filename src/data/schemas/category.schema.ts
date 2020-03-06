@@ -17,16 +17,6 @@ const categorySchema = new Schema({
         required: true,
         type: Date
     },
-    updatedAt: {
-        default: Date.now,
-        required: true,
-        type: Date
-    },
-    responsibleId: {
-        ref: ECollectionsName.USER,
-        required: true,
-        type: Schema.Types.ObjectId
-    }
 });
 
 export const Category: Model<ICategorySchema> = model<ICategorySchema>(ECollectionsName.CATEGORY, categorySchema);

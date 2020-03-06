@@ -1,9 +1,9 @@
 'use strict';
 
 import { Document } from 'mongoose';
-import { IAuditable } from './auditable.interface';
+import { IRegistable } from './auditable.interface';
 
-export interface IProduct {
+export interface IProduct extends IRegistable {
     readonly title: string;
     readonly desc: string;
     readonly urlMainImage?: string;
@@ -17,6 +17,6 @@ export interface IProduct {
     readonly amountAvailable: number;
 }
 
-export interface IProductSchema extends Document, IAuditable, IProduct {
+export interface IProductSchema extends Document, IProduct {
     readonly priceWithDiscount: number;
 }

@@ -41,16 +41,6 @@ const userSchema = new Schema({
         required: true,
         type: Date
     },
-    updatedAt: {
-        default: Date.now,
-        required: true,
-        type: Date
-    },
-    responsibleId: {
-        ref: ECollectionsName.USER,
-        required: false,
-        type: Schema.Types.ObjectId
-    }
 });
 
 export const User: Model<IUserSchema> = model<IUserSchema>(ECollectionsName.USER, userSchema);

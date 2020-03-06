@@ -2,14 +2,12 @@
 // @ts-ignore
 import express from 'express';
 import { indexRoutes } from './routes/index.route';
-import { addressRoutes } from './routes/address.route';
 import { config } from './config';
 import { userRoutes } from './routes/user.route';
 import { authRoutes } from './routes/auth.route';
 import { Model, Mongoose } from 'mongoose';
-import { productRoutes } from './routes/product.route';
-import { categoryRoutes } from './routes/category.route';
 import { IClassAuditable } from './domain/interfaces/auditable.interface';
+import { categoryRoutes } from './routes/category.route';
 
 const express = require('express');
 const cors = require('cors');
@@ -52,10 +50,10 @@ export class App {
 
     private routes(): void {
         this.express.use(indexRoutes);
-        this.express.use('/address', addressRoutes);
+        // this.express.use('/address', addressRoutes);
         this.express.use('/auth', authRoutes);
         this.express.use('/category', categoryRoutes);
-        this.express.use('/product', productRoutes);
+        // this.express.use('/product', productRoutes);
         this.express.use('/user', userRoutes);
     }
 

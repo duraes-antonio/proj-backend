@@ -3,12 +3,12 @@ import { Request, Response } from 'express';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
 import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
-import { userRepository } from '../data/repository/user.repository';
 import { cryptService as cryptS } from '../services/crypt.service';
 import { tokenService as tokenS } from '../services/tokenService';
-import { IUser } from '../domain/interfaces/user.interface';
+import { IUser, IUserSchema } from '../domain/interfaces/user.interface';
 import { ITokenData } from '../services/interfaces/tokenData.interface';
 import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
+import { userRepository } from '../data/repository/user.functions.repository';
 
 
 function validateUser(user: IUser): PipelineValidation {
@@ -36,7 +36,7 @@ async function authenticate(req: Request, res: Response) {
             return res.status(403).send(serviceDataMsg.wrongPassword());
         }
 
-        const token = tokenS.generate(user);
+        const token = tokenS.generate(user as IUserSchema);
         return res.status(200).send({
             token: token,
             user: {

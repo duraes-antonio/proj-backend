@@ -4,6 +4,8 @@
  * Expressão baseada no regex usado na API do Angular Form Validators:
  * https://github.com/angular/angular/blob/e0ad9ecda0b8a541b405d2ab35335b90ceb21fd1/packages/forms/src/validators.ts#L254
 */
+import { validationErrorMsg } from './buildMsg';
+
 const regexEmail = /^(?=.{1,254}$)(?=.{1,64}@)[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 const regexPhone = /^\([1-9]{2}\)\s?(?:[2-8]|9[1-9])[0-9]{3}-?[0-9]{4}$/;
 
@@ -44,8 +46,8 @@ export class PipelineValidation {
     readonly errors: string[] = [];
     readonly fnEmpty: (field: string) => string;
 
-    constructor(fnEmptyOrNull: (field: string) => string) {
-        this.fnEmpty = fnEmptyOrNull;
+    constructor(fnEmptyOrNull?: (field: string) => string) {
+        this.fnEmpty = fnEmptyOrNull ? fnEmptyOrNull : validationErrorMsg.empty;
     }
 
     get valid(): boolean {

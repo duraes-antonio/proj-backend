@@ -1,12 +1,9 @@
-export interface IAuditable {
-    readonly createdAt: Date;
-    readonly updatedAt: Date;
-    readonly responsibleId: string;
+export interface IRegistable {
+    id?: any;
+    readonly createdAt?: Date;
 }
 
-export class IClassAuditable implements IAuditable {
+export class IClassAuditable implements IRegistable {
+    readonly id: any;
     readonly createdAt: Date = new Date;
-    readonly updatedAt: Date = new Date();
-    readonly responsibleId: string = '';
-
 }

@@ -51,16 +51,6 @@ const addressSchema = new Schema({
         required: true,
         type: Date
     },
-    updatedAt: {
-        default: Date.now,
-        required: true,
-        type: Date
-    },
-    responsibleId: {
-        required: true,
-        ref: ECollectionsName.USER,
-        type: Schema.Types.ObjectId
-    }
 });
 
 export const Address: Model<IAddressSchema> = model<IAddressSchema>(ECollectionsName.ADDRESS, addressSchema);

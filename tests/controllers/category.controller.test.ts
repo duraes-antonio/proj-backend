@@ -83,6 +83,12 @@ describe('GET BY ID', () => {
     it(
       'Categoria existente',
       async () => {
+          const resPost = await request(app)
+            .post('/category')
+            .send(categoryRight);
+          expect(resPost.status).toBe(201);
+          categSaved = resPost.body;
+
           const res = await request(app)
             .get(`/category/${categSaved._id}`)
             .send();
