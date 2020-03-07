@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
     "prebuild": "rimraf dist",
-    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit"
+    "test": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.5.3",
@@ -38,6 +38,7 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "jest": "^25.1.0",
+    "jest-sonar-reporter": "^2.0.0",
     "nodemon": "^1.18.10",
     "prettier": "^1.16.4",
     "rimraf": "^2.6.3",
@@ -47,10 +48,10 @@
     "ts-node": "^8.6.2",
     "typescript": "^3.7"
   },
-    "jest": {
+  "jest": {
     "testResultsProcessor": "jest-sonar-reporter"
   },
-    "jestSonar": {
+  "jestSonar": {
     "reportPath": "reports",
     "reportFile": "test-reporter.xml",
     "indent": 4,

@@ -1,8 +1,23 @@
 module.exports = {
-    preset: 'ts-jest',
-    testEnvironment: 'node'
+  preset: "ts-jest",
+  testEnvironment: "node"
 };
 
-if (process.env.NODE_ENV == null) {
-    process.env.NODE_ENV = 'test';
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = "test";
 }
+
+module.exports = {
+  globals: {
+    "ts-jest": {
+      skipBabel: true
+    }
+  },
+  mapCoverage: true,
+  moduleFileExtensions: ["js", "ts"],
+  testResultsProcessor: "jest-sonar-reporter",
+  transform: {
+    "^.+\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+  },
+  testMatch: ["<rootDir>/tests/**/*.test.ts"]
+};
