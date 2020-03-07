@@ -19,7 +19,7 @@ const tokenSchema = new Schema({
         default: Date.now,
         required: true,
         type: Date
-    },
+    }
 });
 
 export const TokenInvalid: Model<ITokenInvalidSchema> = model<ITokenInvalidSchema>(

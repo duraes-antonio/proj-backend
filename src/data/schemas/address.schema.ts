@@ -50,7 +50,7 @@ const addressSchema = new Schema({
         default: Date.now,
         required: true,
         type: Date
-    },
+    }
 });
 
 export const Address: Model<IAddressSchema> = model<IAddressSchema>(ECollectionsName.ADDRESS, addressSchema);

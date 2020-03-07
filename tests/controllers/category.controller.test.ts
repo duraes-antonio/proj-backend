@@ -188,7 +188,7 @@ describe('PUT', () => {
           const newTitle = 'Novo título';
           const res = await request(app)
             .put(`/category/${categSaved.id}`)
-            .send({...categSaved, title: newTitle});
+            .send({ ...categSaved, title: newTitle });
           expect(res.status).toBe(200);
 
           const resGet = await request(app)

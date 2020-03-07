@@ -73,7 +73,7 @@ const productSchema = new Schema({
         default: Date.now,
         required: true,
         type: Date
-    },
+    }
 });
 
 export const Product: Model<IProductSchema> = model<IProductSchema>(ECollectionsName.PRODUCT, productSchema);

@@ -16,7 +16,7 @@ const categorySchema = new Schema({
         default: Date.now,
         required: true,
         type: Date
-    },
+    }
 });
 
 export const Category: Model<ICategorySchema> = model<ICategorySchema>(ECollectionsName.CATEGORY, categorySchema);

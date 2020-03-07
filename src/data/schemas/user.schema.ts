@@ -40,7 +40,7 @@ const userSchema = new Schema({
         default: Date.now,
         required: true,
         type: Date
-    },
+    }
 });
 
 export const User: Model<IUserSchema> = model<IUserSchema>(ECollectionsName.USER, userSchema);
