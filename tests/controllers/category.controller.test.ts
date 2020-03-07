@@ -90,10 +90,10 @@ describe('GET BY ID', () => {
           categSaved = resPost.body;
 
           const res = await request(app)
-            .get(`/category/${categSaved._id}`)
+            .get(`/category/${categSaved.id}`)
             .send();
           expect(res.status).toBe(200);
-          expect(res.body).toHaveProperty('_id', categSaved._id);
+          expect(res.body).toHaveProperty('id', categSaved.id);
           expect(res.body).toHaveProperty('title', categSaved.title);
       });
 });
@@ -115,10 +115,10 @@ describe('GET', () => {
       'Categoria existente',
       async () => {
           const res = await request(app)
-            .get(`/category/${categSaved._id}`)
+            .get(`/category/${categSaved.id}`)
             .send();
           expect(res.status).toBe(200);
-          expect(res.body).toHaveProperty('_id', categSaved._id);
+          expect(res.body).toHaveProperty('id', categSaved.id);
           expect(res.body).toHaveProperty('title', categSaved.title);
       });
 });
@@ -139,16 +139,21 @@ describe('DELETE', () => {
     it(
       'Categoria existente',
       async () => {
+          const res1 = await request(app)
+            .post('/category')
+            .send(categoryRight);
+          expect(res1.status).toBe(201);
+
           const resGet = await request(app)
             .get(`/category/`)
             .send();
           expect(resGet.status).toBe(200);
           expect((resGet.body as ICategory[])
-            .some(c => c._id == categSaved._id)
+            .some(c => c.id == categSaved.id)
           ).toBe(true);
 
           const res = await request(app)
-            .delete(`/category/${categSaved._id}`)
+            .delete(`/category/${categSaved.id}`)
             .send();
 
           expect(res.status).toBe(200);
@@ -159,7 +164,7 @@ describe('DELETE', () => {
 
           expect(resGetAfterDel.status).toBe(200);
           expect((resGetAfterDel.body as ICategory[])
-            .some(c => c._id == categSaved._id)
+            .some(c => c.id == categSaved.id)
           ).toBe(false);
       });
 });
@@ -182,12 +187,12 @@ describe('PUT', () => {
       async () => {
           const newTitle = 'Novo título';
           const res = await request(app)
-            .put(`/category/${categSaved._id}`)
+            .put(`/category/${categSaved.id}`)
             .send({...categSaved, title: newTitle});
           expect(res.status).toBe(200);
 
           const resGet = await request(app)
-            .get(`/category/${categSaved._id}`)
+            .get(`/category/${categSaved.id}`)
             .send();
           expect(resGet.status).toBe(200);
           expect(resGet.body.title).toBe(newTitle);

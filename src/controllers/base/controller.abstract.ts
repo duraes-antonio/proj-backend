@@ -74,6 +74,7 @@ async function post<T>(
 
     try {
         const objSaved = await bdCreate({ ...req.body });
+
         if (fnPosCreate) {
             return fnPosCreate(objSaved);
         } else {

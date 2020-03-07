@@ -92,7 +92,7 @@ describe('Get By Id', () => {
             .send(userRight);
           expect(resCreate.status).toBe(201);
 
-          const tokenData = await tokenService.decode(resCreate.body.data.token);
+          const tokenData = await tokenService.decode(resCreate.body.token);
 
           const resGet = await request(app)
             .get(`/user/${tokenData.id}`)
@@ -126,7 +126,7 @@ describe('Put', () => {
             .send(userRight);
           expect(resCreate.status).toBe(201);
 
-          const tokenData = await tokenService.decode(resCreate.body.data.token);
+          const tokenData = await tokenService.decode(resCreate.body.token);
 
           const resGet = await request(app)
             .put(`/user/${tokenData.id}`)
