@@ -13,7 +13,6 @@ router.get(
   });
 
 export async function postx(req: Request, res: Response, next: NextFunction) {
-    console.log('FOI');
     return res.status(200).send({
         title: 'Node JS - API',
         version: '1.0'

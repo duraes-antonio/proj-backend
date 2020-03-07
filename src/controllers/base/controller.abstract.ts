@@ -13,7 +13,6 @@ async function delete_<T>(
 
     try {
         const objDeleted = await bdDelete(req.params.id);
-        console.log(objDeleted);
 
         if (!objDeleted) {
             return resFunc.notFound(res, entity, 'id', req.params.id);
@@ -30,7 +29,6 @@ async function get<T>(
   req: Request, res: Response, next: NextFunction,
   bdFind: (filter: any) => Promise<T[]>
 ) {
-
     try {
         const objs: T[] = await bdFind({});
         return resFunc.success(res, objs);

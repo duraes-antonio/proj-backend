@@ -122,3 +122,74 @@ describe('GET', () => {
           expect(res.body).toHaveProperty('title', categSaved.title);
       });
 });
+
+describe('DELETE', () => {
+
+    let categSaved: ICategorySchema;
+
+    beforeAll(async () => {
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await request(app)
+          .post('/category')
+          .send(categoryRight);
+        expect(res.status).toBe(201);
+        categSaved = res.body;
+    });
+
+    it(
+      'Categoria existente',
+      async () => {
+          const resGet = await request(app)
+            .get(`/category/`)
+            .send();
+          expect(resGet.status).toBe(200);
+          expect((resGet.body as ICategory[])
+            .some(c => c._id == categSaved._id)
+          ).toBe(true);
+
+          const res = await request(app)
+            .delete(`/category/${categSaved._id}`)
+            .send();
+
+          expect(res.status).toBe(200);
+
+          const resGetAfterDel = await request(app)
+            .get(`/category/`)
+            .send();
+
+          expect(resGetAfterDel.status).toBe(200);
+          expect((resGetAfterDel.body as ICategory[])
+            .some(c => c._id == categSaved._id)
+          ).toBe(false);
+      });
+});
+
+describe('PUT', () => {
+
+    let categSaved: ICategorySchema;
+
+    beforeAll(async () => {
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await request(app)
+          .post('/category')
+          .send(categoryRight);
+        expect(res.status).toBe(201);
+        categSaved = res.body;
+    });
+
+    it(
+      'Categoria existente',
+      async () => {
+          const newTitle = 'Novo título';
+          const res = await request(app)
+            .put(`/category/${categSaved._id}`)
+            .send({...categSaved, title: newTitle});
+          expect(res.status).toBe(200);
+
+          const resGet = await request(app)
+            .get(`/category/${categSaved._id}`)
+            .send();
+          expect(resGet.status).toBe(200);
+          expect(resGet.body.title).toBe(newTitle);
+      });
+});

@@ -1,5 +1,5 @@
 export interface IRegistable {
-    id?: any;
+    _id?: any;
     readonly createdAt?: Date;
 }
 
