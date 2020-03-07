@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
     "prebuild": "rimraf dist",
-    "test": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit",
-    "report": "nyc --reporter=lcov --reporter=text-lcov yarn test"
+    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
   },
   "dependencies": {
     "@sendgrid/mail": "^6.5.3",
