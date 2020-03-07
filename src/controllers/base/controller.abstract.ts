@@ -35,7 +35,6 @@ async function get<T>(
         const objs: T[] = await bdFind({});
         return resFunc.success(res, objs);
     } catch (err) {
-        console.log(err);
         return resFunc.unknown(res, err);
     }
 }
@@ -57,7 +56,6 @@ async function getById<T>(
         }
         return resFunc.success(res, obj);
     } catch (err) {
-        console.log(err);
         return resFunc.unknown(res, err);
     }
 }

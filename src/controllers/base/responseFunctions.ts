@@ -6,7 +6,7 @@ function badRequest(res: Response, errors: string[]) {
 }
 
 function created(res: Response, data: any) {
-    return res.status(201).send({ ...msgS.created(), data });
+    return res.status(201).send(data);
 }
 
 function duplicated(res: Response, entity: string, propName: string, propVal: string) {
@@ -18,8 +18,7 @@ function notFound(res: Response, entity: string, propName: string, propVal: stri
 }
 
 function success(res: Response, data?: any) {
-    const msg = data ? { ...msgS.success(), data: data } : msgS.success();
-    return res.status(200).send(msg);
+    return res.status(200).send(data ? data : '');
 }
 
 function unknown(res: Response, err: any) {
