@@ -15,8 +15,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.2",
-    "nyc": "^15.0.0"
+    "mongoose": "^5.9.2"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.8.3",
@@ -48,18 +47,5 @@
     "ts-jest": "^25.2.1",
     "ts-node": "^8.6.2",
     "typescript": "^3.7"
-  },
-  "jest": {
-    "testResultsProcessor": "jest-sonar-reporter"
-  },
-  "jestSonar": {
-    "reportPath": "reports",
-    "reportFile": "test-reporter.xml",
-    "indent": 4,
-    "env": {
-      "test": {
-        "reportPath": "reports-test"
-      }
-    }
   }
 }
