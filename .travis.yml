@@ -17,5 +17,6 @@ before_script:
 - yarn install
 
 script:
-- yarn run test
+- yarn test
+- yarn report
 - sonar-scanner
