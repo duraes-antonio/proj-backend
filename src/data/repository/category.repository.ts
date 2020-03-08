@@ -1,32 +1,52 @@
 'use strict';
-import { IRepository } from '../repository.interface';
 import { Category } from '../schemas/category.schema';
 import { ICategory } from '../../domain/interfaces/category.interface';
+import { FilterCategory } from '../../domain/models/filters/filterCategory.model';
 
-const projection = 'title updatedAt createdAt';
+const select = 'title createdAt';
 
-export class CategoryRepository implements IRepository<ICategory> {
+async function find(filter: FilterCategory): Promise<ICategory[]> {
+    const query: any = {};
 
-    async create(obj: ICategory): Promise<ICategory> {
-        return await new Category(obj).save();
+    if (filter.text && filter.text.trim()) {
+        query['$text'] = {
+            $search: filter.text,
+            $caseSensitive: false
+        };
     }
 
-    async delete(id: string): Promise<ICategory | null> {
-        return await Category.findByIdAndDelete(id);
+    if (filter.dateStart) {
+        query.createdAt = query.createdAt ? query.createdAt : {};
+        query.createdAt['$gte'] = filter.dateStart;
     }
 
-    async find(): Promise<ICategory[]> {
-        return await Category.find({}, projection);
+    if (filter.dateEnd) {
+        query.createdAt = query.createdAt ? query.createdAt : {};
+        query.createdAt['$lt'] = filter.dateEnd;
     }
-
-    async findById(id: string): Promise<ICategory | null> {
-        return await Category.findById(id, projection);
-    }
-
-    async update(id: string, obj: ICategory): Promise<ICategory | null> {
-        return await Category.findByIdAndUpdate(
-          id,
-          { $set: { title: obj.title } }
-        );
-    }
+    return await Category.find(
+      query,
+      { 'score': { '$meta': 'textScore' } }
+    ).select({ id: 1, title: 1, createdAt: 1 })
+      .sort({ score: { $meta: 'textScore' } })
+      .lean();
 }
+
+async function findCount(filter: FilterCategory): Promise<number> {
+    return await Category.count({
+        $text: { $search: filter.text, $caseSensitive: false },
+        score: { $meta: 'textScore' },
+        id: {
+            $in: filter.categoriesId
+        },
+        createdAt: {
+            $gte: filter.dateStart,
+            $lt: filter.dateEnd
+        }
+    });
+}
+
+export const categoryRepository = {
+    findCount: findCount,
+    find: find
+};

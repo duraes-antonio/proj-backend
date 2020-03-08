@@ -7,6 +7,8 @@ import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.abstract';
 import { Category } from '../data/schemas/category.schema';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
+import { categoryRepository as categRepo } from '../data/repository/category.repository';
+import { FilterCategory } from '../domain/models/filters/filterCategory.model';
 
 export const entityName = 'Categoria';
 
@@ -22,7 +24,6 @@ async function delete_(req: Request, res: Response, next: NextFunction) {
 }
 
 async function post(req: Request, res: Response, next: NextFunction) {
-
     return await ctrlFunc.post<ICategory>(
       req, res, next,
       () => repoFunc.create<ICategory>(req.body, Category),
@@ -33,14 +34,14 @@ async function post(req: Request, res: Response, next: NextFunction) {
 async function get(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.get<ICategory>(
       req, res, next,
-      ({}) => repoFunc.find<ICategory>(Category)
+      () => categRepo.find(req.query as FilterCategory)
     );
 }
 
 async function getById(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.getById<ICategory>(
       req, res, next,
-      (id) => repoFunc.findById<ICategory>(req.params.id, Category)
+      () => repoFunc.findById<ICategory>(req.params.id, Category)
     );
 }
 

@@ -6,6 +6,7 @@ import { ECollectionsName } from '../collectionsName.enum';
 
 const categorySchema = new Schema({
     title: {
+        index: true,
         maxlength: categorySizes.titleMax,
         required: true,
         trim: true,
@@ -18,5 +19,5 @@ const categorySchema = new Schema({
         type: Date
     }
 });
-
+categorySchema.index({ title: 'text' });
 export const Category: Model<ICategorySchema> = model<ICategorySchema>(ECollectionsName.CATEGORY, categorySchema);

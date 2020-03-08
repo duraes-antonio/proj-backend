@@ -2,14 +2,12 @@
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { ICategory, ICategorySchema } from '../../src/domain/interfaces/category.interface';
+import { FilterCategory } from '../../src/domain/models/filters/filterCategory.model';
 
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
-
-function getErrorRequest(res: any) {
-    return JSON.parse(res['text']);
-}
+const route = '/category';
 
 const categoryRight: ICategory = { title: 'Card' };
 
@@ -21,9 +19,7 @@ describe('POST', () => {
     it(
       'Categoria sem título',
       async () => {
-          const res = await request(app)
-            .post('/category')
-            .send({});
+          const res = await request(app).post(route).send({});
           expect(res.status).toBe(400);
       });
 
@@ -32,7 +28,7 @@ describe('POST', () => {
       async () => {
           const strPart = '12345678912345678912345678';
           const res = await request(app)
-            .post('/category')
+            .post(route)
             .send({
                 title: [1, 2, 3, 4, 5].map(() => strPart).join(strPart)
             });
@@ -42,9 +38,7 @@ describe('POST', () => {
     it(
       'True - Categoria válida',
       async () => {
-          const res = await request(app)
-            .post('/category')
-            .send(categoryRight);
+          const res = await request(app).post(route).send(categoryRight);
           expect(res.status).toBe(201);
       });
 });
@@ -55,9 +49,7 @@ describe('GET BY ID', () => {
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post('/category')
-          .send(categoryRight);
+        const res = await request(app).post(route).send(categoryRight);
         expect(res.status).toBe(201);
         categSaved = res.body;
     });
@@ -65,9 +57,7 @@ describe('GET BY ID', () => {
     it(
       'Categoria inexistente - ID Inválido',
       async () => {
-          const res = await request(app)
-            .get(`/category/${1}`)
-            .send();
+          const res = await request(app).get(`${route}/${1}`).send();
           expect(res.status).toBe(404);
       });
 
@@ -75,7 +65,7 @@ describe('GET BY ID', () => {
       'Categoria inexistente - ID válido',
       async () => {
           const res = await request(app)
-            .get(`/category/41224d776a326fb40f000001`)
+            .get(`${route}/41224d776a326fb40f000001`)
             .send();
           expect(res.status).toBe(404);
       });
@@ -83,14 +73,12 @@ describe('GET BY ID', () => {
     it(
       'Categoria existente',
       async () => {
-          const resPost = await request(app)
-            .post('/category')
-            .send(categoryRight);
+          const resPost = await request(app).post(route).send(categoryRight);
           expect(resPost.status).toBe(201);
           categSaved = resPost.body;
 
           const res = await request(app)
-            .get(`/category/${categSaved.id}`)
+            .get(`${route}/${categSaved.id}`)
             .send();
           expect(res.status).toBe(200);
           expect(res.body).toHaveProperty('id', categSaved.id);
@@ -104,9 +92,7 @@ describe('GET', () => {
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post('/category')
-          .send(categoryRight);
+        const res = await request(app).post(route).send(categoryRight);
         expect(res.status).toBe(201);
         categSaved = res.body;
     });
@@ -115,11 +101,48 @@ describe('GET', () => {
       'Categoria existente',
       async () => {
           const res = await request(app)
-            .get(`/category/${categSaved.id}`)
+            .get(`${route}/${categSaved.id}`)
             .send();
           expect(res.status).toBe(200);
           expect(res.body).toHaveProperty('id', categSaved.id);
           expect(res.body).toHaveProperty('title', categSaved.title);
+      });
+});
+
+describe('GET - FILTER', () => {
+
+    let categSaved: ICategorySchema;
+
+    beforeAll(async () => {
+        await clearDatabase(await appInstance.databaseInstance);
+
+        const cat1: ICategory = { title: 'Cards' };
+        const cat2: ICategory = { title: 'Action Figures' };
+        const cat3: ICategory = { title: 'Pack de Cards - 30 card' };
+
+        const res1 = await request(app).post(route).send(cat1);
+        expect(res1.status).toBe(201);
+        const res2 = await request(app).post(route).send(cat2);
+        expect(res2.status).toBe(201);
+        const res3 = await request(app).post(route).send(cat3);
+        expect(res3.status).toBe(201);
+    });
+
+    it(
+      'Filter: Text - "Card"',
+      async () => {
+          const filter = new FilterCategory();
+          filter.text = 'card';
+
+          const res = await request(app)
+            .get(`${route}`)
+            .query(filter);
+          console.log(res.body);
+
+          expect(res.status).toBe(200);
+          expect((res.body as ICategory[])
+            .every(c => c.title.toLowerCase().includes(filter.text))
+          ).toBeTruthy();
       });
 });
 
@@ -129,9 +152,7 @@ describe('DELETE', () => {
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post('/category')
-          .send(categoryRight);
+        const res = await request(app).post(route).send(categoryRight);
         expect(res.status).toBe(201);
         categSaved = res.body;
     });
@@ -139,28 +160,22 @@ describe('DELETE', () => {
     it(
       'Categoria existente',
       async () => {
-          const res1 = await request(app)
-            .post('/category')
-            .send(categoryRight);
+          const res1 = await request(app).post(route).send(categoryRight);
           expect(res1.status).toBe(201);
 
-          const resGet = await request(app)
-            .get(`/category/`)
-            .send();
+          const resGet = await request(app).get(route).send();
           expect(resGet.status).toBe(200);
           expect((resGet.body as ICategory[])
             .some(c => c.id == categSaved.id)
           ).toBe(true);
 
           const res = await request(app)
-            .delete(`/category/${categSaved.id}`)
+            .delete(`${route}/${categSaved.id}`)
             .send();
 
           expect(res.status).toBe(200);
 
-          const resGetAfterDel = await request(app)
-            .get(`/category/`)
-            .send();
+          const resGetAfterDel = await request(app).get(route).send();
 
           expect(resGetAfterDel.status).toBe(200);
           expect((resGetAfterDel.body as ICategory[])
@@ -175,9 +190,7 @@ describe('PUT', () => {
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post('/category')
-          .send(categoryRight);
+        const res = await request(app).post(route).send(categoryRight);
         expect(res.status).toBe(201);
         categSaved = res.body;
     });
