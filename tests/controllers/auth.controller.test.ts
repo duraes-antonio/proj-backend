@@ -19,7 +19,7 @@ describe('Authentication', () => {
     });
 
     it(
-      'Usuário sem email',
+      'Without email',
       async () => {
           const res = await request(app)
             .post('/auth/authenticate')
@@ -28,7 +28,7 @@ describe('Authentication', () => {
       });
 
     it(
-      'Usuário com email válido, sem senha',
+      'Without password',
       async () => {
           const res = await request(app)
             .post('/auth/authenticate')
@@ -37,7 +37,7 @@ describe('Authentication', () => {
       });
 
     it(
-      'Usuário válido, mas senha incorreta',
+      'Wrong password',
       async () => {
           const resUserCreated = await request(app)
             .post('/user')
@@ -51,7 +51,7 @@ describe('Authentication', () => {
       });
 
     it(
-      'Usuário válido, mas não existente',
+      'User inexistent',
       async () => {
           const res = await request(app)
             .post('/auth/authenticate')
@@ -60,7 +60,7 @@ describe('Authentication', () => {
       });
 
     it(
-      'True - Usuário válido',
+      'Valid user',
       async () => {
           const resUserCreated = await request(app)
             .post('/user')
@@ -81,7 +81,7 @@ describe('Invalidate Token', () => {
     });
 
     it(
-      'Token inicial inválido',
+      'Invalid token',
       async () => {
           const resPostUser = await request(app)
             .post('/user')
@@ -96,7 +96,20 @@ describe('Invalidate Token', () => {
       });
 
     it(
-      'True - Token inicial válido',
+      'Empty token',
+      async () => {
+          const resPostUser = await request(app)
+            .post('/user')
+            .send(userRight);
+          expect(resPostUser.status).toBe(201);
+
+          const res = await request(app)
+            .post('/auth/invalidate');
+          expect(res.status).toBe(401);
+      });
+
+    it(
+      'Valid Token',
       async () => {
           const resPostUser = await request(app)
             .post('/user')
@@ -107,7 +120,7 @@ describe('Invalidate Token', () => {
           const res = await request(app)
             .post('/auth/invalidate')
             .set('x-access-token', `${validToken}`);
-          expect(res.status).toBe(200);
+          expect(res.status).toBe(201);
 
           const resInvalid = await request(app)
             .post('/auth/invalidate')

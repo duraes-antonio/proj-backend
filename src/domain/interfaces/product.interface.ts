@@ -4,17 +4,15 @@ import { Document } from 'mongoose';
 import { IRegistable } from './auditable.interface';
 
 export interface IProduct extends IRegistable {
-    readonly title: string;
-    readonly desc: string;
-    readonly urlMainImage?: string;
-
-    readonly price: number;
-    readonly percentOff: number;
-
-    readonly freeDelivery: boolean;
-    readonly categoriesId: string[];
-    readonly avgReview: number;
     readonly amountAvailable: number;
+    readonly avgReview: number;
+    readonly categoriesId: string[];
+    readonly desc: string;
+    readonly freeDelivery: boolean;
+    readonly percentOff: number;
+    readonly price: number;
+    readonly title: string;
+    readonly urlMainImage?: string;
 }
 
 export interface IProductSchema extends Document, IProduct {

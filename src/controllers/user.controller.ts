@@ -63,19 +63,20 @@ async function post(req: Request, res: Response, next: NextFunction) {
 
 async function get(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.get<IUser>(
-      req, res, next, ({}) => repoFunc.find<IUser>(User)
+      req, res, next, () => repoFunc.find<IUser>(User)
     );
 }
 
 async function getById(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.getById<IUser>(
-      req, res, next, (id: string) => repoFunc.findById<IUser>(id, User)
+      req, res, next, entityName,
+      (id: string) => repoFunc.findById<IUser>(id, User)
     );
 }
 
 async function put(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.put<IUser>(
-      req, res, next, validateUser,
+      req, res, next, entityName, validateUser,
       (id: string, obj: IUser) => repoFunc.update<IUser>(id, obj, User)
     );
 }

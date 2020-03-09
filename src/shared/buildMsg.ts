@@ -45,6 +45,9 @@ export const serviceDataMsg = {
               `O item ${entity}, de ${propName} '${propValue}' já existe`
         };
     },
+    invalidId(id: string): { message: string } {
+        return { message: `O ID '${id}' não é válido para um documento` };
+    },
     onlyAdmin(): { message: string } {
         return { message: `Somente administradores podem acessar o item solicitado` };
     },

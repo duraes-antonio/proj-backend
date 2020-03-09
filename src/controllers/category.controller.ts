@@ -18,7 +18,7 @@ function validateCategory(cat: ICategory): PipelineValidation {
 }
 
 async function delete_(req: Request, res: Response, next: NextFunction) {
-    return ctrlFunc.delete(req, res, next,
+    return ctrlFunc.delete(req, res, next, entityName,
       (id) => repoFunc.delete(id, Category)
     );
 }
@@ -26,7 +26,7 @@ async function delete_(req: Request, res: Response, next: NextFunction) {
 async function post(req: Request, res: Response, next: NextFunction) {
     return await ctrlFunc.post<ICategory>(
       req, res, next,
-      () => repoFunc.create<ICategory>(req.body, Category),
+      () => repoFunc.create(req.body, Category),
       validateCategory
     );
 }
@@ -40,15 +40,15 @@ async function get(req: Request, res: Response, next: NextFunction) {
 
 async function getById(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.getById<ICategory>(
-      req, res, next,
-      () => repoFunc.findById<ICategory>(req.params.id, Category)
+      req, res, next, entityName,
+      () => repoFunc.findById(req.params.id, Category)
     );
 }
 
 async function put(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.put<ICategory>(
-      req, res, next, validateCategory,
-      (id, obj) => repoFunc.update<ICategory>(id, obj, Category)
+      req, res, next, entityName, validateCategory,
+      (id, obj) => repoFunc.update(id, obj, Category)
     );
 }
 

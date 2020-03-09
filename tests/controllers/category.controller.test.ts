@@ -58,7 +58,7 @@ describe('GET BY ID', () => {
       'Categoria inexistente - ID Inválido',
       async () => {
           const res = await request(app).get(`${route}/${1}`).send();
-          expect(res.status).toBe(404);
+          expect(res.status).toBe(400);
       });
 
     it(
@@ -111,15 +111,12 @@ describe('GET', () => {
 
 describe('GET - FILTER', () => {
 
-    let categSaved: ICategorySchema;
+    const cat1: ICategory = { title: 'Cards' };
+    const cat2: ICategory = { title: 'Action Figures' };
+    const cat3: ICategory = { title: 'Pack de Cards - 30 card' };
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-
-        const cat1: ICategory = { title: 'Cards' };
-        const cat2: ICategory = { title: 'Action Figures' };
-        const cat3: ICategory = { title: 'Pack de Cards - 30 card' };
-
         const res1 = await request(app).post(route).send(cat1);
         expect(res1.status).toBe(201);
         const res2 = await request(app).post(route).send(cat2);
@@ -137,12 +134,26 @@ describe('GET - FILTER', () => {
           const res = await request(app)
             .get(`${route}`)
             .query(filter);
-          console.log(res.body);
 
           expect(res.status).toBe(200);
           expect((res.body as ICategory[])
             .every(c => c.title.toLowerCase().includes(filter.text))
           ).toBeTruthy();
+      });
+
+    it(
+      'Filter - Skip: 1 - Limit: 1',
+      async () => {
+          const filter: FilterCategory = {
+              currentPage: 2,
+              perPage: 1,
+              text: 'Card'
+          };
+
+          const res = await request(app).get(`${route}`).query(filter);
+          expect(res.status).toBe(200);
+          expect((res.body as ICategory[])[0].title === cat1.title)
+            .toBeTruthy();
       });
 });
 
@@ -158,21 +169,20 @@ describe('DELETE', () => {
     });
 
     it(
-      'Categoria existente',
+      'Invalid ID',
       async () => {
-          const res1 = await request(app).post(route).send(categoryRight);
-          expect(res1.status).toBe(201);
+          const res = await request(app)
+            .delete(`${route}/${categSaved.id.replace('0', 'x')}`)
+            .send();
+          expect(res.status).toBe(400);
+      });
 
-          const resGet = await request(app).get(route).send();
-          expect(resGet.status).toBe(200);
-          expect((resGet.body as ICategory[])
-            .some(c => c.id == categSaved.id)
-          ).toBe(true);
-
+    it(
+      'Valid Category',
+      async () => {
           const res = await request(app)
             .delete(`${route}/${categSaved.id}`)
             .send();
-
           expect(res.status).toBe(200);
 
           const resGetAfterDel = await request(app).get(route).send();
@@ -196,7 +206,16 @@ describe('PUT', () => {
     });
 
     it(
-      'Categoria existente',
+      'Invalid ID',
+      async () => {
+          const res = await request(app)
+            .put(`/category/${categSaved.id.replace('0', 'x')}`)
+            .send({ ...categSaved });
+          expect(res.status).toBe(400);
+      });
+
+    it(
+      'Valid Category',
       async () => {
           const newTitle = 'Novo título';
           const res = await request(app)

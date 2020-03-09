@@ -13,6 +13,10 @@ function duplicated(res: Response, entity: string, propName: string, propVal: st
     return res.status(409).send(msgS.duplicate(entity, propName, propVal));
 }
 
+function invalidId(res: Response, id: string) {
+    return res.status(400).send(msgS.invalidId(id));
+}
+
 function notFound(res: Response, entity: string, propName: string, propVal: string | number) {
     return res.status(404).send(msgS.notFound(entity, propName, propVal));
 }
@@ -29,6 +33,7 @@ export const responseFunctions = {
     badRequest: badRequest,
     created: created,
     duplicated: duplicated,
+    invalidId: invalidId,
     notFound: notFound,
     success: success,
     unknown: unknown

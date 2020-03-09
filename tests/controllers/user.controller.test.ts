@@ -108,7 +108,7 @@ describe('Get By Id', () => {
             .get(`/user/${'12sdsadsa1d5sa1ds5d4ads'}`)
             .send();
 
-          expect(resGet.status).toBe(404);
+          expect(resGet.status).toBe(400);
       });
 });
 
@@ -118,7 +118,7 @@ describe('Put', () => {
     });
 
     it(
-      'Usuário válido',
+      'Valid User',
       async () => {
 
           const resCreate = await request(app)
@@ -127,8 +127,7 @@ describe('Put', () => {
           expect(resCreate.status).toBe(201);
 
           const tokenData = await tokenService.decode(resCreate.body.token);
-
-          const resGet = await request(app)
+          const resPut = await request(app)
             .put(`/user/${tokenData.id}`)
             .send({
                   avatarUrl: 'https:www.google.com',
@@ -136,18 +135,17 @@ describe('Put', () => {
                   roles: [EUserRole.ADMIN],
                   password: '87654321',
                   email: 'novoemail@gmail.com'
-              } as IUser
+              }
             );
-          expect(resGet.status).toBe(200);
+          expect(resPut.status).toBe(200);
       });
 
     it(
-      'Usuário não existente',
+      'Invalid Id',
       async () => {
           const resGet = await request(app)
             .get(`/user/${'000000000000'}`)
             .send();
-
-          expect(resGet.status).toBe(404);
+          expect(resGet.status).toBe(400);
       });
 });

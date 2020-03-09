@@ -26,6 +26,7 @@ const productSchema = new Schema({
         ref: ECollectionsName.CATEGORY
     },
     desc: {
+        index: true,
         maxlength: productSizes.descMax,
         required: true,
         trim: true,
@@ -57,12 +58,14 @@ const productSchema = new Schema({
         type: Number
     },
     title: {
+        index: true,
         maxlength: productSizes.titleMax,
         required: true,
         trim: true,
         type: String
     },
     urlMainImage: {
+        index: true,
         maxlength: productSizes.urlMainImageMax,
         required: false,
         trim: true,
@@ -75,5 +78,7 @@ const productSchema = new Schema({
         type: Date
     }
 });
+
+productSchema.index({ title: 'text', desc: 'text' });
 
 export const Product: Model<IProductSchema> = model<IProductSchema>(ECollectionsName.PRODUCT, productSchema);

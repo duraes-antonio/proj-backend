@@ -8,8 +8,8 @@ const router = Router();
 
 if (process.env.NODE_ENV !== 'test') {
     router.delete('/:id', tokenS.verify, prodCtrl.delete);
-    router.get('/', tokenS.verify, prodCtrl.get);
-    router.get('/:id', tokenS.verify, prodCtrl.getById);
+    router.get('/', prodCtrl.get);
+    router.get('/:id', prodCtrl.getById);
     router.post('/', tokenS.verify, prodCtrl.post);
     router.put('/:id', tokenS.verify, prodCtrl.put);
 } else {

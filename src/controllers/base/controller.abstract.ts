@@ -3,15 +3,21 @@
 import { NextFunction, Request, Response } from 'express';
 import { responseFunctions as resFunc } from './responseFunctions';
 import { PipelineValidation } from '../../shared/validations';
+import { IFilterBasic } from '../../domain/interfaces/filters/filterBasic.interface';
 
-const entity = 'teste';
+function validIdHex(id: string): boolean {
+    return /^[0-9a-fA-F]{24}$/.test(id);
+}
 
 async function delete_<T>(
-  req: Request, res: Response, next: NextFunction,
+  req: Request, res: Response, next: NextFunction, entity: string,
   bdDelete: (id: string) => Promise<T | null>
 ) {
-
     try {
+        if (!validIdHex(req.params.id)) {
+            return resFunc.invalidId(res, req.params.id);
+        }
+
         const objDeleted = await bdDelete(req.params.id);
 
         if (!objDeleted) {
@@ -24,13 +30,12 @@ async function delete_<T>(
     }
 }
 
-/*TODO: Criar e receber iterface para filtros*/
 async function get<T>(
   req: Request, res: Response, next: NextFunction,
-  bdFind: (filter: any) => Promise<T[]>
+  bdFind: (filter: IFilterBasic) => Promise<T[]>
 ) {
     try {
-        const objs: T[] = await bdFind({});
+        const objs: T[] = await bdFind(req.query);
         return resFunc.success(res, objs);
     } catch (err) {
         return resFunc.unknown(res, err);
@@ -38,12 +43,11 @@ async function get<T>(
 }
 
 async function getById<T>(
-  req: Request, res: Response, next: NextFunction,
+  req: Request, res: Response, next: NextFunction, entity: string,
   bdFind: (id: string) => Promise<T | null>
 ) {
-
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-        return resFunc.notFound(res, entity, 'id', req.params.id);
+    if (!validIdHex(req.params.id)) {
+        return resFunc.invalidId(res, req.params.id);
     }
 
     try {
@@ -87,12 +91,16 @@ async function post<T>(
 }
 
 async function put<T>(
-  req: Request, res: Response, next: NextFunction,
+  req: Request, res: Response, next: NextFunction, entity: string,
   fnValidate: (obj: T) => PipelineValidation,
   bdUpdate: (id: string, payload: T) => Promise<T | null>
 ) {
 
     try {
+        if (!validIdHex(req.params.id)) {
+            return resFunc.invalidId(res, req.params.id);
+        }
+
         const pipe = fnValidate(req.body);
 
         if (!pipe.valid) {

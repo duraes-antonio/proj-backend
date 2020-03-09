@@ -1,5 +1,5 @@
 'use strict';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
 import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
@@ -7,16 +7,17 @@ import { cryptService as cryptS } from '../services/crypt.service';
 import { tokenService as tokenS } from '../services/tokenService';
 import { IUser, IUserSchema } from '../domain/interfaces/user.interface';
 import { ITokenData } from '../services/interfaces/tokenData.interface';
-import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
 import { userRepository } from '../data/repository/user.functions.repository';
-
+import { controllerFunctions as ctrlFunc } from './base/controller.abstract';
+import { repositoryFunctions as repoFunc } from '../data/repository.functions';
+import { TokenInvalid } from '../data/schemas/token.schema';
+import { ITokenInvalid } from '../domain/interfaces/tokenInvalid.interface';
 
 function validateUser(user: IUser): PipelineValidation {
     return new PipelineValidation(msg.empty)
       .validEmail('Email', user.email, msg.invalidFormat)
       .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
 }
-
 
 async function authenticate(req: Request, res: Response) {
     const pipe = validateUser(req.body);
@@ -49,24 +50,25 @@ async function authenticate(req: Request, res: Response) {
     }
 }
 
-async function refreshToken(req: Request, res: Response) {
+async function refreshToken(req: Request, res: Response, next: NextFunction) {
     const uInfo: ITokenData = await tokenS.decodeFromReq(req);
 
-    try {
-        const token = await tokenS.generate(uInfo);
-        return res.status(200).send({
-            token: token,
-            user: {
-                email: uInfo.email,
-                name: uInfo.name
-            }
-        });
-    } catch (err) {
-        return res.status(500).send(serviceDataMsg.unknown());
-    }
+    return ctrlFunc.post(
+      req, res, next,
+      async () => {
+          const token = tokenS.generate(uInfo);
+          return {
+              token: token,
+              user: {
+                  email: uInfo.email,
+                  name: uInfo.name
+              }
+          };
+      }
+    );
 }
 
-async function invalidate(req: Request, res: Response) {
+async function invalidate(req: Request, res: Response, next: NextFunction) {
     const token = tokenS.extract(req);
 
     if (!token) {
@@ -75,13 +77,10 @@ async function invalidate(req: Request, res: Response) {
 
     const uInfo: ITokenData = await tokenS.decode(token);
 
-    try {
-        return res.status(200).send(
-          await tokenRepo.create({ token, userId: uInfo.id })
-        );
-    } catch (err) {
-        return res.status(500).send(serviceDataMsg.unknown());
-    }
+    return ctrlFunc.post<ITokenInvalid>(
+      req, res, next,
+      () => repoFunc.create({ token, userId: uInfo.id }, TokenInvalid)
+    );
 }
 
 export const authController = {

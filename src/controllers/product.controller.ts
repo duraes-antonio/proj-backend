@@ -7,6 +7,8 @@ import { productSizes as prodSizes } from '../shared/fieldSize';
 import { controllerFunctions as ctrlFunc } from './base/controller.abstract';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { Product } from '../data/schemas/product.schema';
+import { productRepository as prodRepo } from '../data/repository/product.repository';
+import { FilterProduct } from '../domain/models/filters/filterProduct.model';
 
 export const entityName = 'Produto';
 
@@ -26,7 +28,8 @@ function validateProduct(prod: IProduct): PipelineValidation {
 }
 
 async function delete_(req: Request, res: Response, next: NextFunction) {
-    return ctrlFunc.delete(req, res, next,
+    return ctrlFunc.delete(
+      req, res, next, entityName,
       (id) => repoFunc.delete(id, Product)
     );
 }
@@ -40,22 +43,34 @@ async function post(req: Request, res: Response, next: NextFunction) {
 }
 
 async function get(req: Request, res: Response, next: NextFunction) {
-    return ctrlFunc.get<IProduct>(
-      req, res, next,
-      ({}) => repoFunc.find(Product)
-    );
+    const oldF: FilterProduct = req.query;
+    const filter: FilterProduct = {
+        avgReview: oldF.avgReview ? oldF.avgReview.map(n => +n) : [],
+        categoriesId: oldF.categoriesId,
+        countTotal: +oldF.countTotal,
+        currentPage: +oldF.currentPage,
+        dateEnd: oldF.dateEnd,
+        dateStart: oldF.dateStart,
+        discounts: oldF.discounts ? oldF.discounts.map(d => d.map(n => +n)) : [],
+        freeDelivery: oldF.freeDelivery,
+        perPage: +oldF.perPage,
+        priceMax: +oldF.priceMax,
+        priceMin: +oldF.priceMin,
+        text: oldF.text
+    };
+    return ctrlFunc.get<IProduct>(req, res, next, () => prodRepo.find(filter));
 }
 
 async function getById(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.getById<IProduct>(
-      req, res, next,
-      (id) => repoFunc.findById(req.params.id, Product)
+      req, res, next, entityName,
+      (id) => repoFunc.findById(id, Product)
     );
 }
 
 async function put(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.put<IProduct>(
-      req, res, next, validateProduct,
+      req, res, next, entityName, validateProduct,
       (id, obj) => repoFunc.update(id, obj, Product)
     );
 }

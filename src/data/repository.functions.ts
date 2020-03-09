@@ -9,7 +9,7 @@ async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
         updatedAt: new Date()
     }).save();
     // @ts-ignore
-    return { ...saved._doc, id: saved._id } as T;
+    return { ...saved._doc, id: saved._id };
 }
 
 async function delete_<T>(id: string, model: Model<Document & T>): Promise<T | null> {

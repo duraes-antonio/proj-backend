@@ -1,44 +1,75 @@
 'use strict';
 import { Product } from '../schemas/product.schema';
 import { IProduct } from '../../domain/interfaces/product.interface';
-import { IRepository } from '../repository.interface';
+import { FilterProduct } from '../../domain/models/filters/filterProduct.model';
 
-const projection = 'amountAvailable avgReview categories desc freeDelivery percentOff price priceWithDiscount title urlMainImage';
+function parseQuery(filter: FilterProduct): any {
+    const match: any = {};
 
-export class ProductRepository implements IRepository<IProduct> {
-
-    async delete(id: string): Promise<IProduct | null> {
-        return await Product.findByIdAndDelete(id);
+    if (filter.text && filter.text.trim()) {
+        match['$text'] = {
+            $search: filter.text,
+            $caseSensitive: false
+        };
     }
 
-    async find(): Promise<IProduct[]> {
-        return await Product.find({}, projection).populate(['categoriesId']);
+    if (filter.avgReview && filter.avgReview.length) {
+        match.avgReview = { avgInt: { $in: filter.avgReview } };
     }
 
-    async findById(id: string): Promise<IProduct | null> {
-        return await Product.findById(id, projection);
+    if (filter.dateStart) {
+        match.createdAt = match.createdAt ? match.createdAt : {};
+        match.createdAt['$gte'] = filter.dateStart;
     }
 
-    async create(prod: IProduct): Promise<IProduct> {
-        return await new Product(prod).save();
+    if (filter.dateEnd) {
+        match.createdAt = match.createdAt ? match.createdAt : {};
+        match.createdAt['$lt'] = filter.dateEnd;
     }
 
-    async update(id: string, prod: IProduct): Promise<IProduct | null> {
-        return await Product.findByIdAndUpdate(
-          id,
-          {
-              $set: {
-                  amountAvailable: prod.amountAvailable,
-                  avgReview: prod.avgReview,
-                  categoriesId: prod.categoriesId,
-                  desc: prod.desc,
-                  freeDelivery: prod.freeDelivery,
-                  percentOff: prod.percentOff,
-                  price: prod.price,
-                  title: prod.title,
-                  urlMainImage: prod.urlMainImage
-              }
-          }
-        );
-    }
+    return match;
 }
+
+const fieldsSelect = {
+    avgReview: 1,
+    amountAvailable: 1,
+    categoriesId: 1,
+    createdAt: 1,
+    desc: 1,
+    freeDelivery: 1,
+    percentOff: 1,
+    price: 1,
+    title: 1,
+    urlMainImage: 1
+};
+
+async function find(filter: FilterProduct): Promise<IProduct[]> {
+    const match = parseQuery(filter);
+    const res = await Product
+      .aggregate()
+      .project({
+          ...fieldsSelect,
+          id: '$_id',
+          avgInt: { $floor: '$avgReview' }
+      })
+      .match(match);
+    /*.select(fieldsSelect)
+    .sort({ score: { $meta: 'textScore' } })
+    .skip(+filter.perPage * (+filter.currentPage - 1))
+    .limit(+filter.perPage)
+    .lean();
+    */
+    console.log(res);
+    return res.map(obj => {
+        return { ...obj, id: obj._id };
+    });
+}
+
+async function findCount(filter: FilterProduct): Promise<number> {
+    return await Product.count(parseQuery(filter));
+}
+
+export const productRepository = {
+    findCount: findCount,
+    find: find
+};
