@@ -11,14 +11,11 @@ const appInstance = new App();
 const app = appInstance.express;
 const route = '/product';
 const routeCateg = '/category';
-let token: string;
-
 const userRight: IUser = {
     email: `teste_@teste.com`,
     name: 'Tester',
     password: '12345678'
 };
-
 const productValid: IProduct = {
     title: 'Produto de teste',
     desc: 'Descrição',
@@ -29,6 +26,8 @@ const productValid: IProduct = {
     freeDelivery: true,
     categoriesId: []
 };
+
+let token: string;
 
 async function getTokenValid(user: IUser): Promise<string> {
     const resPostUser = await request(app)
@@ -72,8 +71,15 @@ function productRandom(
     };
 }
 
+beforeAll(async () => {
+    token = await getTokenValid(userRight);
+});
 
 describe('POST', () => {
+
+    beforeAll(async() => {
+        await clearDatabase(await appInstance.databaseInstance);
+    });
 
     it(
       'True - Produto válido',
@@ -91,7 +97,6 @@ describe('GET - Filter', () => {
     let catCard: ICategory, catGame: ICategory;
 
     beforeAll(async () => {
-        token = await getTokenValid(userRight);
 
         const resCatCard = await request(app)
           .post(routeCateg)
