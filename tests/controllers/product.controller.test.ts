@@ -37,50 +37,49 @@ async function getTokenValid(user: IUser): Promise<string> {
     return resPostUser.body.token;
 }
 
-function randomFloat(
-  min: number = 0, max: number = Number.MAX_SAFE_INTEGER): number {
-    return (Math.random() * (max - min)) + min;
-}
+const randomFunc = {
 
-function randomInt(
-  min: number = 0, max: number = Number.MAX_SAFE_INTEGER): number {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
+    randomFloat: function randomFloat(
+      min: number = 0, max: number = Number.MAX_SAFE_INTEGER): number {
+        return (Math.random() * (max - min)) + min;
+    },
 
-function randomBoolean(): boolean {
-    return Math.random() >= 0.5;
-}
+    randomInt: function randomInt(
+      min: number = 0, max: number = Number.MAX_SAFE_INTEGER): number {
+        return Math.floor(Math.random() * (max - min)) + min;
+    },
 
-function randomIndex<T>(arr: any[]): T {
-    return arr[randomInt(0, arr.length)];
-}
+    randomBoolean: function randomBoolean(): boolean {
+        return Math.random() >= 0.5;
+    },
 
-function productRandom(
-  title: string, desc: string, imgUrl: string, categories?: ICategory[]
-): IProduct {
+    randomIndex: function randomIndex<T>(arr: any[]): T {
+        return arr[this.randomInt(0, arr.length)];
+    }
+};
+
+const productRandom = function productRandom(
+  title: string, desc: string, imgUrl: string, categories?: ICategory[]): IProduct {
     return {
         title,
         desc,
-        price: randomFloat(0, 2500),
+        price: randomFunc.randomFloat(0, 2500),
         urlMainImage: imgUrl,
-        percentOff: randomFloat(0, 100),
-        categoriesId: categories ? [randomIndex(categories)] : [],
-        freeDelivery: randomBoolean(),
-        amountAvailable: randomInt(0, 10000),
-        avgReview: randomFloat(0, 5)
+        percentOff: randomFunc.randomFloat(0, 100),
+        categoriesId: categories ? [randomFunc.randomIndex(categories)] : [],
+        freeDelivery: randomFunc.randomBoolean(),
+        amountAvailable: randomFunc.randomInt(0, 10000),
+        avgReview: randomFunc.randomFloat(0, 5)
     };
-}
+};
 
 beforeAll(async () => {
+    clearDatabase(await appInstance.databaseInstance);
     token = await getTokenValid(userRight);
 });
 
+
 describe('POST', () => {
-
-    beforeAll(async() => {
-        await clearDatabase(await appInstance.databaseInstance);
-    });
-
     it(
       'True - Produto válido',
       async () => {

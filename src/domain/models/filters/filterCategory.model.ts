@@ -4,7 +4,7 @@ import { IFilterBasic } from '../../interfaces/filters/filterBasic.interface';
 export class FilterCategory implements IFilterBasic {
     text = '';
 
-    countTotal?: number = 0;
+    countTotal: number = 0;
     currentPage: number = 1;
     dateEnd? = new Date();
     dateStart? = new Date(1900, 1, 1);

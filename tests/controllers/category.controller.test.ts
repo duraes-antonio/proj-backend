@@ -145,6 +145,7 @@ describe('GET - FILTER', () => {
       'Filter - Skip: 1 - Limit: 1',
       async () => {
           const filter: FilterCategory = {
+              countTotal: 0,
               currentPage: 2,
               perPage: 1,
               text: 'Card'

@@ -59,7 +59,6 @@ async function find(filter: FilterProduct): Promise<IProduct[]> {
     .limit(+filter.perPage)
     .lean();
     */
-    console.log(res);
     return res.map(obj => {
         return { ...obj, id: obj._id };
     });
