@@ -243,9 +243,7 @@ describe('GET - Filter', () => {
       async () => {
           const filter = new FilterProduct();
           filter.categoriesId = [catGame.id];
-          console.log(catGame, catCard);
           const res = await request(app).get(route).query(filter).send();
-          console.log(res.b);
           expect(res.status).toBe(200);
       });
 });
