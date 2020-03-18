@@ -158,11 +158,11 @@ describe('GET - FILTER', () => {
       });
 });
 
-describe('DELETE', () => {
+describe('DELETEx', () => {
 
     let categSaved: ICategorySchema;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         await clearDatabase(await appInstance.databaseInstance);
         const res = await request(app).post(route).send(categoryRight);
         expect(res.status).toBe(201);
