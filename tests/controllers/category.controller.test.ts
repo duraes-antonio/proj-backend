@@ -158,7 +158,7 @@ describe('GET - FILTER', () => {
       });
 });
 
-describe('DELETEx', () => {
+describe('DELETE', () => {
 
     let categSaved: ICategorySchema;
 
@@ -173,7 +173,7 @@ describe('DELETEx', () => {
       'Invalid ID',
       async () => {
           const res = await request(app)
-            .delete(`${route}/${categSaved.id.replace('0', 'x')}`)
+            .delete(`${route}/${categSaved.id.replace(/[0-9]/g, 'z')}`)
             .send();
           expect(res.status).toBe(400);
       });
@@ -210,7 +210,7 @@ describe('PUT', () => {
       'Invalid ID',
       async () => {
           const res = await request(app)
-            .put(`/category/${categSaved.id.replace('0', 'x')}`)
+            .put(`/category/${categSaved.id.replace(/[0-9]/g, 'z')}`)
             .send({ ...categSaved });
           expect(res.status).toBe(400);
       });
