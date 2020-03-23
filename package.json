@@ -16,7 +16,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.2"
+    "mongoose": "^5.9.2",
+    "tslib": "^1.11.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.9.0",
@@ -54,7 +55,9 @@
     "modulePaths": [
       "<rootDir>"
     ],
-    "testPathIgnorePatterns": ["/node_modules/"],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
     "globals": {
       "ts-jest": {
         "diagnostics": false
