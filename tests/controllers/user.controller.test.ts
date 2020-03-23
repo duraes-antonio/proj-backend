@@ -40,7 +40,6 @@ describe('Post', () => {
           const userWithoutEmail = await request(app)
             .post('/user')
             .send({ ...userRight, email: null });
-          console.log(userWithoutEmail.body)
           expect(userWithoutEmail.status).toBe(400);
 
           const userWithoutName = await request(app)

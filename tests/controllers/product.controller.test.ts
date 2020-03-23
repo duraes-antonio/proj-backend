@@ -400,7 +400,6 @@ describe('get_filter', () => {
             .send(filter);
           const body = res.body as IProduct[];
 
-          console.log(body)
           expect(res.status).toBe(200);
           expect(body.length == expec.length).toBeTruthy();
           expect(body.every(p =>

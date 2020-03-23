@@ -7,6 +7,9 @@ branches:
   only:
   - master
 
+cache:
+  yarn: false
+
 addons:
   sonarcloud:
     organization: duraes-antonio-github

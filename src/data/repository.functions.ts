@@ -21,7 +21,6 @@ async function find<T>(
   model: Model<Document & T>, f?: IFilterBasic, sort?: any): Promise<T[]> {
     let res: T[];
 
-    console.log(sort)
     if (f) {
         res = await model.find()
           .lean()
