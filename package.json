@@ -8,8 +8,8 @@
     "prestart": "yarn run build",
 
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
-    "prod": "NODE_ENV=prod node dist/out-tsc/src/server.js",
-    "start": "NODE_ENV=prod node dist/out-tsc/src/server.js",
+    "prod": "NODE_ENV=prod node dist/src/server.js",
+    "start": "NODE_ENV=prod node dist/src/server.js",
     "test": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit",
     "test-dev": "NODE_ENV=test-dev jest --coverage --detectOpenHandles --forceExit"
   },
