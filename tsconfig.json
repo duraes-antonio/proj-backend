@@ -1,21 +1,13 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "lib": ["dom", "esnext"],
+    "module": "esnext",
     "target": "es5",
-    "declaration": true,
-    "importHelpers": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "dist",
-    "strict": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "esModuleInterop": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true
   },
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
