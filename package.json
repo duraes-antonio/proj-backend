@@ -55,18 +55,11 @@
   },
   "jest": {
     "testResultsProcessor": "jest-sonar-reporter",
-    "moduleFileExtensions": ["js", "ts"],
-    "transform": {
-      "^.+\\.(ts|tsx)$": "ts-jest"
-    },
     "globals": {
       "ts-jest": {
         "tsConfigFile": "tsconfig.json"
       }
-    },
-    "testMatch": [
-      "**/__tests__/*.+(ts|tsx|js)"
-    ]
+    }
   },
   "jestSonar": {
     "reportPath": "reports",
