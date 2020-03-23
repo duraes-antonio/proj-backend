@@ -57,7 +57,7 @@
     "testResultsProcessor": "jest-sonar-reporter",
     "globals": {
       "ts-jest": {
-        "tsConfigFile": "tsconfig.json"
+        "tsConfig": "tsconfig.json"
       }
     }
   },
