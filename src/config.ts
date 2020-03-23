@@ -1,7 +1,7 @@
 enum EEnv {
     DEV = 'dev',
     PROD = 'prod',
-    TEST_CLOUD = 'test',
+    TEST = 'test',
     TEST_DEV = 'test-dev'
 }
 
@@ -9,7 +9,7 @@ function getPathFileEnv(envEnum: EEnv): string  {
     const mapEnvPath = {
         [EEnv.DEV]: '.env.dev',
         [EEnv.PROD]: '.env.prod',
-        [EEnv.TEST_CLOUD]: '.env.test',
+        [EEnv.TEST]: '.env.test',
         [EEnv.TEST_DEV]: '.env.test_dev'
     };
     return mapEnvPath[envEnum];
@@ -19,7 +19,7 @@ function getConnString(envEnum: EEnv): string  {
     const mapEnvPath = {
         [EEnv.DEV]: `mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`,
         [EEnv.PROD]: `mongodb+srv://${process.env.MONGODB_PROD_USER}:${process.env.MONGODB_PROD_PASS}@prod-fpioj.gcp.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
-        [EEnv.TEST_CLOUD]: `mongodb+srv://teste:teste@yugishop-ywmam.mongodb.net/test?retryWrites=true&w=majority`,
+        [EEnv.TEST]: `mongodb+srv://teste:teste@yugishop-ywmam.mongodb.net/test?retryWrites=true&w=majority`,
         [EEnv.TEST_DEV]: `mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`
     };
     return mapEnvPath[envEnum];
