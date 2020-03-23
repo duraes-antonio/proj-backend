@@ -53,6 +53,13 @@
     "ts-node": "^8.6.2",
     "typescript": "^3.8.3"
   },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "diagnostics": false
+      }
+    }
+  },
   "jestSonar": {
     "reportPath": "reports",
     "reportFile": "test-reporter.xml",
