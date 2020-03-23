@@ -8,6 +8,7 @@ const appInstance = new App();
 const app = appInstance.express;
 
 const userRight: IUser = {
+    createdAt: new Date(),
     email: 'gseis@gmail.com',
     name: 'Antônio',
     password: '12345678'
