@@ -8,6 +8,7 @@ import { userRoutes } from './routes/user.route';
 import { authRoutes } from './routes/auth.route';
 import { categoryRoutes } from './routes/category.route';
 import { productRoutes } from './routes/product.route';
+import { reviewRoutes } from './routes/review.route';
 
 const express = require('express');
 const cors = require('cors');
@@ -49,6 +50,7 @@ export class App {
         this.express.use('/auth', authRoutes);
         this.express.use('/category', categoryRoutes);
         this.express.use('/product', productRoutes);
+        this.express.use('/review', reviewRoutes);
         this.express.use('/user', userRoutes);
     }
 }

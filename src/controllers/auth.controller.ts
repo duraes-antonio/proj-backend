@@ -7,8 +7,8 @@ import { cryptService as cryptS } from '../services/crypt.service';
 import { tokenService as tokenS } from '../services/tokenService';
 import { IUser, IUserSchema } from '../domain/interfaces/user.interface';
 import { ITokenData } from '../services/interfaces/tokenData.interface';
-import { userRepository } from '../data/repository/user.functions.repository';
-import { controllerFunctions as ctrlFunc } from './base/controller.abstract';
+import { userRepository } from '../data/repository/user.repository';
+import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { TokenInvalid } from '../data/schemas/token.schema';
 import { ITokenInvalid } from '../domain/interfaces/tokenInvalid.interface';
@@ -76,10 +76,14 @@ async function invalidate(req: Request, res: Response, next: NextFunction) {
     }
 
     const uInfo: ITokenData = await tokenS.decode(token);
+    const tokenInv: ITokenInvalid = {
+        createdAt: new Date(),
+        token: token,
+        userId: uInfo.id
+    };
 
     return ctrlFunc.post<ITokenInvalid>(
-      req, res, next,
-      () => repoFunc.create({ token, userId: uInfo.id }, TokenInvalid)
+      req, res, next, () => repoFunc.create(tokenInv, TokenInvalid)
     );
 }
 

@@ -54,7 +54,7 @@ export class PipelineValidation {
         return !this.errors.length;
     }
 
-    hasValue(field: string, value: string) {
+    hasValue(field: string, value: any) {
         if (!validation.hasValue(value)) {
             this.errors.push(this.fnEmpty(field));
         }

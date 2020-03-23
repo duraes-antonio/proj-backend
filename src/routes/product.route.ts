@@ -19,4 +19,5 @@ if (process.env.NODE_ENV !== 'test') {
     router.post('/', prodCtrl.post);
     router.put('/:id', prodCtrl.put);
 }
+
 export { router as productRoutes };

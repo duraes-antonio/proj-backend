@@ -33,8 +33,11 @@ export const serviceDataMsg = {
             message: `O item ${entity ? entity : ''} foi criado com êxito!`
         };
     },
-    deniedAccess(): string {
-        return `Acesso negado`;
+    custom(msg: string): { message: string } {
+        return { message: msg };
+    },
+    deniedAccess(): { message: string } {
+        return { message: `Acesso negado` };
     },
     deniedAccessItem(): { message: string } {
         return { message: `O usuário atual não possui acesso ao item solicitado` };

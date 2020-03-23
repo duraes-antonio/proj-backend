@@ -12,11 +12,13 @@ const app = appInstance.express;
 const route = '/product';
 const routeCateg = '/category';
 const userRight: IUser = {
+    createdAt: new Date(),
     email: `teste_@teste.com`,
     name: 'Tester',
     password: '12345678'
 };
 const productValid: IProduct = {
+    createdAt: new Date(),
     title: 'Produto de teste',
     desc: 'Descrição',
     price: 150,
@@ -52,21 +54,18 @@ const randomFunc = {
     randomBoolean: function randomBoolean(): boolean {
         return Math.random() >= 0.5;
     },
-
-    randomIndex: function randomIndex<T>(arr: any[]): T {
-        return arr[this.randomInt(0, arr.length)];
-    }
 };
 
 const productRandom = function productRandom(
   title: string, desc: string, imgUrl: string, categories?: ICategory[]): IProduct {
     return {
+        createdAt: new Date(),
         title,
         desc,
         price: randomFunc.randomFloat(0, 2500),
         urlMainImage: imgUrl,
         percentOff: randomFunc.randomFloat(0, 100),
-        categoriesId: categories ? [randomFunc.randomIndex(categories)] : [],
+        categoriesId: categories ? categories.map(c => c.id) : [],
         freeDelivery: randomFunc.randomBoolean(),
         amountAvailable: randomFunc.randomInt(0, 10000),
         avgReview: randomFunc.randomFloat(0, 5)
@@ -79,9 +78,9 @@ beforeAll(async () => {
 });
 
 
-describe('POST', () => {
+describe('post', () => {
     it(
-      'True - Produto válido',
+      'obj_valid',
       async () => {
           const res = await request(app)
             .post(route)
@@ -91,12 +90,12 @@ describe('POST', () => {
       });
 });
 
-describe('GET - Filter', () => {
+describe('get_filter', () => {
     let products: IProduct[];
     let catCard: ICategory, catGame: ICategory;
 
     beforeAll(async () => {
-
+        clearDatabase(await appInstance.databaseInstance);
         const resCatCard = await request(app)
           .post(routeCateg)
           .set('x-access-token', token)
@@ -112,20 +111,32 @@ describe('GET - Filter', () => {
         catGame = resCatGame.body;
 
         products = [
-            productRandom(
-              'Funk POP - Yugi',
-              `Boneco Funko Pop Yu-gi-oh - Yami Yugi 387, é o mais novo
-              título popular mundialmente.`,
-              'https://images-na.ssl-images-amazon.com/images/I/717MHGTzgbL._SY606_.jpg',
-              [catCard, catGame]
-            ),
-            productRandom(
-              'Yugioh Booster Duelist Pack',
-              `Essa Coleção possui Cartas usados por Yugi Muto.
+            {
+                createdAt: new Date(),
+                title: 'Funk POP - Yugi',
+                desc: `Boneco Funko Pop Yu-gi-oh - Yami Yugi 387, é o mais novo título popular mundialmente.`,
+                urlMainImage: 'https://images-na.ssl-images-amazon.com/images/I/717MHGTzgbL._SY606_.jpg',
+                categoriesId: [catCard.id, catGame.id],
+                freeDelivery: true,
+                price: 150.99,
+                avgReview: 2.22,
+                percentOff: 10,
+                amountAvailable: 10
+            },
+            {
+                createdAt: new Date(),
+                title: 'Yugioh Booster Duelist Pack',
+                desc: `Essa Coleção possui Cartas usados por Yugi Muto.
               Contém novas artes para muitas cartas, incluindo "Dark Magician Girl",
               "Summoned Skull", "Dark Paladin" e "Polymerization"`,
-              'https://www.extra-imagens.com.br/brinquedos/Jogos/jogosdeCartas/13037927.jpg'
-            ),
+                urlMainImage: 'https://www.extra-imagens.com.br/brinquedos/Jogos/jogosdeCartas/13037927.jpg',
+                categoriesId: [catCard.id],
+                freeDelivery: false,
+                price: 73.45,
+                avgReview: 0.25,
+                percentOff: 25,
+                amountAvailable: 17
+            },
             productRandom(
               'Legendary Decks 1 E 2 - Decks Legendários Em Pt Em 12 X',
               `NESTE ANÚNCIO VOCÊ ESTA LEVANDO 2 LEGENDARYS EM 12 X SEM
@@ -163,7 +174,7 @@ describe('GET - Filter', () => {
               `Yu-Gi-Oh! é uma série de mangá sobre jogo escrita
               e ilustrada por Kazuki Takahashi.`,
               'https://http2.mlstatic.com/boneco-F.webp',
-              [catCard, catGame]
+              [catCard]
             ),
             productRandom(
               'Funko Pop! Animation - Yu-gi-oh! - Dark Magician Girl #390',
@@ -180,7 +191,7 @@ describe('GET - Filter', () => {
               Yu-Gi-Oh! Legacy of the Duelist: Link Evolution! é um jogo de
               estratégia baseado na animação japonesa Yu-Gi-Oh`,
               'https://http2.mlstatic.com/yugioh-legacy-of-the-duelist-F.webp',
-              [catCard, catGame]
+              [catGame]
             ),
             productRandom(
               'Yu-gi-oh! Forbidden Memories Português Patch Ps1',
@@ -189,61 +200,212 @@ describe('GET - Filter', () => {
               'https://http2.mlstatic.com/yu-gi-oh-forbidden-memories-F.webp'
             )
         ];
-        await clearDatabase(await appInstance.databaseInstance);
-        await Promise.all(products.map(async p => {
-            await request(app)
-              .post(route)
-              .set('x-access-token', token)
-              .send(p);
-        }));
 
+        await Promise.all(products
+          .map(async p => {
+              await request(app)
+                .post(route)
+                .set('x-access-token', token)
+                .send(p);
+          })
+        );
     });
 
     it(
-      'Filter: Rating Stars - Filled',
+      'rating_filled',
       async () => {
           const filter = new FilterProduct();
           filter.avgReview = [0, 2];
-          const res = await request(app).get(route).query(filter).send();
-          expect(res.status).toBe(200);
+          const res = await request(app)
+            .get(route)
+            .send(filter);
 
-          const allValidReview = (res.body as IProduct[]).every(
-            p => filter.avgReview.includes(Math.floor(p.avgReview))
-          );
+          const body = res.body as IProduct[];
+          expect(res.status).toBe(200);
+          expect(body.length).toBeTruthy();
+
+          const allValidReview = body
+            .every(p => filter.avgReview
+              .includes(Math.floor(p.avgReview))
+            );
           expect(allValidReview).toBeTruthy();
       });
 
     it(
-      'Filter: Rating Stars - Empty',
+      'rating_empty',
       async () => {
           const filter = new FilterProduct();
           filter.avgReview = [];
-          const res = await request(app).get(route).query(filter).send();
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
           expect(res.status).toBe(200);
+          expect(body.length).toBeTruthy();
           expect(res.body.length === products.length).toBeTruthy();
       });
 
-    /*
-    categoriesId: 1,
-
-    createdAt: 1,
-
-    desc: 1,
-    title: 1,
-
-    freeDelivery: 1,
-
-    percentOff: 1,
-
-    price: 1,
-    */
-
     it(
-      'Filter: Category - Filled',
+      'category',
       async () => {
           const filter = new FilterProduct();
-          filter.categoriesId = [catGame.id];
-          const res = await request(app).get(route).query(filter).send();
+          filter.categoriesId = [catCard.id, catGame.id];
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+
           expect(res.status).toBe(200);
+          expect(body.length).toBeTruthy();
+          const allExpected = (res.body as IProduct[])
+            .every(p => p.categoriesId
+              .some(c => filter.categoriesId.includes(c)));
+          expect(allExpected).toBeTruthy();
+      });
+
+    it(
+      'text',
+      async () => {
+          const filter = new FilterProduct();
+          filter.text = 'card';
+          const expectedLen = products.filter(p =>
+            p.title.toLowerCase().includes(filter.text)
+            || p.desc.toLowerCase().includes(filter.text)
+          ).length;
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+
+          expect(res.status).toBe(200);
+          expect(body.length).toBeTruthy();
+
+          const allExpected = body
+            .every(p =>
+              p.title.toLowerCase().includes(filter.text)
+              || p.desc.toLowerCase().includes(filter.text)
+            );
+          expect(allExpected && expectedLen == body.length).toBeTruthy();
+      });
+
+    it(
+      'free_delivery',
+      async () => {
+          const filter = new FilterProduct();
+          filter.freeDelivery = true;
+          const expec = products
+            .filter(p => p.freeDelivery === filter.freeDelivery);
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+          expect(res.status).toBe(200);
+          expect(body.length == expec.length).toBeTruthy();
+      });
+
+    it(
+      'discount',
+      async () => {
+          const filter = new FilterProduct();
+          filter.discounts = [[0, 25], [50, 75]];
+
+          const expec = products
+            .filter(p => filter.discounts
+              .some(pairOff =>
+                p.percentOff >= pairOff[0]
+                && p.percentOff <= pairOff[1]
+              )
+            );
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+
+          expect(res.status).toBe(200);
+          expect(body.length == expec.length).toBeTruthy();
+
+          const allDiscountOk = body
+            .filter(p => filter.discounts
+              .some(pairOff =>
+                p.percentOff >= pairOff[0]
+                && p.percentOff <= pairOff[1]
+              )
+            );
+
+          expect(allDiscountOk).toBeTruthy();
+      });
+
+    it(
+      'price_min',
+      async () => {
+          const filter = new FilterProduct();
+          filter.priceMin = 150;
+          filter.priceMax = undefined;
+
+          const expec = products
+            .filter(p => !filter.priceMin || p.price >= filter.priceMin);
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+
+          expect(res.status).toBe(200);
+          expect(body.length == expec.length).toBeTruthy();
+          expect(body.every(p =>
+            !filter.priceMin || p.price >= filter.priceMin)
+          );
+      });
+
+    it(
+      'price_max',
+      async () => {
+          const filter = new FilterProduct();
+          filter.priceMax = 450;
+
+          const expec = products
+            .filter(p => !filter.priceMax || p.price <= filter.priceMax);
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+
+          expect(res.status).toBe(200);
+          expect(body.length == expec.length).toBeTruthy();
+          expect(body.every(p =>
+            !filter.priceMax || p.price <= filter.priceMax)
+          );
+      });
+
+    it(
+      'price_min_max',
+      async () => {
+          const filter = new FilterProduct();
+          filter.priceMin = 100;
+          filter.priceMax = 500;
+
+          const expec = products
+            .filter(p =>
+              (!filter.priceMin || p.price >= filter.priceMin)
+              && (!filter.priceMax || p.price <= filter.priceMax)
+            );
+
+          const res = await request(app)
+            .get(route)
+            .send(filter);
+          const body = res.body as IProduct[];
+
+          console.log(body)
+          expect(res.status).toBe(200);
+          expect(body.length == expec.length).toBeTruthy();
+          expect(body.every(p =>
+            (!filter.priceMin || p.price >= filter.priceMin)
+            && (!filter.priceMax || p.price <= filter.priceMax))
+          );
       });
 });

@@ -4,7 +4,7 @@ import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
 import { IProduct } from '../domain/interfaces/product.interface';
 import { productSizes as prodSizes } from '../shared/fieldSize';
-import { controllerFunctions as ctrlFunc } from './base/controller.abstract';
+import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { Product } from '../data/schemas/product.schema';
 import { productRepository as prodRepo } from '../data/repository/product.repository';
@@ -43,22 +43,13 @@ async function post(req: Request, res: Response, next: NextFunction) {
 }
 
 async function get(req: Request, res: Response, next: NextFunction) {
-    const oldF: FilterProduct = req.query;
-    const filter: FilterProduct = {
-        avgReview: oldF.avgReview ? oldF.avgReview.map(n => +n) : [],
-        categoriesId: oldF.categoriesId,
-        countTotal: +oldF.countTotal,
-        currentPage: +oldF.currentPage,
-        dateEnd: oldF.dateEnd,
-        dateStart: oldF.dateStart,
-        discounts: oldF.discounts ? oldF.discounts.map(d => d.map(n => +n)) : [],
-        freeDelivery: oldF.freeDelivery,
-        perPage: +oldF.perPage,
-        priceMax: +oldF.priceMax,
-        priceMin: +oldF.priceMin,
-        text: oldF.text
-    };
-    return ctrlFunc.get<IProduct>(req, res, next, () => prodRepo.find(filter));
+    const reqKeys = [ 'currentPage', 'perPage'];
+    const filterKeys = Object.keys(req.body);
+    const filterValid = reqKeys.every(k => filterKeys.includes(k));
+    const prods = await ctrlFunc.get<IProduct>(req, res, next,
+      () => prodRepo.find(filterValid ? req.body : new FilterProduct())
+    );
+
 }
 
 async function getById(req: Request, res: Response, next: NextFunction) {
@@ -69,9 +60,19 @@ async function getById(req: Request, res: Response, next: NextFunction) {
 }
 
 async function put(req: Request, res: Response, next: NextFunction) {
+    const putObj = {
+        desc: req.body.desc,
+        price: req.body.price,
+        percentOff: req.body.percentOff,
+        freeDelivery: req.body.freeDelivery,
+        amountAvailable: req.body.amountAvailable,
+        categoriesId: req.body.categoriesId,
+        title: req.body.title,
+        urlMainImage: req.body.urlMainImage
+    };
     return ctrlFunc.put<IProduct>(
-      req, res, next, entityName, validateProduct,
-      (id, obj) => repoFunc.update(id, obj, Product)
+      req, res, next, entityName, putObj, validateProduct,
+      (id: string, obj: any) => repoFunc.update(id, obj, Product)
     );
 }
 

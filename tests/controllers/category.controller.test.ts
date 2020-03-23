@@ -9,7 +9,10 @@ const appInstance = new App();
 const app = appInstance.express;
 const route = '/category';
 
-const categoryRight: ICategory = { title: 'Card' };
+const categoryRight: ICategory = {
+    createdAt: new Date(),
+    title: 'Card'
+};
 
 describe('POST', () => {
     beforeEach(async () => {
@@ -111,9 +114,18 @@ describe('GET', () => {
 
 describe('GET - FILTER', () => {
 
-    const cat1: ICategory = { title: 'Cards' };
-    const cat2: ICategory = { title: 'Action Figures' };
-    const cat3: ICategory = { title: 'Pack de Cards - 30 card' };
+    const cat1: ICategory = {
+        ...categoryRight,
+        title: 'Cards'
+    };
+    const cat2: ICategory = {
+        ...categoryRight,
+        title: 'Action Figures'
+    };
+    const cat3: ICategory = {
+        ...categoryRight,
+        title: 'Pack de Cards - 30 card'
+    };
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);

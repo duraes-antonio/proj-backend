@@ -25,6 +25,15 @@ export const productSizes = {
     amountAvailableMax: Number.MAX_SAFE_INTEGER
 };
 
+export const reviewSizes = {
+    commentMin: 10,
+    commentMax: 512,
+    ratingMin: 0,
+    ratingMax: 5,
+    titleMin: 10,
+    titleMax: 128,
+};
+
 export const userSizes = {
     emailMax: 128,
     nameMax: 128,

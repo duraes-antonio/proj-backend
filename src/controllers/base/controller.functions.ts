@@ -1,7 +1,7 @@
 'use strict';
 
 import { NextFunction, Request, Response } from 'express';
-import { responseFunctions as resFunc } from './responseFunctions';
+import { responseFunctions as resFunc } from './response.functions';
 import { PipelineValidation } from '../../shared/validations';
 import { IFilterBasic } from '../../domain/interfaces/filters/filterBasic.interface';
 
@@ -91,8 +91,8 @@ async function post<T>(
 }
 
 async function put<T>(
-  req: Request, res: Response, next: NextFunction, entity: string,
-  fnValidate: (obj: T) => PipelineValidation,
+  req: Request, res: Response, next: NextFunction,
+  entity: string, putObj: any, fnValidate: (obj: T) => PipelineValidation,
   bdUpdate: (id: string, payload: T) => Promise<T | null>
 ) {
 
@@ -101,13 +101,13 @@ async function put<T>(
             return resFunc.invalidId(res, req.params.id);
         }
 
-        const pipe = fnValidate(req.body);
+        const pipe = fnValidate(putObj);
 
         if (!pipe.valid) {
             return resFunc.badRequest(res, pipe.errors);
         }
 
-        const objUpdated = await bdUpdate(req.params.id, req.body);
+        const objUpdated = await bdUpdate(req.params.id, putObj);
 
         if (!objUpdated) {
             return resFunc.notFound(res, entity, 'id', req.params.id);

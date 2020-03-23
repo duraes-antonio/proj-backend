@@ -1,7 +1,6 @@
 export enum ECollectionsName {
     ADDRESS = 'Address',
     CATEGORY = 'Category',
-    COMMENT = 'Comment',
     CONTACT = 'Contact',
     ITEM_ORDER = 'ItemOrder',
     LINK = 'Link',
@@ -13,6 +12,7 @@ export enum ECollectionsName {
     ORDER = 'Order',
     PARTNER = 'Partner',
     PRODUCT = 'Product',
+    REVIEW = 'Review',
     SLIDE = 'Slide',
     TOKEN_INVALID = 'TokenInvalid',
     USER = 'User'

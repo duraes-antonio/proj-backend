@@ -1,6 +1,6 @@
 export interface IRegistable {
     id?: any;
-    readonly createdAt?: Date;
+    readonly createdAt: Date;
 }
 
 export class IClassAuditable implements IRegistable {

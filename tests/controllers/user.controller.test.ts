@@ -3,13 +3,13 @@ import { IUser } from '../../src/domain/interfaces/user.interface';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { tokenService } from '../../src/services/tokenService';
-import { EUserRole } from '../../src/domain/enum/role.enum';
 
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
 
 const userRight: IUser = {
+    createdAt: new Date(),
     email: 'gseis@gmail.com',
     name: 'Antônio',
     password: '12345678'
@@ -40,6 +40,7 @@ describe('Post', () => {
           const userWithoutEmail = await request(app)
             .post('/user')
             .send({ ...userRight, email: null });
+          console.log(userWithoutEmail.body)
           expect(userWithoutEmail.status).toBe(400);
 
           const userWithoutName = await request(app)
@@ -112,6 +113,8 @@ describe('Get By Id', () => {
       });
 });
 
+/*TODO: Pensar na criação de patchs para atualizações*/
+/*
 describe('Put', () => {
     beforeEach(async () => {
         await clearDatabase(await appInstance.databaseInstance);
@@ -132,9 +135,7 @@ describe('Put', () => {
             .send({
                   avatarUrl: 'https:www.google.com',
                   name: 'Novo nome',
-                  roles: [EUserRole.ADMIN],
-                  password: '87654321',
-                  email: 'novoemail@gmail.com'
+                  password: '87654321'
               }
             );
           expect(resPut.status).toBe(200);
@@ -149,3 +150,4 @@ describe('Put', () => {
           expect(resGet.status).toBe(400);
       });
 });
+*/

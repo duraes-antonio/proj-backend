@@ -4,20 +4,26 @@ import { validationErrorMsg as msgServ } from '../shared/buildMsg';
 import { IUser } from '../domain/interfaces/user.interface';
 import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
-import { controllerFunctions as ctrlFunc } from './base/controller.abstract';
+import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { responseFunctions as resFunc, responseFunctions as respFunc } from './base/responseFunctions';
+import { responseFunctions as resFunc, responseFunctions as respFunc } from './base/response.functions';
 import { User } from '../data/schemas/user.schema';
-import { userRepository } from '../data/repository/user.functions.repository';
+import { userRepository } from '../data/repository/user.repository';
 import { cryptService } from '../services/crypt.service';
 import { tokenService } from '../services/tokenService';
 
 const entityName = 'Usuário';
 
-function validateUser(user: IUser): PipelineValidation {
+function validate(user: IUser): PipelineValidation {
     return new PipelineValidation()
       .atMaxLen('Nome', user.name, userSizes.nameMax, msgServ.maxLen)
       .validEmail('Email', user.email, msgServ.invalidFormat)
+      .atMaxLen('Senha', user.password, userSizes.passwordMax, msgServ.maxLen);
+}
+
+function validatePut(user: IUser): PipelineValidation {
+    return new PipelineValidation()
+      .atMaxLen('Nome', user.name, userSizes.nameMax, msgServ.maxLen)
       .atMaxLen('Senha', user.password, userSizes.passwordMax, msgServ.maxLen);
 }
 
@@ -38,7 +44,7 @@ async function sendToken(res: Response, user: any) {
 
 async function post(req: Request, res: Response, next: NextFunction) {
 
-    const pipe = validateUser(req.body);
+    const pipe = validatePut(req.body);
 
     if (!pipe.valid) {
         return resFunc.badRequest(res, pipe.errors);
@@ -56,7 +62,7 @@ async function post(req: Request, res: Response, next: NextFunction) {
     await ctrlFunc.post<IUser>(
       req, res, next,
       () => repoFunc.create<IUser>(user, User),
-      undefined,
+      validate,
       (objSaved) => sendToken(res, objSaved as IUser)
     );
 }
@@ -75,8 +81,13 @@ async function getById(req: Request, res: Response, next: NextFunction) {
 }
 
 async function put(req: Request, res: Response, next: NextFunction) {
+    const putObj = {
+        name: req.body.name,
+        password: req.body.password,
+        avatarUrl: req.body.avatarUrl,
+    };
     return ctrlFunc.put<IUser>(
-      req, res, next, entityName, validateUser,
+      req, res, next, entityName, putObj, validatePut,
       (id: string, obj: IUser) => repoFunc.update<IUser>(id, obj, User)
     );
 }
