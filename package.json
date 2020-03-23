@@ -54,12 +54,7 @@
     "typescript": "^3.7"
   },
   "jest": {
-    "testResultsProcessor": "jest-sonar-reporter",
-    "globals": {
-      "ts-jest": {
-        "tsConfig": "tsconfig.json"
-      }
-    }
+    "testResultsProcessor": "jest-sonar-reporter"
   },
   "jestSonar": {
     "reportPath": "reports",
