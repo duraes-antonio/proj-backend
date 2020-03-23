@@ -3,11 +3,16 @@ module.exports = {
   testResultsProcessor: "jest-sonar-reporter",
   testEnvironment: "node",
   roots: ["<rootDir>/tests"],
-  verbose: true,
+  verbose: false,
   modulePaths: [
     "<rootDir>"
   ],
   transform: {
     "^.+\\.tsx?$": "ts-jest"
+  },
+  globals: {
+    "ts-jest": {
+      diagnostics: false
+    }
   }
 };
