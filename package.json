@@ -52,19 +52,6 @@
     "ts-node": "^8.6.2",
     "typescript": "^3.8.3"
   },
-  "jest": {
-    "modulePaths": [
-      "<rootDir>"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/"
-    ],
-    "globals": {
-      "ts-jest": {
-        "diagnostics": false
-      }
-    }
-  },
   "jestSonar": {
     "reportPath": "reports",
     "reportFile": "test-reporter.xml",
