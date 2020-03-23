@@ -23,6 +23,8 @@
     "mongoose": "^5.9.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
     "@babel/preset-typescript": "^7.9.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/cors": "^2.8.4",
@@ -51,8 +53,7 @@
     "sucrase": "^3.10.0",
     "supertest": "^4.0.2",
     "ts-jest": "^25.2.1",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.7.3"
   },
   "jestSonar": {
     "reportPath": "reports",
