@@ -13,8 +13,6 @@ import { reviewRoutes } from './routes/review.route';
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv')
-  .config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
 export class App {
     express: express.Application;
@@ -24,6 +22,7 @@ export class App {
         this.express = express();
         this.middlewares();
         this.routes();
+        console.log('CONFIG', config);
         this.databaseInstance = this.database(config.connectionString);
     }
 
