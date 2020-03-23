@@ -1,7 +1,7 @@
 'use strict';
 import { Router } from 'express';
-import { reviewController } from '../controllers/review.controller.ts';
-import { tokenService as tokenS } from '../services/tokenService.ts';
+import { reviewController } from '../controllers/review.controller';
+import { tokenService as tokenS } from '../services/tokenService';
 
 const router = Router();
 

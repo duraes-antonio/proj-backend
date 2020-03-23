@@ -19,7 +19,7 @@ async function delete_<T>(id: string, model: Model<Document & T>): Promise<T | n
 
 async function find<T>(
   model: Model<Document & T>, f?: IFilterBasic, sort?: any): Promise<T[]> {
-    let res: T[];
+    let res: any[];
 
     if (f) {
         res = await model.find()
