@@ -54,6 +54,9 @@
     "typescript": "^3.8.3"
   },
   "jest": {
+    "modulePaths": [
+      "<rootDir>"
+    ],
     "globals": {
       "ts-jest": {
         "diagnostics": false
