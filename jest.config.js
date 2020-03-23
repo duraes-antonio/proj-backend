@@ -8,5 +8,10 @@ module.exports = {
   transform: {'^.+\\.ts$': 'ts-jest'},
   testMatch: ['<rootDir>/tests/**/*.test.ts'],
   preset: 'ts-jest',
-  testEnvironment: 'node'
+  testEnvironment: 'node',
+  globals: {
+    'ts-jest': {
+      diagnostics: false
+    }
+  }
 };
