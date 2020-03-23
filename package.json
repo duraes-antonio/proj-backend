@@ -57,6 +57,7 @@
     "modulePaths": [
       "<rootDir>"
     ],
+    "testPathIgnorePatterns": ["/node_modules/"],
     "globals": {
       "ts-jest": {
         "diagnostics": false
