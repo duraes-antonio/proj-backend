@@ -7,9 +7,9 @@ module.exports = {
   modulePaths: [
     "<rootDir>"
   ],
-  moduleFileExtensions: ["js", "ts"]
-  ,
+  moduleFileExtensions: ["js", "ts"],
   transform: {
+    "^.+\\.jsx?$": "babel-jest",
     "^.+\\.tsx?$": "ts-jest"
   },
   globals: {
