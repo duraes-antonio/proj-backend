@@ -1,7 +1,6 @@
 language: node_js
 
-node_js:
-  - "12.13"
+node_js: '13'
 
 branches:
   only:
@@ -10,7 +9,8 @@ branches:
 addons:
   sonarcloud:
     organization: duraes-antonio-github
-    token: ${SONAR_TOKEN}
+    token:
+      secure: vBUDd5LuibApihT00ASzkeJs3kfBk/7GvRMuCRSckRzK2c67IIz5C1IG6xOGde4O23ReD5XJoT6wl4X+HPRw+5l/ETpN4tbsQE98p/yAibay5ha/EhtUVqkpV1SeeHlRlrWvQtac+m3PDumXyqGxJcL6CVHM+rjY71T9EWIywXSBbSHKx0X9MfaliOUQ4Y0nzOj6CYyEWKDzaAT3xXyAEp4uZU7UdT9X6UluMhu9YgNQEIhJzOfoSZO9H6F2fffHwI8XX79JEA497lo8QzvsvHZ27CiCuE2v2tn5pWNlaT+TNTnpnhSE7kWV1GNU29F3t+1Gc1w07hwd00BLPWImscMRd/zReG8j6P1EUgI+SHXulCzF4OXT5urKDM8hm+PgOxl9fj7G2rDQebElSDllDanI3N09rcxJAtCQQ2gVwrT/LsOVKv+JyE9M0ZlI9r2ODZdTxD/ExZO25LYlMQzEpINHWsrmA9jblEr2VgLcQvOXM7zV1UBjXCDN3HXolVitXEbNVMbTcIXR6smrQtUzu4sv20WCrw/NXrAqVMHJdX5NTlYjEphBPBlaZ66b2Fkg2Dup12PX3tMozNiOZqeboSVWYwAvZOduOjvb73yy+E2D17iRb5mM2EX/xj9FZujSfdaqDgQsOwT2z/IWjCwnGKeC8CyYSGC/oaQYy9nk04Q=
 
 install:
   - yarn install
