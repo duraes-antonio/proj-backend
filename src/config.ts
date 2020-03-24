@@ -1,3 +1,5 @@
+console.log('ENV', process.env.NODE_ENV);
+
 enum EEnv {
     DEV = 'dev',
     PROD = 'prod',
