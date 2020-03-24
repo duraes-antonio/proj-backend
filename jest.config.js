@@ -1,21 +1,12 @@
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'test';
+}
+
 module.exports = {
-  coverageDirectory: "coverage",
-  testResultsProcessor: "jest-sonar-reporter",
-  testEnvironment: "node",
-  moduleDirectories: [
-    "node_modules"
-  ],
-  transform: {
-    "\\.tsx?$": "ts-jest",
-    "\\.jsx?$": "babel-jest"
-  },
-  globals: {
-    "ts-jest": {
-      "tsConfig": "<rootDir>/tsconfig.json",
-      diagnostics: false
-    }
-  },
-  transformIgnorePatterns: [
-    "[/\\\\]node_modules[/\\\\](?!lodash-es/).+\\.js$"
-  ]
+  moduleFileExtensions: ['js', 'ts'],
+  testResultsProcessor: 'jest-sonar-reporter',
+  transform: {'^.+\\.ts$': 'ts-jest'},
+  testMatch: ['<rootDir>/tests/**/*.test.ts'],
+  preset: 'ts-jest',
+  testEnvironment: 'node'
 };
