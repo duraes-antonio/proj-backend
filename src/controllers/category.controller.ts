@@ -34,7 +34,7 @@ async function post(req: Request, res: Response, next: NextFunction) {
 async function get(req: Request, res: Response, next: NextFunction) {
     return ctrlFunc.get<ICategory>(
       req, res, next,
-      () => categRepo.find(req.query as FilterCategory)
+      () => categRepo.find(req.body as FilterCategory)
     );
 }
 

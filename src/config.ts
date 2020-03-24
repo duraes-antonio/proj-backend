@@ -1,10 +1,8 @@
-console.log('ENV', process.env.NODE_ENV);
-
 enum EEnv {
     DEV = 'dev',
     PROD = 'prod',
     TEST = 'test',
-    TEST_DEV = 'test-dev'
+    TEST_DEV = 'test_dev'
 }
 
 function getPathFileEnv(envEnum: EEnv): string  {
@@ -21,7 +19,7 @@ function getConnString(envEnum: EEnv): string  {
     const mapEnvPath = {
         [EEnv.DEV]: `mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`,
         [EEnv.PROD]: `mongodb+srv://${process.env.MONGODB_PROD_USER}:${process.env.MONGODB_PROD_PASS}@prod-fpioj.gcp.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
-        [EEnv.TEST]: `mongodb+srv://teste:teste@yugishop-ywmam.mongodb.net/test?retryWrites=true&w=majority`,
+        [EEnv.TEST]: `mongodb+srv://teste:${'dbDEo8SKQkhhGMAZ'}@yugishop-ywmam.mongodb.net/test?retryWrites=true&w=majority`,
         [EEnv.TEST_DEV]: `mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`
     };
     return mapEnvPath[envEnum];

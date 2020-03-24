@@ -22,7 +22,6 @@ export class App {
         this.express = express();
         this.middlewares();
         this.routes();
-        console.log('CONFIG', config);
         this.databaseInstance = this.database(config.connectionString);
     }
 
