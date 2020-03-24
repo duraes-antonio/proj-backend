@@ -2,19 +2,20 @@ module.exports = {
   coverageDirectory: "coverage",
   testResultsProcessor: "jest-sonar-reporter",
   testEnvironment: "node",
-  roots: ["<rootDir>/tests"],
-  verbose: false,
-  modulePaths: [
-    "<rootDir>"
+  moduleDirectories: [
+    "node_modules"
   ],
-  moduleFileExtensions: ["js", "ts"],
   transform: {
-    "^.+\\.jsx?$": "babel-jest",
-    "^.+\\.tsx?$": "ts-jest"
+    "\\.tsx?$": "ts-jest",
+    "\\.jsx?$": "babel-jest"
   },
   globals: {
     "ts-jest": {
+      "tsConfig": "<rootDir>/tsconfig.json",
       diagnostics: false
     }
-  }
+  },
+  transformIgnorePatterns: [
+    "[/\\\\]node_modules[/\\\\](?!lodash-es/).+\\.js$"
+  ]
 };
