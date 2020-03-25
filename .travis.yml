@@ -9,8 +9,7 @@ branches:
 addons:
   sonarcloud:
     organization: duraes-antonio-github
-    secure:
-      token: ${SONAR_TOKEN}
+    token: ${SONAR_TOKEN}
 
 install:
   - yarn install
