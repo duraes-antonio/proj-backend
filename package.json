@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "yarn tsc",
     "prestart": "yarn run build",
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
     "prod": "NODE_ENV=prod dist/src/server.js",
