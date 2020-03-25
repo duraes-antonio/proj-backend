@@ -8,11 +8,12 @@ branches:
 
 addons:
   sonarcloud:
-    organization: duraes-antonio-github
+    organization: "duraes-antonio-github"
+    token:
+      secure: "fT8F9SYFqb7ykTZDgioDfgpjX2sgu5SQ1QQE1ebz/5qM8WMOq0SIHBs6ywG2MWIqjQWVAesLEIHXYRk3nA5KCRqvzY9hZ33Hf52lOkzTTLI0GflnWJHW1eJ1CT/GNP7OFxPN+5AUwwIW6WHyV6HE3KhJepLaVj1FsAvdHiSdpukzIPVprzS44jdfyZrnI51qIJ7zi3b1CufC7vRaURgqF+qO8IiTJhlLOKTzpQzTO6IMoNo/q6riHEjwUoumOGztxWrw1bGnpO2d8vF2c4MLHITMfdt79FrjdFiWSDFyUmkgTrgCvYH6v+hKdN45638Vyvh7DaQNPq0kkWj8heRLLfLO0kbFMG19xE/B6RVDu3rd9hPqfNbSEjT3OtRMHWOVBSZdQfRsDutS0vIvVLRF7V66OhZqPXNLZEfh9yj2kx1T1f/WRhaMkB6EepgfuKB3MpahAPobD341PxNH74giYGb91Qi7KTeSOw4aqt4gCK4eLsNfVtGkwu3SBxjQg+NGlyKIujD+akrr4inSI8wIpCsJtRCk6GwRvnOw+Rj41EP/tybTIxQ8SgGt1xaGWwGjKD//FxRM000hWDz4NO9kA0v5Xmsu+hZqcNHI+3EiAsRigW3JZTFUVCkJXHP2VD1+U7hfh/9PU/G3SQOqOfN8WLvhhYsmRb5SpOFZZ8NyqgE="
 
 install:
   - yarn install
 
 script:
-  - yarn run test
   - sonar-scanner
