@@ -9,11 +9,10 @@ branches:
 addons:
   sonarcloud:
     organization: duraes-antonio-github
-    token: ${SONAR_TOKEN}
 
 install:
   - yarn install
 
 script:
-  - yarn test
+  - yarn run test
   - sonar-scanner
