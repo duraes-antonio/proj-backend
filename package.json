@@ -8,7 +8,7 @@
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
     "prod": "NODE_ENV=prod node dist/server.js",
     "start": "NODE_ENV=prod node dist/server.js",
-    "test": "jest",
+    "test": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit",
     "test_dev": "NODE_ENV=test_dev jest --coverage --detectOpenHandles --forceExit"
   },
   "dependencies": {
