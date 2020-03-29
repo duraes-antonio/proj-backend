@@ -1,7 +1,7 @@
 'use strict';
-import { model, Model, Schema } from 'mongoose';
+import { Document, model, Model, Schema } from 'mongoose';
 import { categorySizes } from '../../shared/fieldSize';
-import { ICategorySchema } from '../../domain/interfaces/category.interface';
+import { Category } from '../../domain/interfaces/category.interface';
 import { ECollectionsName } from '../collectionsName.enum';
 
 const categorySchema = new Schema({
@@ -20,4 +20,7 @@ const categorySchema = new Schema({
     }
 });
 categorySchema.index({ title: 'text' });
-export const Category: Model<ICategorySchema> = model<ICategorySchema>(ECollectionsName.CATEGORY, categorySchema);
+export const CategorySchema: Model<CategoryDBModel> = model<CategoryDBModel>(ECollectionsName.CATEGORY, categorySchema);
+
+export interface CategoryDBModel extends Document, Category {
+}

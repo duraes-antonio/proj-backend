@@ -1,9 +1,7 @@
 'use strict';
+import { Registable } from './auditable.interface';
 
-import { Document } from 'mongoose';
-import { IRegistable } from './auditable.interface';
-
-export interface IReview extends IRegistable {
+export interface Review extends Registable {
     readonly comment: string;
     readonly date: Date;
     readonly rating: number;
@@ -11,5 +9,3 @@ export interface IReview extends IRegistable {
     readonly productId: string;
     readonly userId: string;
 }
-
-export interface IReviewSchema extends Document, IReview { }

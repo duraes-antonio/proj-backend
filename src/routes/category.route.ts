@@ -5,7 +5,7 @@ import { categoryController as catCtrl } from '../controllers/category.controlle
 
 const router = Router();
 
-if (process.env.NODE_ENV !== 'test') {
+if (['test', 'test_dev'].indexOf(process.env.NODE_ENV ?? '') < 0) {
     router.delete('/:id', tokenS.verify, catCtrl.delete);
     router.get('/', tokenS.verify, catCtrl.get);
     router.get('/:id', tokenS.verify, catCtrl.getById);

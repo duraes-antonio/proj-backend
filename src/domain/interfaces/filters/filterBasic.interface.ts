@@ -1,4 +1,4 @@
-export interface IFilterBasic {
+export interface FilterBasic {
     currentPage: number;
     countTotal: number;
     dateStart?: Date;

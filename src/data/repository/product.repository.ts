@@ -1,9 +1,9 @@
 'use strict';
-import { Product } from '../schemas/product.schema';
-import { IProduct } from '../../domain/interfaces/product.interface';
+import { Product } from '../../domain/interfaces/product.interface';
 import { FilterProduct } from '../../domain/models/filters/filterProduct.model';
 import { EProductSort } from '../../domain/enum/productSort.enum';
 import { ObjectId } from 'bson';
+import { ProductSchema } from '../schemas/product.schema';
 
 class MatchQuery {
     categoriesId?: any;
@@ -34,6 +34,13 @@ function buildMatchQuery(filter: FilterProduct): MatchQuery {
         match.$and = match.$and
           ? [...match.$and, { categoriesId: { $in: categIds } }]
           : [{ categoriesId: { $in: categIds } }];
+    }
+
+    if (filter.ids && filter.ids.length) {
+        const ids = filter.ids.map(id => new ObjectId(id));
+        match.$and = match.$and
+          ? [...match.$and, { categoriesId: { $in: ids } }]
+          : [{ _id: { $in: ids } }];
     }
 
     if (filter.text && filter.text.trim()) {
@@ -73,7 +80,7 @@ const fieldsSelect = {
     urlMainImage: 1
 };
 
-async function find(filter: FilterProduct): Promise<IProduct[]> {
+async function find(filter: FilterProduct): Promise<Product[]> {
     const match = buildMatchQuery(filter);
 
     let sortBy = sortOptions.get(EProductSort.NEWEST);
@@ -82,11 +89,14 @@ async function find(filter: FilterProduct): Promise<IProduct[]> {
         sortBy = sortOptions.get(+filter.sortBy);
     }
 
-    const projectField = {
+    const projectField: any = {
         ...fieldsSelect,
         avgInt: { $floor: '$avgReview' },
-        id: '$_id',
-        discountOk: {
+        id: '$_id'
+    };
+
+    if (filter.discounts && filter.discounts.length) {
+        projectField.discountOk = {
             $or: filter.discounts.map(pair => {
                 return {
                     $and: [
@@ -95,10 +105,10 @@ async function find(filter: FilterProduct): Promise<IProduct[]> {
                     ]
                 };
             })
-        }
-    };
+        };
+    }
 
-    let queryRaw = Product
+    const queryRaw = ProductSchema
       .aggregate()
       .match(match)
       .project(projectField);
@@ -117,11 +127,12 @@ async function find(filter: FilterProduct): Promise<IProduct[]> {
       .match(match2)
       .sort(sortBy)
       .skip(+filter.perPage * (Math.max(+filter.currentPage, 1) - 1))
-      .limit(+filter.perPage);
+      .limit(+filter.perPage)
+      ;
 }
 
 async function findCount(filter: FilterProduct): Promise<number> {
-    return await Product.count(buildMatchQuery(filter));
+    return await ProductSchema.count(buildMatchQuery(filter));
 }
 
 export const productRepository = {

@@ -1,25 +1,38 @@
 'use strict';
-
 import { NextFunction, Request, Response } from 'express';
 import { tokenService } from './tokenService';
-import { ITokenData } from './interfaces/tokenData.interface';
+import { TokenData } from './interfaces/tokenData.interface';
 import { EUserRole } from '../domain/enum/role.enum';
 import { serviceDataMsg } from '../shared/buildMsg';
+import { Message, responseFunctions } from '../controllers/base/response.functions';
 
-async function isAdmin(req: Request): Promise<boolean> {
-    const data: ITokenData = await tokenService.decodeFromReq(req);
+function isAdmin(req: Request): boolean {
+    const data: TokenData = tokenService.decodeFromReq(req);
     return data.roles.indexOf(EUserRole.ADMIN) > -1;
 }
 
-async function allowAdmin(req: Request, res: Response, next: NextFunction) {
-    if (await isAdmin(req)) {
+function allowAdmin(req: Request, res: Response, next: NextFunction):
+  Response<Message> | void {
+    if (isAdmin(req)) {
         next();
     } else {
-        res.status(403).send(serviceDataMsg.onlyAdmin());
+        return res.status(403).send(serviceDataMsg.onlyAdmin());
     }
 }
 
+async function checkIsOwner<T>(
+  req: Request, res: Response, entity: T, entityOwnerId: string
+): Promise<Response | void> {
+    const tokenData: TokenData = tokenService.decodeFromReq(req);
+
+    if (entityOwnerId !== tokenData.id) {
+        return responseFunctions.forbidden(res);
+    }
+    return;
+}
+
 export const authService = {
-    isAdmin: isAdmin,
-    allowAdmin: allowAdmin
+    allowAdmin: allowAdmin,
+    checkIsOwner: checkIsOwner,
+    isAdmin: isAdmin
 };

@@ -1,7 +1,7 @@
 'use strict';
-import { model, Model, Schema } from 'mongoose';
+import { Document, model, Model, Schema } from 'mongoose';
 import { addressSizes } from '../../shared/fieldSize';
-import { IAddressSchema } from '../../domain/interfaces/address.interface';
+import { Address } from '../../domain/interfaces/address.interface';
 import { ECollectionsName } from '../collectionsName.enum';
 
 const addressSchema = new Schema({
@@ -53,4 +53,7 @@ const addressSchema = new Schema({
     }
 });
 
-export const Address: Model<IAddressSchema> = model<IAddressSchema>(ECollectionsName.ADDRESS, addressSchema);
+export const AddressSchema: Model<AddressDBModel> = model<AddressDBModel>(ECollectionsName.ADDRESS, addressSchema);
+
+export interface AddressDBModel extends Document, Address {
+}

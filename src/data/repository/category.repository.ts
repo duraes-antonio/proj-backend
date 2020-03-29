@@ -1,13 +1,24 @@
 'use strict';
-import { Category } from '../schemas/category.schema';
-import { ICategory } from '../../domain/interfaces/category.interface';
+import { Category } from '../../domain/interfaces/category.interface';
 import { FilterCategory } from '../../domain/models/filters/filterCategory.model';
+import { CategorySchema } from '../schemas/category.schema';
 
-function parseQuery(filter: FilterCategory): any {
-    const query: any = {};
+interface CategoryQuery {
+    $text?: {
+        $search: string;
+        $caseSensitive: boolean;
+    };
+    createdAt?: {
+        $gte?: Date;
+        $lt?: Date;
+    };
+}
+
+function parseQuery(filter: FilterCategory): CategoryQuery {
+    const query: CategoryQuery = {};
 
     if (filter.text && filter.text.trim()) {
-        query['$text'] = {
+        query.$text = {
             $search: filter.text,
             $caseSensitive: false
         };
@@ -15,19 +26,19 @@ function parseQuery(filter: FilterCategory): any {
 
     if (filter.dateStart) {
         query.createdAt = query.createdAt ? query.createdAt : {};
-        query.createdAt['$gte'] = filter.dateStart;
+        query.createdAt.$gte = filter.dateStart;
     }
 
     if (filter.dateEnd) {
         query.createdAt = query.createdAt ? query.createdAt : {};
-        query.createdAt['$lt'] = filter.dateEnd;
+        query.createdAt.$lt = filter.dateEnd;
     }
 
     return query;
 }
 
-async function find(filter: FilterCategory): Promise<ICategory[]> {
-    const res = await Category.find(
+async function find(filter: FilterCategory): Promise<Category[]> {
+    const res = await CategorySchema.find(
       parseQuery(filter),
       { 'score': { '$meta': 'textScore' } }
     ).select({ id: 1, title: 1, createdAt: 1 })
@@ -41,7 +52,7 @@ async function find(filter: FilterCategory): Promise<ICategory[]> {
 }
 
 async function findCount(filter: FilterCategory): Promise<number> {
-    return await Category.count(parseQuery(filter));
+    return await CategorySchema.count(parseQuery(filter));
 }
 
 export const categoryRepository = {

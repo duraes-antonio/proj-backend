@@ -1,6 +1,7 @@
 'use strict';
 import { App } from '../../src/app';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;

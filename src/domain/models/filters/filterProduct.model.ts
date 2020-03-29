@@ -1,18 +1,19 @@
 'use strict';
-import { IFilterBasic } from '../../interfaces/filters/filterBasic.interface';
+import { FilterBasic } from '../../interfaces/filters/filterBasic.interface';
 import { EProductSort } from '../../enum/productSort.enum';
 
-export class FilterProduct implements IFilterBasic {
-    avgReview: number[] = [];
-    categoriesId: string[] = [];
-    discounts: number[][] = [];
+export class FilterProduct implements FilterBasic {
+    avgReview?: number[] = [];
+    categoriesId?: string[] = [];
+    discounts?: number[][] = [];
     freeDelivery?: boolean = false;
+    ids?: string[] = [];
     priceMax?: number;
     priceMin?: number;
-    text = '';
-    sortBy: EProductSort = EProductSort.DEFAULT;
+    text? = '';
+    sortBy?: EProductSort = EProductSort.DEFAULT;
 
-    countTotal: number = 0;
-    currentPage: number = 1;
-    perPage: number = 15;
+    countTotal = 0;
+    currentPage = 1;
+    perPage = 15;
 }

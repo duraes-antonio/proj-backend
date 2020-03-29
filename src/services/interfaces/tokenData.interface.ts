@@ -2,7 +2,7 @@
 
 import { EUserRole } from '../../domain/enum/role.enum';
 
-export interface ITokenData {
+export interface TokenData {
     id: string;
     email: string;
     name: string;

@@ -1,50 +1,41 @@
 'use strict';
 import { NextFunction, Request, Response } from 'express';
 import { validationErrorMsg as msgServ } from '../shared/buildMsg';
-import { IUser } from '../domain/interfaces/user.interface';
 import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { responseFunctions as resFunc, responseFunctions as respFunc } from './base/response.functions';
-import { User } from '../data/schemas/user.schema';
 import { userRepository } from '../data/repository/user.repository';
 import { cryptService } from '../services/crypt.service';
 import { tokenService } from '../services/tokenService';
+import { User, UserAdd } from '../domain/interfaces/user.interface';
+import { UserSchema } from '../data/schemas/user.schema';
 
 const entityName = 'Usuário';
 
-function validate(user: IUser): PipelineValidation {
+function validatePost(user: UserAdd): PipelineValidation {
     return new PipelineValidation()
       .atMaxLen('Nome', user.name, userSizes.nameMax, msgServ.maxLen)
       .validEmail('Email', user.email, msgServ.invalidFormat)
       .atMaxLen('Senha', user.password, userSizes.passwordMax, msgServ.maxLen);
 }
 
-function validatePut(user: IUser): PipelineValidation {
+/*
+function validatePut(user: User): PipelineValidation {
     return new PipelineValidation()
       .atMaxLen('Nome', user.name, userSizes.nameMax, msgServ.maxLen)
       .atMaxLen('Senha', user.password, userSizes.passwordMax, msgServ.maxLen);
+}*/
+
+function sendToken(res: Response, user: User): Response<{ token: string; user: User }> {
+    const token = tokenService.generate(user);
+    return respFunc.created(res, { token, user });
 }
 
-async function sendToken(res: Response, user: any) {
-    const token = await tokenService.generate(user);
-    return respFunc.created(
-      res,
-      {
-          token: token,
-          user: {
-              email: user.email,
-              name: user.name,
-              roles: user.roles
-          }
-      }
-    );
-}
+async function post(req: Request, res: Response, next: NextFunction): Promise<Response> {
 
-async function post(req: Request, res: Response, next: NextFunction) {
-
-    const pipe = validatePut(req.body);
+    const pipe = validatePost(req.body);
 
     if (!pipe.valid) {
         return resFunc.badRequest(res, pipe.errors);
@@ -54,47 +45,48 @@ async function post(req: Request, res: Response, next: NextFunction) {
         return respFunc.duplicated(res, entityName, 'Email', req.body.email);
     }
 
-    const user: IUser = {
+    const user: User = {
         ...req.body,
         password: await cryptService.encrypt(req.body.password)
     };
 
-    await ctrlFunc.post<IUser>(
+    const objSaved = await ctrlFunc.post<User>(
       req, res, next,
-      () => repoFunc.create<IUser>(user, User),
-      validate,
-      (objSaved) => sendToken(res, objSaved as IUser)
+      async () => await repoFunc.create<User>(user, UserSchema),
+      undefined,
+      false
+    );
+    return sendToken(res, objSaved as User);
+}
+
+async function get(req: Request, res: Response, next: NextFunction): Promise<Response<User[]>> {
+    return ctrlFunc.get<User>(
+      req, res, next, () => repoFunc.find<User>(UserSchema)
     );
 }
 
-async function get(req: Request, res: Response, next: NextFunction) {
-    return ctrlFunc.get<IUser>(
-      req, res, next, () => repoFunc.find<IUser>(User)
-    );
-}
-
-async function getById(req: Request, res: Response, next: NextFunction) {
-    return ctrlFunc.getById<IUser>(
+async function getById(req: Request, res: Response, next: NextFunction): Promise<Response<User>> {
+    return ctrlFunc.getById<User>(
       req, res, next, entityName,
-      (id: string) => repoFunc.findById<IUser>(id, User)
+      (id: string) => repoFunc.findById<User>(id, UserSchema)
     );
 }
 
+/*
 async function put(req: Request, res: Response, next: NextFunction) {
     const putObj = {
         name: req.body.name,
         password: req.body.password,
         avatarUrl: req.body.avatarUrl,
     };
-    return ctrlFunc.put<IUser>(
+    return ctrlFunc.put<User>(
       req, res, next, entityName, putObj, validatePut,
-      (id: string, obj: IUser) => repoFunc.update<IUser>(id, obj, User)
+      (id: string, obj: User) => repoFunc.update<User>(id, obj, UserSchema)
     );
-}
+}*/
 
 export const userController = {
     get: get,
     getById: getById,
-    post: post,
-    put: put
+    post: post
 };

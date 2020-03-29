@@ -1,11 +1,13 @@
 'use strict';
+import { Registable } from './auditable.interface';
 
-import { Document } from 'mongoose';
-import { IRegistable } from './auditable.interface';
-
-export interface IProduct extends IRegistable {
-    readonly amountAvailable: number;
+export interface Product extends ProductAdd, Registable {
     readonly avgReview: number;
+    readonly priceWithDiscount: number;
+}
+
+export interface ProductAdd {
+    readonly amountAvailable: number;
     readonly categoriesId: string[];
     readonly desc: string;
     readonly freeDelivery: boolean;
@@ -13,8 +15,4 @@ export interface IProduct extends IRegistable {
     readonly price: number;
     readonly title: string;
     readonly urlMainImage?: string;
-}
-
-export interface IProductSchema extends Document, IProduct {
-    readonly priceWithDiscount: number;
 }

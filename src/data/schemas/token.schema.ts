@@ -1,6 +1,6 @@
 'use strict';
-import { model, Model, Schema } from 'mongoose';
-import { ITokenInvalidSchema } from '../../domain/interfaces/tokenInvalid.interface';
+import { Document, model, Model, Schema } from 'mongoose';
+import { TokenInvalid } from '../../domain/interfaces/tokenInvalid.interface';
 import { ECollectionsName } from '../collectionsName.enum';
 
 const tokenSchema = new Schema({
@@ -22,6 +22,9 @@ const tokenSchema = new Schema({
     }
 });
 
-export const TokenInvalid: Model<ITokenInvalidSchema> = model<ITokenInvalidSchema>(
+export const TokenInvalidSchema: Model<TokenInvalidDBModel> = model<TokenInvalidDBModel>(
   ECollectionsName.TOKEN_INVALID, tokenSchema
 );
+
+export interface TokenInvalidDBModel extends Document, TokenInvalid {
+}

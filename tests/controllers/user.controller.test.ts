@@ -1,18 +1,20 @@
 'use strict';
-import { IUser } from '../../src/domain/interfaces/user.interface';
+import { UserAdd } from '../../src/domain/interfaces/user.interface';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { tokenService } from '../../src/services/tokenService';
+import { EUserRole } from '../../src/domain/enum/role.enum';
 
-const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
-const userRight: IUser = {
-    createdAt: new Date(),
+const userRight: UserAdd = {
     email: 'gseis@gmail.com',
     name: 'Antônio',
-    password: '12345678'
+    password: '12345678',
+    roles: [EUserRole.CUSTOMER]
 };
 
 describe('Post', () => {

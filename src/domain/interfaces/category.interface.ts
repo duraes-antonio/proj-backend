@@ -1,11 +1,11 @@
 'use strict';
 
-import { Document } from 'mongoose';
-import { IRegistable } from './auditable.interface';
+import { Registable } from './auditable.interface';
 
-export interface ICategory extends IRegistable {
+export interface Category extends Registable {
     readonly title: string;
 }
 
-export interface ICategorySchema extends Document, ICategory {
+export interface CategoryAdd {
+    readonly title: string;
 }

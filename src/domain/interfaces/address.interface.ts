@@ -1,7 +1,6 @@
-import { Document } from 'mongoose';
-import { IRegistable } from './auditable.interface';
+import { Registable } from './auditable.interface';
 
-export interface IAddress extends IRegistable {
+export interface Address extends Registable {
     readonly street: string;
     readonly number: number;
     readonly zipCode: string;
@@ -11,5 +10,11 @@ export interface IAddress extends IRegistable {
     readonly userId: string;
 }
 
-export interface IAddressSchema extends Document, IAddress {
+export interface AddressAdd {
+    readonly street: string;
+    readonly number: number;
+    readonly zipCode: string;
+    readonly neighborhood: string;
+    readonly city: string;
+    readonly state: string;
 }

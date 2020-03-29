@@ -1,8 +1,8 @@
 'use strict';
-import { model, Model, Schema } from 'mongoose';
+import { Document, model, Model, Schema } from 'mongoose';
 import { ECollectionsName } from '../collectionsName.enum';
-import { IReviewSchema } from '../../domain/interfaces/review.interface';
 import { reviewSizes } from '../../shared/fieldSize';
+import { Review } from '../../domain/interfaces/review.interface';
 
 const reviewSchema = new Schema({
     comment: {
@@ -47,4 +47,7 @@ const reviewSchema = new Schema({
     }
 });
 reviewSchema.index({ title: 'text' });
-export const Review: Model<IReviewSchema> = model<IReviewSchema>(ECollectionsName.REVIEW, reviewSchema);
+export const ReviewSchema: Model<ReviewDBModel> = model<ReviewDBModel>(ECollectionsName.REVIEW, reviewSchema);
+
+export interface ReviewDBModel extends Document, Review {
+}

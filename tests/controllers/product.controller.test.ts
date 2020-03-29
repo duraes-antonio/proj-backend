@@ -1,37 +1,37 @@
 'use strict';
 import { App } from '../../src/app';
-import { IProduct } from '../../src/domain/interfaces/product.interface';
-import { IUser } from '../../src/domain/interfaces/user.interface';
+import { Product, ProductAdd } from '../../src/domain/interfaces/product.interface';
+import { UserAdd } from '../../src/domain/interfaces/user.interface';
 import { clearDatabase } from '../../utils/database';
 import { FilterProduct } from '../../src/domain/models/filters/filterProduct.model';
-import { ICategory } from '../../src/domain/interfaces/category.interface';
+import { Category } from '../../src/domain/interfaces/category.interface';
+import { EUserRole } from '../../src/domain/enum/role.enum';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
 const route = '/product';
 const routeCateg = '/category';
-const userRight: IUser = {
-    createdAt: new Date(),
-    email: `teste_@teste.com`,
+const userRight: UserAdd = {
+    email: 'teste_@teste.com',
     name: 'Tester',
-    password: '12345678'
+    password: '12345678',
+    roles: [EUserRole.CUSTOMER]
 };
-const productValid: IProduct = {
-    createdAt: new Date(),
+const productValid: ProductAdd = {
     title: 'Produto de teste',
     desc: 'Descrição',
     price: 150,
     amountAvailable: 100,
     percentOff: 10,
-    avgReview: 3,
     freeDelivery: true,
     categoriesId: []
 };
 
 let token: string;
 
-async function getTokenValid(user: IUser): Promise<string> {
+async function getTokenValid(user: UserAdd): Promise<string> {
     const resPostUser = await request(app)
       .post('/user')
       .send(user);
@@ -42,12 +42,12 @@ async function getTokenValid(user: IUser): Promise<string> {
 const randomFunc = {
 
     randomFloat: function randomFloat(
-      min: number = 0, max: number = Number.MAX_SAFE_INTEGER): number {
+      min = 0, max: number = Number.MAX_SAFE_INTEGER): number {
         return (Math.random() * (max - min)) + min;
     },
 
     randomInt: function randomInt(
-      min: number = 0, max: number = Number.MAX_SAFE_INTEGER): number {
+      min = 0, max: number = Number.MAX_SAFE_INTEGER): number {
         return Math.floor(Math.random() * (max - min)) + min;
     },
 
@@ -57,9 +57,8 @@ const randomFunc = {
 };
 
 const productRandom = function productRandom(
-  title: string, desc: string, imgUrl: string, categories?: ICategory[]): IProduct {
+  title: string, desc: string, imgUrl: string, categories?: Category[]): ProductAdd {
     return {
-        createdAt: new Date(),
         title,
         desc,
         price: randomFunc.randomFloat(0, 2500),
@@ -67,8 +66,7 @@ const productRandom = function productRandom(
         percentOff: randomFunc.randomFloat(0, 100),
         categoriesId: categories ? categories.map(c => c.id) : [],
         freeDelivery: randomFunc.randomBoolean(),
-        amountAvailable: randomFunc.randomInt(0, 10000),
-        avgReview: randomFunc.randomFloat(0, 5)
+        amountAvailable: randomFunc.randomInt(0, 10000)
     };
 };
 
@@ -91,8 +89,8 @@ describe('post', () => {
 });
 
 describe('get_filter', () => {
-    let products: IProduct[];
-    let catCard: ICategory, catGame: ICategory;
+    let products: ProductAdd[];
+    let catCard: Category, catGame: Category;
 
     beforeAll(async () => {
         clearDatabase(await appInstance.databaseInstance);
@@ -112,19 +110,16 @@ describe('get_filter', () => {
 
         products = [
             {
-                createdAt: new Date(),
                 title: 'Funk POP - Yugi',
-                desc: `Boneco Funko Pop Yu-gi-oh - Yami Yugi 387, é o mais novo título popular mundialmente.`,
+                desc: 'Boneco Funko Pop Yu-gi-oh - Yami Yugi 387, é o mais novo título popular mundialmente.',
                 urlMainImage: 'https://images-na.ssl-images-amazon.com/images/I/717MHGTzgbL._SY606_.jpg',
                 categoriesId: [catCard.id, catGame.id],
                 freeDelivery: true,
                 price: 150.99,
-                avgReview: 2.22,
                 percentOff: 10,
                 amountAvailable: 10
             },
             {
-                createdAt: new Date(),
                 title: 'Yugioh Booster Duelist Pack',
                 desc: `Essa Coleção possui Cartas usados por Yugi Muto.
               Contém novas artes para muitas cartas, incluindo "Dark Magician Girl",
@@ -133,7 +128,6 @@ describe('get_filter', () => {
                 categoriesId: [catCard.id],
                 freeDelivery: false,
                 price: 73.45,
-                avgReview: 0.25,
                 percentOff: 25,
                 amountAvailable: 17
             },
@@ -211,6 +205,7 @@ describe('get_filter', () => {
         );
     });
 
+    /*TODO: Tratar avaliação e query externa
     it(
       'rating_filled',
       async () => {
@@ -220,7 +215,7 @@ describe('get_filter', () => {
             .get(route)
             .send(filter);
 
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
           expect(res.status).toBe(200);
           expect(body.length).toBeTruthy();
 
@@ -239,11 +234,12 @@ describe('get_filter', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
           expect(res.status).toBe(200);
           expect(body.length).toBeTruthy();
           expect(res.body.length === products.length).toBeTruthy();
       });
+      */
 
     it(
       'category',
@@ -254,13 +250,15 @@ describe('get_filter', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
 
           expect(res.status).toBe(200);
           expect(body.length).toBeTruthy();
-          const allExpected = (res.body as IProduct[])
+          const allExpected = (res.body as Product[])
             .every(p => p.categoriesId
-              .some(c => filter.categoriesId.includes(c)));
+              .some(c => filter.categoriesId
+                && filter.categoriesId.includes(c))
+            );
           expect(allExpected).toBeTruthy();
       });
 
@@ -270,22 +268,24 @@ describe('get_filter', () => {
           const filter = new FilterProduct();
           filter.text = 'card';
           const expectedLen = products.filter(p =>
-            p.title.toLowerCase().includes(filter.text)
-            || p.desc.toLowerCase().includes(filter.text)
+            filter.text &&
+            (p.title.toLowerCase().includes(filter.text)
+              || p.desc.toLowerCase().includes(filter.text))
           ).length;
 
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
 
           expect(res.status).toBe(200);
           expect(body.length).toBeTruthy();
 
           const allExpected = body
             .every(p =>
-              p.title.toLowerCase().includes(filter.text)
-              || p.desc.toLowerCase().includes(filter.text)
+              filter.text &&
+              (p.title.toLowerCase().includes(filter.text)
+                || p.desc.toLowerCase().includes(filter.text))
             );
           expect(allExpected && expectedLen == body.length).toBeTruthy();
       });
@@ -301,7 +301,7 @@ describe('get_filter', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
           expect(res.status).toBe(200);
           expect(body.length == expec.length).toBeTruthy();
       });
@@ -314,26 +314,28 @@ describe('get_filter', () => {
 
           const expec = products
             .filter(p => filter.discounts
-              .some(pairOff =>
-                p.percentOff >= pairOff[0]
-                && p.percentOff <= pairOff[1]
-              )
+              && filter.discounts
+                .some(pairOff =>
+                  p.percentOff >= pairOff[0]
+                  && p.percentOff <= pairOff[1]
+                )
             );
 
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
 
           expect(res.status).toBe(200);
           expect(body.length == expec.length).toBeTruthy();
 
           const allDiscountOk = body
             .filter(p => filter.discounts
-              .some(pairOff =>
-                p.percentOff >= pairOff[0]
-                && p.percentOff <= pairOff[1]
-              )
+              && filter.discounts
+                .some(pairOff =>
+                  p.percentOff >= pairOff[0]
+                  && p.percentOff <= pairOff[1]
+                )
             );
 
           expect(allDiscountOk).toBeTruthy();
@@ -352,7 +354,7 @@ describe('get_filter', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
 
           expect(res.status).toBe(200);
           expect(body.length == expec.length).toBeTruthy();
@@ -373,7 +375,7 @@ describe('get_filter', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
 
           expect(res.status).toBe(200);
           expect(body.length == expec.length).toBeTruthy();
@@ -398,7 +400,7 @@ describe('get_filter', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body = res.body as IProduct[];
+          const body = res.body as Product[];
 
           expect(res.status).toBe(200);
           expect(body.length == expec.length).toBeTruthy();

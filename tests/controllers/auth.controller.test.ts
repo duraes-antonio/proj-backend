@@ -1,17 +1,21 @@
 'use strict';
-import { IUser } from '../../src/domain/interfaces/user.interface';
+import { User } from '../../src/domain/interfaces/user.interface';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
+import { EUserRole } from '../../src/domain/enum/role.enum';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
+const route = '/auth';
 
-const userRight: IUser = {
+const userRight: User = {
     createdAt: new Date(),
     email: 'gseis@gmail.com',
     name: 'Antônio',
-    password: '12345678'
+    password: '12345678',
+    roles: [EUserRole.CUSTOMER]
 };
 
 describe('Authentication', () => {
@@ -77,6 +81,8 @@ describe('Authentication', () => {
 });
 
 describe('Invalidate Token', () => {
+    const fullRoute = `${route}/signout`;
+
     beforeEach(async () => {
         await clearDatabase(await appInstance.databaseInstance);
     });
@@ -91,8 +97,9 @@ describe('Invalidate Token', () => {
 
           const validToken = resPostUser.body.token;
           const res = await request(app)
-            .post('/auth/invalidate')
-            .set('x-access-token', `${validToken + '1'}`);
+            .post(fullRoute)
+            .set('x-access-token', `${validToken + '1'}`)
+            .send();
           expect(res.status).toBe(401);
       });
 
@@ -105,7 +112,8 @@ describe('Invalidate Token', () => {
           expect(resPostUser.status).toBe(201);
 
           const res = await request(app)
-            .post('/auth/invalidate');
+            .post(fullRoute)
+            .send();
           expect(res.status).toBe(401);
       });
 
@@ -119,13 +127,15 @@ describe('Invalidate Token', () => {
 
           const validToken = resPostUser.body.token;
           const res = await request(app)
-            .post('/auth/invalidate')
-            .set('x-access-token', `${validToken}`);
+            .post(fullRoute)
+            .set('x-access-token', `${validToken}`)
+            .send();
           expect(res.status).toBe(201);
 
           const resInvalid = await request(app)
-            .post('/auth/invalidate')
-            .set('x-access-token', `${validToken}`);
+            .post(fullRoute)
+            .set('x-access-token', `${validToken}`)
+            .send();
           expect(resInvalid.status).toBe(401);
       });
 });

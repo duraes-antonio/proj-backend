@@ -1,22 +1,24 @@
 'use strict';
 import { App } from '../../src/app';
-import { IReview } from '../../src/domain/interfaces/review.interface';
+import { Review } from '../../src/domain/interfaces/review.interface';
 import { clearDatabase } from '../../utils/database';
 import { EReviewSort, FilterReview } from '../../src/domain/models/filters/filterReview.model';
-import { IUser } from '../../src/domain/interfaces/user.interface';
+import { UserAdd } from '../../src/domain/interfaces/user.interface';
+import { EUserRole } from '../../src/domain/enum/role.enum';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
 const route = '/review';
 
-const user: IUser = {
-    createdAt: new Date(),
+const user: UserAdd = {
     email: 'gseis@gmail.com',
     name: 'Antônio',
-    password: '12345678'
+    password: '12345678',
+    roles: [EUserRole.CUSTOMER]
 };
-const payload: IReview = {
+const payload: Review = {
     comment: 'Teste de comentário',
     createdAt: new Date(),
     date: new Date(),
@@ -25,7 +27,7 @@ const payload: IReview = {
     title: 'Título da avaliação',
     userId: '5e768fc2176dedb9cee19e6e'
 };
-const reviews: IReview[] = [
+const reviews: Review[] = [
     {
         ...payload, rating: 5, title: 'Breve resumo 1',
         date: new Date(2016, 2, 1)
@@ -71,7 +73,7 @@ const reviews: IReview[] = [
 ];
 let token: string;
 
-async function getTokenValid(user: IUser): Promise<string> {
+async function getTokenValid(user: UserAdd): Promise<string> {
     const resPostUser = await request(app)
       .post('/user')
       .send(user);
@@ -119,9 +121,9 @@ describe('post', () => {
         { ...payload, userId: null },
         { ...payload, rating: -1 },
         { ...payload, rating: 6 }
-    ] as IReview[])
+    ] as Review[])
     ('invalid',
-      async (data: IReview) => {
+      async (data: Review) => {
           const res = await request(app)
             .post(route)
             .set('x-access-token', token)
@@ -143,7 +145,7 @@ describe('delete', () => {
           .set('x-access-token', token)
           .send({ ...payload });
         expect(resPost.status).toBe(201);
-        const review: IReview = resPost.body;
+        const review: Review = resPost.body;
 
         const resDel = await request(app)
           .delete(`${route}/${review.id}`)
@@ -155,7 +157,7 @@ describe('delete', () => {
           .get(route)
           .send();
 
-        expect(!(resGet.body as IReview[]).length);
+        expect(!(resGet.body as Review[]).length);
     });
 });
 
@@ -242,7 +244,7 @@ describe('get', () => {
             .get(route)
             .send(filter);
 
-          const body: IReview[] = res.body;
+          const body: Review[] = res.body;
           expect(res.status).toBe(200);
           expect(body.length == filter.perPage).toBeTruthy();
           const hasGreat = body.some((v, i) =>
@@ -260,7 +262,7 @@ describe('get', () => {
             .get(route)
             .send(filter);
 
-          const body: IReview[] = res.body;
+          const body: Review[] = res.body;
           expect(res.status).toBe(200);
           expect(body.length == filter.perPage).toBeTruthy();
           const hasGreat = body.some((v, i) =>
@@ -278,7 +280,7 @@ describe('get', () => {
             .get(route)
             .send(filter);
 
-          const body: IReview[] = res.body;
+          const body: Review[] = res.body;
           expect(res.status).toBe(200);
           expect(body.length == filter.perPage).toBeTruthy();
           const hasGreat = body.some((v, i) =>
@@ -296,7 +298,7 @@ describe('get', () => {
             .get(route)
             .send(filter);
 
-          const body: IReview[] = res.body;
+          const body: Review[] = res.body;
           expect(res.status).toBe(200);
           expect(body.length == filter.perPage).toBeTruthy();
           const hasGreat = body.some((v, i) =>

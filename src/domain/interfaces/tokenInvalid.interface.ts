@@ -1,10 +1,7 @@
-import { Document } from 'mongoose';
-import { IRegistable } from './auditable.interface';
+'use strict';
+import { Registable } from './auditable.interface';
 
-export interface ITokenInvalid extends IRegistable {
+export interface TokenInvalid extends Registable {
     readonly token: string;
     readonly userId: string;
-}
-
-export interface ITokenInvalidSchema extends Document, ITokenInvalid {
 }

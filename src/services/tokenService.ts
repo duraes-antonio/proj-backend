@@ -1,54 +1,63 @@
 'use strict';
-
 import { config } from '../config';
 import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg } from '../shared/buildMsg';
 import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
-import { ITokenData } from './interfaces/tokenData.interface';
-import { IUser, IUserSchema } from '../domain/interfaces/user.interface';
+import { TokenData } from './interfaces/tokenData.interface';
+import { UserDBModel } from '../data/schemas/user.schema';
+import { User } from '../domain/interfaces/user.interface';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const jwt = require('jsonwebtoken');
 
 function extractToken(req: Request): string | null {
     if (!req) {
         return null;
     }
-    return req.body.token || req.query.token || req.headers['x-access-token'];
+    return req.headers.authorization || req.body.token || req.query.token || req.headers['x-access-token'];
 }
 
 async function verifyToken(req: Request, res: Response, next: NextFunction) {
     const token = extractToken(req);
 
     if (token) {
-        jwt.verify(token, config.saltKey, async (err: Error, data: ITokenData) => {
-            if (err) {
-                res.status(401).send(serviceDataMsg.tokenInvalid());
-            } else if (await tokenRepo.find(data.id, token)) {
-                res.status(401).send(serviceDataMsg.tokenExpired());
-            } else {
-                next();
-            }
-        });
+        jwt.verify(
+          token,
+          config.saltKey,
+          async (err: JsonWebTokenError, data: TokenData) => {
+              if (err) {
+                  res.status(401).send(serviceDataMsg.tokenInvalid());
+              } else if (await tokenRepo.find(data.id, token)) {
+                  res.status(401).send(serviceDataMsg.tokenExpired());
+              } else {
+                  next();
+              }
+          });
     } else {
         res.status(401).send({ message: serviceDataMsg.tokenEmpty() });
     }
 }
 
-async function decodeToken(token: string): Promise<ITokenData> {
-    return await jwt.verify(token, config.saltKey);
+async function decodeToken(token: string): Promise<TokenData> {
+    return await jwt.verify(token, config.saltKey) as TokenData;
 }
 
-async function decodeTokenReq(req: Request): Promise<ITokenData> {
+function decodeTokenReq(req: Request): TokenData {
     const token = extractToken(req);
 
     if (!token) {
         throw new Error(serviceDataMsg.tokenEmpty());
     }
 
-    return await jwt.verify(extractToken(req), config.saltKey);
+    return jwt.verify(token, config.saltKey) as TokenData;
 }
 
-function generateToken(data: ITokenData | IUserSchema | IUser): string {
+function generateToken(data: TokenData | UserDBModel | User): string {
+    if (!process.env.SECRET_KEY) {
+        throw new Error('É necessário definir uma chave para a variável SECRET_KEY');
+    }
+
     return jwt.sign({
           id: data.id,
           email: data.email,
@@ -56,7 +65,7 @@ function generateToken(data: ITokenData | IUserSchema | IUser): string {
           roles: data.roles
       },
       process.env.SECRET_KEY,
-      { expiresIn: 60 * 15 }
+      { expiresIn: 60 * 30 }
     );
 }
 

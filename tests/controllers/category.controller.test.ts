@@ -1,31 +1,31 @@
 'use strict';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { ICategory, ICategorySchema } from '../../src/domain/interfaces/category.interface';
+import { Category, CategoryAdd } from '../../src/domain/interfaces/category.interface';
 import { FilterCategory } from '../../src/domain/models/filters/filterCategory.model';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
 const route = '/category';
 
-const categoryRight: ICategory = {
-    createdAt: new Date(),
+const categoryRight: CategoryAdd = {
     title: 'Card'
 };
-const categories = [
-    { ...categoryRight, title: 'Cards' },
-    { ...categoryRight, title: 'Deck Ultra-Raro' },
-    { ...categoryRight, title: 'Action Figures' },
-    { ...categoryRight, title: 'Vestuário' },
-    { ...categoryRight, title: 'Acessórios' },
-    { ...categoryRight, title: 'Deck Raros' },
-    { ...categoryRight, title: 'Deck Comuns' },
+const categories: CategoryAdd[] = [
+    { title: 'Cards' },
+    { title: 'Deck Ultra-Raro' },
+    { title: 'Action Figures' },
+    { title: 'Vestuário' },
+    { title: 'Acessórios' },
+    { title: 'Deck Raros' },
+    { title: 'Deck Comuns' }
 ];
 
 describe('post', () => {
     beforeEach(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+        clearDatabase(await appInstance.databaseInstance);
     });
 
     it(
@@ -63,10 +63,10 @@ describe('post', () => {
 
 describe('get_by_id', () => {
 
-    let categSaved: ICategorySchema;
+    let categSaved: Category;
 
     beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+        clearDatabase(await appInstance.databaseInstance);
         const res = await request(app)
           .post(route)
           .send(categoryRight);
@@ -111,7 +111,7 @@ describe('get_by_id', () => {
 describe('get', () => {
 
     beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+        clearDatabase(await appInstance.databaseInstance);
         await Promise.all(categories
           .map(async c => {
               const res = await request(app)
@@ -131,7 +131,7 @@ describe('get', () => {
           const res = await request(app)
             .get(route)
             .send(filter);
-          const body: ICategory[] = res.body;
+          const body: Category[] = res.body;
           expect(res.status).toBe(200);
           expect(body.length).toBeTruthy();
           expect(body.every(
@@ -154,7 +154,7 @@ describe('get', () => {
           const res = await request(app)
             .get(`${route}`)
             .send(filter);
-          const body: ICategory[] = res.body;
+          const body: Category[] = res.body;
           expect(res.status).toBe(200);
           expect(body.length == 2);
           expect(body
@@ -165,10 +165,10 @@ describe('get', () => {
 
 describe('delete', () => {
 
-    let categSaved: ICategorySchema;
+    let categSaved: Category;
 
     beforeEach(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+        clearDatabase(await appInstance.databaseInstance);
         const res = await request(app)
           .post(route)
           .send(categoryRight);
@@ -196,7 +196,7 @@ describe('delete', () => {
           const resGetAfterDel = await request(app).get(route).send();
 
           expect(resGetAfterDel.status).toBe(200);
-          expect((resGetAfterDel.body as ICategory[])
+          expect((resGetAfterDel.body as Category[])
             .some(c => c.id == categSaved.id)
           ).toBe(false);
       });
@@ -204,10 +204,10 @@ describe('delete', () => {
 
 describe('put', () => {
 
-    let categSaved: ICategorySchema;
+    let categSaved: Category;
 
     beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+        clearDatabase(await appInstance.databaseInstance);
         const res = await request(app).post(route).send(categoryRight);
         expect(res.status).toBe(201);
         categSaved = res.body;

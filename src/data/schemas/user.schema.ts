@@ -2,8 +2,8 @@
 import { userSizes } from '../../shared/fieldSize';
 import { EUserRole } from '../../domain/enum/role.enum';
 import { ECollectionsName } from '../collectionsName.enum';
-import { model, Model, Schema } from 'mongoose';
-import { IUserSchema } from '../../domain/interfaces/user.interface';
+import { Document, model, Model, Schema } from 'mongoose';
+import { User } from '../../domain/interfaces/user.interface';
 
 const userSchema = new Schema({
     avatarUrl: {
@@ -31,7 +31,7 @@ const userSchema = new Schema({
         type: String
     },
     roles: {
-        default: EUserRole.CUSTOMER,
+        default: [EUserRole.CUSTOMER],
         enum: [EUserRole.ADMIN, EUserRole.CUSTOMER],
         type: [String]
     },
@@ -43,4 +43,7 @@ const userSchema = new Schema({
     }
 });
 
-export const User: Model<IUserSchema> = model<IUserSchema>(ECollectionsName.USER, userSchema);
+export const UserSchema: Model<UserDBModel> = model<UserDBModel>(ECollectionsName.USER, userSchema);
+
+export interface UserDBModel extends Document, User {
+}

@@ -1,16 +1,16 @@
 'use strict';
-import { ITokenInvalidSchema } from '../../domain/interfaces/tokenInvalid.interface';
-import { TokenInvalid } from '../schemas/token.schema';
 
-async function find(userId: string, token: string): Promise<ITokenInvalidSchema | null> {
-    return await TokenInvalid.findOne(
+import { TokenInvalidDBModel, TokenInvalidSchema } from '../schemas/token.schema';
+
+async function find(userId: string, token: string): Promise<TokenInvalidDBModel | null> {
+    return await TokenInvalidSchema.findOne(
       { userId: userId, token: token },
       'token userId'
     );
 }
 
-async function create(value: { token: string, userId: string }): Promise<ITokenInvalidSchema> {
-    return await new TokenInvalid(value).save();
+async function create(value: { token: string; userId: string }): Promise<TokenInvalidDBModel> {
+    return await new TokenInvalidSchema(value).save();
 }
 
 export const tokenRepository = {

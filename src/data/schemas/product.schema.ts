@@ -1,8 +1,8 @@
 'use strict';
-import { model, Model, Schema } from 'mongoose';
+import { Document, model, Model, Schema } from 'mongoose';
 import { productSizes } from '../../shared/fieldSize';
-import { IProductSchema } from '../../domain/interfaces/product.interface';
 import { ECollectionsName } from '../collectionsName.enum';
+import { Product } from '../../domain/interfaces/product.interface';
 
 const productSchema = new Schema({
     amountAvailable: {
@@ -81,4 +81,7 @@ const productSchema = new Schema({
 
 productSchema.index({ title: 'text', desc: 'text' });
 
-export const Product: Model<IProductSchema> = model<IProductSchema>(ECollectionsName.PRODUCT, productSchema);
+export const ProductSchema: Model<ProductDBModel> = model<ProductDBModel>(ECollectionsName.PRODUCT, productSchema);
+
+export interface ProductDBModel extends Document, Product {
+}
