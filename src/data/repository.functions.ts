@@ -1,7 +1,6 @@
 'use strict';
-
 import { Document, Model } from 'mongoose';
-import { IFilterBasic } from '../domain/interfaces/filters/filterBasic.interface';
+import { FilterBasic } from '../domain/interfaces/filters/filterBasic.interface';
 
 async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
     const saved: Document = await new model({
@@ -9,38 +8,46 @@ async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
         createdAt: new Date(),
         updatedAt: new Date()
     }).save();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     return { ...saved._doc, id: saved._id };
 }
 
-async function delete_<T>(id: string, model: Model<Document & T>): Promise<T | null> {
-    return await model.findByIdAndDelete(id);
+async function delete_<T>(id: string, model: Model<Document & T>, query?: object): Promise<T | null> {
+    const q = query ? { ...query, _id: id } : { _id: id };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    return await model.findOneAndDelete(q);
 }
 
 async function find<T>(
-  model: Model<Document & T>, f?: IFilterBasic, sort?: any): Promise<T[]> {
-    let res: any[];
+  model: Model<Document & T>, f?: FilterBasic, sort?: object, query?: object): Promise<T[]> {
+    let res: (Document & T)[];
 
     if (f) {
-        res = await model.find()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        res = await model.find(query ?? {})
           .lean()
           .sort(sort ? sort : {})
           .skip((f.currentPage - 1) * f.perPage)
           .limit(f.perPage);
     } else {
-        res = await model.find()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        res = await model.find(query ?? {})
           .lean()
           .sort(sort ? sort : {});
     }
 
     return res.map(o => {
-        // @ts-ignore
         return { ...o, id: o._id };
     });
 }
 
 async function findById<T>(id: string, model: Model<Document & T>): Promise<T | null> {
     const obj = await model.findById(id);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     return obj ? { ...obj._doc, id: obj._id } : obj;
 }
