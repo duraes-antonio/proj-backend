@@ -48,6 +48,16 @@ async function getTokenValid(user: UserAdd): Promise<string> {
     return resPostUser.body.token;
 }
 
+function cmp(a: Address | AddressAdd, b: Address | AddressAdd): number {
+    if (a.zipCode < b.zipCode) {
+        return -1;
+    }
+    if (a.zipCode > b.zipCode) {
+        return 1;
+    }
+    return 0;
+}
+
 beforeAll(async () => {
     clearDatabase(await appInstance.databaseInstance);
     token1 = await getTokenValid(user);
@@ -109,7 +119,8 @@ describe('get', () => {
           expect(res.status).toBe(200);
           expect((res.body as Address[]).length === addresses.length)
             .toBeTruthy();
-          expect(res.body).toMatchObject(addresses);
+          expect((res.body as Address[]).sort(cmp))
+            .toMatchObject(addresses.sort(cmp));
       });
 });
 
