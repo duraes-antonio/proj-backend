@@ -37,10 +37,10 @@ export const serviceDataMsg = {
         return { message: msg };
     },
     deniedAccess(): { message: string } {
-        return { message: `Acesso negado` };
+        return { message: 'Acesso negado' };
     },
     deniedAccessItem(): { message: string } {
-        return { message: `O usuário atual não possui acesso ao item solicitado` };
+        return { message: 'O usuário atual não possui acesso ao item solicitado' };
     },
     duplicate(entity: string, propName: string, propValue: string | number): { message: string } {
         return {
@@ -52,7 +52,7 @@ export const serviceDataMsg = {
         return { message: `O ID '${id}' não é válido para um documento` };
     },
     onlyAdmin(): { message: string } {
-        return { message: `Somente administradores podem acessar o item solicitado` };
+        return { message: 'Somente administradores podem acessar o item solicitado' };
     },
     notFound(entity: string, propName: string, propValue: string | number): { message: string } {
         return {
@@ -61,24 +61,24 @@ export const serviceDataMsg = {
     },
     success(): { message: string } {
         return {
-            message: `Requisição executada com êxito!`
+            message: 'Requisição executada com êxito!'
         };
     },
     tokenEmpty(): string {
-        return `Não foi possível encontrar o token de acesso`;
+        return 'Não foi possível encontrar o token de acesso';
     },
     tokenExpired(): { message: string } {
-        return { message: `O token atual está expirado. Realize o login novamente` };
+        return { message: 'O token atual está expirado. Realize o login novamente' };
     },
     tokenInvalid(): { message: string } {
-        return { message: `O token atual é inválido` };
+        return { message: 'O token atual é inválido' };
     },
     unknown(): { message: string } {
         return {
-            message: `Houve um erro desconhecido ao tentar realizar a operação. Contate o Administrador do sistema`
+            message: 'Houve um erro desconhecido ao tentar realizar a operação. Contate o Administrador do sistema'
         };
     },
     wrongPassword(): { message: string } {
-        return { message: `A senha digitada está incorreta` };
+        return { message: 'A senha digitada está incorreta' };
     }
 };
