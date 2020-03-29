@@ -8,7 +8,7 @@
     "dev": "NODE_ENV=dev nodemon src/server.ts --ignore tests",
     "prod": "NODE_ENV=prod node dist/server.js",
     "start": "NODE_ENV=prod node dist/server.js",
-    "test": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit",
+    "test": "jest",
     "test_dev": "NODE_ENV=test_dev jest --coverage --detectOpenHandles --forceExit"
   },
   "dependencies": {
@@ -18,7 +18,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.2"
+    "mongoose": "^5.9.2",
+    "paypal-rest-sdk": "^1.8.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.8.3",
@@ -30,6 +31,7 @@
     "@types/mongodb": "^3.3.16",
     "@types/mongoose": "^5.7.2",
     "@types/supertest": "^2.0.8",
+    "@types/paypal-rest-sdk": "^1.7.5",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "eslint": "^6.8.0",
@@ -44,7 +46,15 @@
     "typescript": "^3.7"
   },
   "jest": {
-    "testResultsProcessor": "jest-sonar-reporter"
+    "modulePaths": [
+      "<rootDir>"
+    ],
+    "testPathIgnorePatterns": ["/node_modules/"],
+    "globals": {
+      "ts-jest": {
+        "diagnostics": false
+      }
+    }
   },
   "jestSonar": {
     "reportPath": "reports",

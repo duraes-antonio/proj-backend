@@ -3,7 +3,7 @@ if (!process.env.NODE_ENV) {
 }
 
 module.exports = {
-  moduleFileExtensions: ['js', 'ts'],
+  moduleFileExtensions: ['json', 'js', 'ts'],
   testResultsProcessor: 'jest-sonar-reporter',
   transform: {'^.+\\.ts$': 'ts-jest'},
   testMatch: ['<rootDir>/tests/**/*.test.ts'],
