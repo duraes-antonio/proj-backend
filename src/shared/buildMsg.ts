@@ -1,30 +1,28 @@
 export const validationErrorMsg = {
     maxLen(fieldName: string, maxLenght: number): string {
-        return `O campo ${fieldName} deve possuir no máximo ${maxLenght} caracteres`;
+        return `O campo '${fieldName}' deve possuir no máximo ${maxLenght} caracteres`;
     },
     minLen(fieldName: string, minLenght: number): string {
-        return `O campo ${fieldName} deve possuir no mínimo ${minLenght} caracteres`;
+        return `O campo '${fieldName}' deve possuir no mínimo ${minLenght} caracteres`;
     },
     maxLenList(fieldName: string, maxLenght: number): string {
-        return `O campo ${fieldName} deve possuir no máximo ${maxLenght} item`;
+        return `O campo '${fieldName}' deve possuir no máximo ${maxLenght} item`;
     },
     minLenList(fieldName: string, minLenght: number): string {
-        return `O campo ${fieldName} deve possuir ao menos ${minLenght} item`;
+        return `O campo '${fieldName}' deve possuir ao menos ${minLenght} item`;
     },
     exactlyLen(fieldName: string, lenght: number): string {
-        return `O campo ${fieldName} deve possuir exatamente ${lenght} caracteres`;
+        return `O campo '${fieldName}' deve possuir exatamente ${lenght} caracteres`;
     },
-
     maxValue(fieldName: string, maxVal: number): string {
-        return `O campo ${fieldName} não aceita valor maior que ${maxVal}`;
+        return `O campo '${fieldName}' não aceita valor maior que ${maxVal}`;
     },
     minValue(fieldName: string, minVal: number): string {
-        return `O campo ${fieldName} não aceita valor menor que ${minVal}`;
+        return `O campo '${fieldName}' não aceita valor menor que ${minVal}`;
     },
     empty(fieldName: string): string {
-        return `O campo ${fieldName} deve ser preenchido`;
+        return `O campo '${fieldName}' deve ser preenchido`;
     },
-
     invalidFormat(fieldName: string): string {
         return `O campo ${fieldName} não está em um formato válido`;
     }

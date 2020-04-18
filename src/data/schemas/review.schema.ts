@@ -2,7 +2,7 @@
 import { Document, model, Model, Schema } from 'mongoose';
 import { ECollectionsName } from '../collectionsName.enum';
 import { reviewSizes } from '../../shared/fieldSize';
-import { Review } from '../../domain/interfaces/review';
+import { Review } from '../../domain/models/review';
 
 const reviewSchema = new Schema({
     comment: {

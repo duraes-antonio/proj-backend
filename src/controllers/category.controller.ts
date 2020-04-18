@@ -1,7 +1,7 @@
 'use strict';
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { Category, CategoryAdd } from '../domain/interfaces/category';
+import { Category, CategoryAdd } from '../domain/models/category';
 import { categorySizes } from '../shared/fieldSize';
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';

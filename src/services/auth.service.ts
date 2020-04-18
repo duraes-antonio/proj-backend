@@ -1,6 +1,6 @@
 'use strict';
 import { NextFunction, Request, Response } from 'express';
-import { tokenService } from './tokenService';
+import { tokenService } from './token.service';
 import { TokenData } from './interfaces/tokenData.interface';
 import { EUserRole } from '../domain/enum/role.enum';
 import { serviceDataMsg } from '../shared/buildMsg';

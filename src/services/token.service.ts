@@ -5,7 +5,7 @@ import { serviceDataMsg } from '../shared/buildMsg';
 import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
 import { TokenData } from './interfaces/tokenData.interface';
 import { UserDBModel } from '../data/schemas/user.schema';
-import { User } from '../domain/interfaces/user';
+import { User } from '../domain/models/user';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

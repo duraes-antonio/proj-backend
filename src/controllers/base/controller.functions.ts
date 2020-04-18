@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { responseFunctions as resFunc } from './response.functions';
 import { PipelineValidation } from '../../shared/validations';
-import { FilterBasic } from '../../domain/interfaces/filters/filterBasic.interface';
+import { FilterBasic } from '../../domain/models/filters/filterBasic.interface';
 
 function validIdHex(id: string): boolean {
     return /^[0-9a-fA-F]{24}$/.test(id);

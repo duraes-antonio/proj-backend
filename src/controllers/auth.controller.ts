@@ -4,13 +4,13 @@ import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
 import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
 import { cryptService as cryptS } from '../services/crypt.service';
-import { tokenService as tokenS } from '../services/tokenService';
+import { tokenService as tokenS } from '../services/token.service';
 import { TokenData } from '../services/interfaces/tokenData.interface';
 import { userRepository } from '../data/repository/user.repository';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { UserAdd } from '../domain/interfaces/user';
-import { TokenInvalid } from '../domain/interfaces/token-invalid';
+import { UserAdd } from '../domain/models/user';
+import { TokenInvalid } from '../domain/models/token-invalid';
 import { TokenInvalidSchema } from '../data/schemas/token.schema';
 
 function validateUser(user: UserAdd): PipelineValidation {

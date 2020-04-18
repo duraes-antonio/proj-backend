@@ -1,8 +1,8 @@
 'use strict';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { Address, AddressAdd } from '../../src/domain/interfaces/address';
-import { UserAdd } from '../../src/domain/interfaces/user';
+import { Address, AddressAdd } from '../../src/domain/models/address';
+import { UserAdd } from '../../src/domain/models/user';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

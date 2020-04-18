@@ -1,7 +1,7 @@
 'use strict';
 import { Router } from 'express';
 import { authController as authCtrl } from '../controllers/auth.controller';
-import { tokenService as tokenS } from '../services/tokenService';
+import { tokenService as tokenS } from '../services/token.service';
 
 const router = Router();
 

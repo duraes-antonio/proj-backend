@@ -1,41 +1,24 @@
 'use strict';
-import { PipelineValidation } from '../shared/validations';
-import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
-import { reviewSizes as sizes } from '../shared/fieldSize';
+import { serviceDataMsg } from '../shared/buildMsg';
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { tokenService } from '../services/tokenService';
+import { tokenService } from '../services/token.service';
 import { TokenData } from '../services/interfaces/tokenData.interface';
 import { EReviewSort, FilterReview } from '../domain/models/filters/filterReview.model';
 import { reviewRepository } from '../data/repository/review.repository';
 import { Messages } from '../shared/consts/messages';
-import { Review } from '../domain/interfaces/review';
+import { Review } from '../domain/models/review';
 import { ReviewSchema } from '../data/schemas/review.schema';
+import { reviewService } from '../services/review.service';
 
 export const entityName = 'Avaliação';
 
-function validate(obj: Review): PipelineValidation {
-    return new PipelineValidation(msg.empty)
-      .atLeastLen('Título da Avaliação', obj.title, sizes.titleMin, msg.minLen)
-      .atMaxLen('Título da Avaliação', obj.title, sizes.titleMax, msg.maxLen)
-
-      .atLeastLen('Comentário da Avaliação', obj.comment, sizes.commentMin, msg.minLen)
-      .atMaxLen('Comentário da Avaliação', obj.comment, sizes.commentMax, msg.maxLen)
-
-      .atLeastValue('Nota da Avaliação', obj.rating, sizes.ratingMin, msg.minValue)
-      .atMaxValue('Nota da Avaliação', obj.rating, sizes.ratingMax, msg.maxValue)
-
-      .hasValue('Id de Usuário', obj.userId)
-      .hasValue('Id do Produto', obj.productId)
-      .hasValue('Data da Avaliação', obj.date)
-      ;
-}
-
 async function delete_(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    /*TODO: Checar se o usuário é autor ou admin*/
+    const userData = tokenService.decodeFromReq(req);
     return ctrlFunc.delete(req, res, next, entityName,
-      (id) => repoFunc.delete(id, ReviewSchema)
+      (id) =>
+        repoFunc.delete(id, ReviewSchema, { 'userId': userData.id })
     );
 }
 
@@ -56,7 +39,8 @@ async function post(req: Request, res: Response, next: NextFunction): Promise<Re
     // @ts-ignore
     return await ctrlFunc.post<Review>(
       req, res, next,
-      () => repoFunc.create(data, ReviewSchema), validate
+      () => repoFunc.create(data, ReviewSchema),
+      reviewService.validate
     );
 }
 
@@ -74,17 +58,13 @@ async function get(req: Request, res: Response, next: NextFunction): Promise<Res
     );
 }
 
-/*TODO: Converter para PATCH*/
-async function put(req: Request, res: Response, next: NextFunction) {
-    /*TODO: Checar se o usuário é autor ou admin*/
-    const putObj = {
-        title: req.body.title,
-        rating: req.body.rating,
-        comment: 'new comment'
-    };
-    return ctrlFunc.put<Review>(
-      req, res, next, entityName, putObj, validate,
-      (id, obj) => repoFunc.update(id, obj, ReviewSchema)
+async function patch(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    const userData = tokenService.decodeFromReq(req);
+    return ctrlFunc.patch<Review>(
+      req, res, next, entityName, reviewService.validate,
+      (id, obj) =>
+        repoFunc.findAndUpdate(id, obj, ReviewSchema, { userId: userData.id }),
+      ['comment', 'rating', 'title']
     );
 }
 
@@ -92,5 +72,5 @@ export const reviewController = {
     delete: delete_,
     get: get,
     post: post,
-    put: put
+    patch: patch
 };

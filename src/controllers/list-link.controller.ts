@@ -1,7 +1,7 @@
 'use strict';
-import { FilterBasic } from '../domain/interfaces/filters/filterBasic.interface';
-import { Link, LinkAdd } from '../domain/interfaces/link';
-import { List } from '../domain/interfaces/lists/list';
+import { FilterBasic } from '../domain/models/filters/filterBasic.interface';
+import { Link, LinkAdd } from '../domain/models/link';
+import { List } from '../domain/models/lists/list';
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
@@ -26,9 +26,7 @@ async function post(req: Request, res: Response, next: NextFunction): Promise<Re
     );
 }
 
-async function get(
-  req: Request, res: Response, next: NextFunction
-): Promise<Response<List<Link>[]>> {
+async function get(req: Request, res: Response, next: NextFunction): Promise<Response<List<Link>[]>> {
     return ctrlFunc.get<List<Link>>(
       req, res, next,
       () => repoFunc.find(ListLinkSchema, req.body as FilterBasic)
@@ -45,7 +43,7 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<List<Link>>> {
     return ctrlFunc.patch<List<Link>>(
       req, res, next, entityName, listService.validateListAdd,
-      (id, obj) => repoFunc.update(id, obj, ListLinkSchema),
+      (id, obj) => repoFunc.findAndUpdate(id, obj, ListLinkSchema, {}),
       ['title', 'readRole', 'itemsId']
     );
 }

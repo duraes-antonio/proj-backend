@@ -1,5 +1,5 @@
 'use strict';
-import { FilterBasic } from '../../interfaces/filters/filterBasic.interface';
+import { FilterBasic } from './filterBasic.interface';
 
 export enum EReviewSort {
     OLDEST,

@@ -1,5 +1,5 @@
 'use strict';
-import { User } from '../../src/domain/interfaces/user';
+import { User } from '../../src/domain/models/user';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { EUserRole } from '../../src/domain/enum/role.enum';

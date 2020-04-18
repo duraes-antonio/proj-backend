@@ -1,5 +1,5 @@
-import { Order } from '../domain/interfaces/order';
-import { Product } from '../domain/interfaces/product';
+import { Order } from '../domain/models/order';
+import { Product } from '../domain/models/product';
 import paypal from 'paypal-rest-sdk';
 import { productRepository } from '../data/repository/product.repository';
 

@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { Product, ProductAdd } from '../domain/interfaces/product';
+import { Product, ProductAdd } from '../domain/models/product';
 import { productSizes as prodSizes } from '../shared/fieldSize';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';

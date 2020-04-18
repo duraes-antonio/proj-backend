@@ -1,7 +1,7 @@
 'use strict';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { Category, CategoryAdd } from '../../src/domain/interfaces/category';
+import { Category, CategoryAdd } from '../../src/domain/models/category';
 import { FilterCategory } from '../../src/domain/models/filters/filterCategory.model';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

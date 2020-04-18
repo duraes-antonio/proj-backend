@@ -1,8 +1,8 @@
 'use strict';
-import { UserAdd } from '../../src/domain/interfaces/user';
+import { UserAdd } from '../../src/domain/models/user';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { tokenService } from '../../src/services/tokenService';
+import { tokenService } from '../../src/services/token.service';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 
 const appInstance = new App();

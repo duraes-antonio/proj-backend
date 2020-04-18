@@ -1,41 +1,32 @@
 'use strict';
 import { Document, Model } from 'mongoose';
-import { FilterBasic } from '../domain/interfaces/filters/filterBasic.interface';
+import { FilterBasic } from '../domain/models/filters/filterBasic.interface';
 import { ObjectId } from 'bson';
 
 async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
-    const saved: Document = await new model({
+    const saved: any = await new model({
         ...obj,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date()
     }).save();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
     return { ...saved._doc, id: saved._id };
 }
 
-async function delete_<T>(id: string, model: Model<Document & T>, query?: object): Promise<T | null> {
-    const q = query ? { ...query, _id: id } : { _id: id };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
+async function delete_<T>(id: string, model: Model<Document & T>, conditions?: object): Promise<T | null> {
+    const q: object = conditions ? { ...conditions, _id: id } : { _id: id };
     return await model.findOneAndDelete(q);
 }
 
 async function find<T>(
   model: Model<Document & T>, f?: FilterBasic, sort?: object, query?: object): Promise<T[]> {
-    let res: (Document & T)[];
+    let res: any[];
 
     if (f) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         res = await model.find(query ?? {})
           .lean()
           .sort(sort ? sort : {})
           .skip((f.currentPage - 1) * f.perPage)
           .limit(f.perPage);
     } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         res = await model.find(query ?? {})
           .lean()
           .sort(sort ? sort : {});
@@ -47,10 +38,8 @@ async function find<T>(
 }
 
 async function findById<T>(id: string, model: Model<Document & T>): Promise<T | null> {
-    const obj = await model.findById(id);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    return obj ? { ...obj._doc, id: obj._id } : obj;
+    const obj: any = await model.findById(id).lean();
+    return obj ? { ...obj._doc, id: obj._id } : null;
 }
 
 async function update<T>(id: string, obj: T, model: Model<Document & T>): Promise<T | null> {
@@ -72,9 +61,7 @@ async function findAndUpdate<T>(
       { $set: { ...obj } },
       { new: true }
     );
-    return updated && Object.keys(updated).length
-      ? { ...(updated._doc), id: updated._id }
-      : null;
+    return updated?._doc ? { ...updated._doc, id: updated._doc._id } : null;
 }
 
 export const repositoryFunctions = {

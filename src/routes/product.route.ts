@@ -1,6 +1,6 @@
 'use strict';
 import { Router } from 'express';
-import { tokenService as tokenS } from '../services/tokenService';
+import { tokenService as tokenS } from '../services/token.service';
 import { productController as prodCtrl } from '../controllers/product.controller';
 
 
