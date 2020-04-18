@@ -1,5 +1,5 @@
 'use strict';
-import { Registable } from './auditable.interface';
+import { Registable } from './auditable';
 
 export interface TokenInvalid extends Registable {
     readonly token: string;

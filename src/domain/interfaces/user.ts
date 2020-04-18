@@ -1,5 +1,5 @@
 'use strict';
-import { Registable } from './auditable.interface';
+import { Registable } from './auditable';
 import { EUserRole } from '../enum/role.enum';
 
 export interface User extends Registable, UserAdd {

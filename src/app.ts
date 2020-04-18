@@ -9,6 +9,7 @@ import { productRoutes } from './routes/product.route';
 import { reviewRoutes } from './routes/review.route';
 import { paymentRoutes } from './routes/payment.route';
 import { addressRoutes } from './routes/address.route';
+import { listLinksRoutes } from './routes/list-links.route';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
@@ -52,6 +53,7 @@ export class App {
         this.express.use('/address', addressRoutes);
         this.express.use('/auth', authRoutes);
         this.express.use('/category', categoryRoutes);
+        this.express.use('/list-link', listLinksRoutes);
         this.express.use('/payment', paymentRoutes);
         this.express.use('/product', productRoutes);
         this.express.use('/review', reviewRoutes);

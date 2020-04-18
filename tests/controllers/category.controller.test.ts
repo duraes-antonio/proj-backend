@@ -1,7 +1,7 @@
 'use strict';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { Category, CategoryAdd } from '../../src/domain/interfaces/category.interface';
+import { Category, CategoryAdd } from '../../src/domain/interfaces/category';
 import { FilterCategory } from '../../src/domain/models/filters/filterCategory.model';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -138,7 +138,7 @@ describe('get', () => {
             c => c.title
               .toLowerCase()
               .includes(filter.text)
-            )).toBeTruthy();
+          )).toBeTruthy();
       });
 
     it(
@@ -202,8 +202,7 @@ describe('delete', () => {
       });
 });
 
-describe('put', () => {
-
+describe('patch', () => {
     let categSaved: Category;
 
     beforeAll(async () => {
@@ -213,28 +212,49 @@ describe('put', () => {
         categSaved = res.body;
     });
 
-    it(
-      'invalid',
-      async () => {
+    it.each([
+        { 'invalidField': 4, 'city': 'validField' },
+        { 'notExist': 'string' },
+        { 'id': 'notAllowed' },
+        { 'createdAt': 'notAllowed' },
+        { 'createdAt': 'notAllowed' }
+    ])
+    ('invalid_field',
+      async (data) => {
           const res = await request(app)
-            .put(`/category/${categSaved.id.replace(/[0-9]/g, 'z')}`)
-            .send({ ...categSaved });
+            .patch(`${route}/${categSaved.id}`)
+            .send(data);
           expect(res.status).toBe(400);
       });
 
-    it(
-      'valid',
-      async () => {
-          const newTitle = 'Novo título';
+    it.each([
+        { 'title': null },
+        { 'title': '' },
+        { 'title': new Array(20).fill('0123456789').join() }
+    ])
+    ('invalid_value',
+      async (data) => {
           const res = await request(app)
-            .put(`/category/${categSaved.id}`)
-            .send({ ...categSaved, title: newTitle });
+            .patch(`${route}/${categSaved.id}`)
+            .send(data);
+          expect(res.status).toBe(400);
+      });
+
+    it.each([
+        { 'title': 'Title Right' }
+    ])
+    (
+      'valid',
+      async (data) => {
+          const res = await request(app)
+            .patch(`${route}/${categSaved.id}`)
+            .send(data);
           expect(res.status).toBe(200);
 
           const resGet = await request(app)
-            .get(`/category/${categSaved.id}`)
+            .get(`${route}/${categSaved.id}`)
             .send();
           expect(resGet.status).toBe(200);
-          expect(resGet.body.title).toBe(newTitle);
+          expect(resGet.body).toMatchObject(data);
       });
 });

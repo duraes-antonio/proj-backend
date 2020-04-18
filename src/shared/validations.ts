@@ -1,11 +1,9 @@
 'use strict';
-
+import { validationErrorMsg } from './buildMsg';
 /* tslint:disable-next-line:max-line-length
  * Expressão baseada no regex usado na API do Angular Form Validators:
  * https://github.com/angular/angular/blob/e0ad9ecda0b8a541b405d2ab35335b90ceb21fd1/packages/forms/src/validators.ts#L254
 */
-import { validationErrorMsg } from './buildMsg';
-
 const regexEmail = /^(?=.{1,254}$)(?=.{1,64}@)[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 const regexPhone = /^\([1-9]{2}\)\s?(?:[2-8]|9[1-9])[0-9]{3}-?[0-9]{4}$/;
 
@@ -21,6 +19,9 @@ const validation = {
     },
     exactlytLen(value: string, lenght: number): boolean {
         return this.hasValue(value) && value.length === lenght;
+    },
+    atMaxLenList(value: ArrayLike<any>, maxLenght: number): boolean {
+        return this.hasValue(value) && value.length <= maxLenght;
     },
     atMaxValue(value: number, maxVal: number): boolean {
         return value !== undefined && value !== null && value <= maxVal;
@@ -45,8 +46,10 @@ const validation = {
 export class PipelineValidation {
     readonly errors: string[] = [];
     readonly fnEmpty: (field: string) => string;
+    private readonly _ignoreUndefined: boolean;
 
-    constructor(fnEmptyOrNull?: (field: string) => string) {
+    constructor(fnEmptyOrNull?: (field: string) => string, ignoreUndefined = false) {
+        this._ignoreUndefined = ignoreUndefined;
         this.fnEmpty = fnEmptyOrNull ? fnEmptyOrNull : validationErrorMsg.empty;
     }
 
@@ -54,7 +57,7 @@ export class PipelineValidation {
         return !this.errors.length;
     }
 
-    hasValue(field: string, value: any) {
+    hasValue(field: string, value: any): PipelineValidation {
         if (!validation.hasValue(value)) {
             this.errors.push(this.fnEmpty(field));
         }
@@ -64,7 +67,7 @@ export class PipelineValidation {
     atMaxLen(
       field: string, value: string, maxLenght: number,
       fnMsg: (field: string, max: number) => string
-    ) {
+    ): PipelineValidation {
 
         if (!this.isEmpty(value, field) && !validation.atMaxLen(value, maxLenght)) {
             this.errors.push(fnMsg(field, maxLenght));
@@ -75,7 +78,7 @@ export class PipelineValidation {
     atLeastLen(
       field: string, value: string, minLenght: number,
       fnMsg: (field: string, max: number) => string
-    ) {
+    ): PipelineValidation {
         if (!this.isEmpty(value, field) && !validation.atLeastLen(value, minLenght)) {
             this.errors.push(fnMsg(field, minLenght));
         }
@@ -85,7 +88,7 @@ export class PipelineValidation {
     atLeastLenList(
       field: string, value: ArrayLike<any>, minLenght: number,
       fnMsg: (field: string, max: number) => string
-    ) {
+    ): PipelineValidation {
         if (!this.isEmpty(value, field)
           && !validation.atLeastLenList(value, minLenght)
         ) {
@@ -97,9 +100,21 @@ export class PipelineValidation {
     exactlytLen(
       field: string, value: string, lenght: number,
       fnMsg: (field: string, max: number) => string
-    ) {
+    ): PipelineValidation {
         if (!this.isEmpty(value, field) && !validation.exactlytLen(value, lenght)) {
             this.errors.push(fnMsg(field, lenght));
+        }
+        return this;
+    }
+
+    atMaxLenList(
+      field: string, value: ArrayLike<any>, minLenght: number,
+      fnMsg: (field: string, max: number) => string
+    ): PipelineValidation {
+        if (!this.isEmpty(value, field)
+          && !validation.atMaxLenList(value, minLenght)
+        ) {
+            this.errors.push(fnMsg(field, minLenght));
         }
         return this;
     }
@@ -107,7 +122,7 @@ export class PipelineValidation {
     atMaxValue(
       field: string, value: number, maxVal: number,
       fnMsg: (field: string, max: number) => string
-    ) {
+    ): PipelineValidation {
         if (!this.isEmpty(value, field) && !validation.atMaxValue(value, maxVal)) {
             this.errors.push(fnMsg(field, maxVal));
         }
@@ -117,37 +132,28 @@ export class PipelineValidation {
     atLeastValue(
       field: string, value: number, minVal: number,
       fnMsg: (field: string, max: number) => string
-    ) {
+    ): PipelineValidation {
         if (!this.isEmpty(value, field) && !validation.atLeastValue(value, minVal)) {
             this.errors.push(fnMsg(field, minVal));
         }
         return this;
     }
 
-    validCEP(
-      field: string, cep: string,
-      fnMsg: (field: string) => string
-    ) {
+    validCEP(field: string, cep: string, fnMsg: (field: string) => string): PipelineValidation {
         if (!this.isEmpty(cep, field) && !validation.validCEP(cep)) {
             this.errors.push(fnMsg(field));
         }
         return this;
     }
 
-    validEmail(
-      field: string, email: string,
-      fnMsg: (field: string) => string
-    ) {
+    validEmail(field: string, email: string, fnMsg: (field: string) => string): PipelineValidation {
         if (!this.isEmpty(email, field) && !validation.validEmail(email)) {
             this.errors.push(fnMsg(field));
         }
         return this;
     }
 
-    validPhone(
-      field: string, number: string,
-      fnMsg: (field: string) => string
-    ) {
+    validPhone(field: string, number: string, fnMsg: (field: string) => string): PipelineValidation {
         if (!this.isEmpty(number, field) && !validation.validPhone(number)) {
             this.errors.push(fnMsg(field));
         }
@@ -156,7 +162,9 @@ export class PipelineValidation {
 
     private isEmpty(value: any, field: string): boolean {
         if (!validation.hasValue(value)) {
-            this.errors.push(this.fnEmpty(field));
+            if (!this._ignoreUndefined || value === null) {
+                this.errors.push(this.fnEmpty(field));
+            }
             return true;
         }
         return false;

@@ -11,18 +11,43 @@ export const categorySizes = {
     titleMax: 128
 };
 
+export const listSizes = {
+    titleMin: 2,
+    titleMax: 64,
+    lengthMin: 0,
+    lengthMax: 10
+};
+
+export const linkSizes = {
+    titleMax: 64,
+    titleMin: 2,
+    urlMax: 2048
+};
+
 export const productSizes = {
-    titleMax: 128,
+    amountAvailableMax: Number.MAX_SAFE_INTEGER,
+    amountAvailableMin: 0,
+    avgReviewMax: 5,
+    avgReviewMin: 0,
+    costMin: 0,
+    costMax: 9999999,
+    descMin: 10,
     descMax: 4000,
-    urlMainImageMax: 512,
+    heightMin: 1,
+    heightMax: 9999,
+    lengthMin: 1,
+    lengthMax: 9999,
+    percentOffMax: 100,
+    percentOffMin: 0,
     priceMin: 0,
     priceMax: Number.MAX_SAFE_INTEGER,
-    percentOffMin: 0,
-    percentOffMax: 100,
-    avgReviewMin: 0,
-    avgReviewMax: 5,
-    amountAvailableMin: 0,
-    amountAvailableMax: Number.MAX_SAFE_INTEGER
+    titleMin: 20,
+    titleMax: 128,
+    weightMin: 0.01,
+    weightMax: 9999,
+    widthMin: 1,
+    widthMax: 9999,
+    urlMainImageMax: 512
 };
 
 export const reviewSizes = {

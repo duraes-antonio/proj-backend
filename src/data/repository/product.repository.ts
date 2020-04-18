@@ -1,5 +1,5 @@
 'use strict';
-import { Product } from '../../domain/interfaces/product.interface';
+import { Product } from '../../domain/interfaces/product';
 import { FilterProduct } from '../../domain/models/filters/filterProduct.model';
 import { EProductSort } from '../../domain/enum/productSort.enum';
 import { ObjectId } from 'bson';

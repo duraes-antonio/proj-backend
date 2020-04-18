@@ -1,7 +1,7 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
 import { categorySizes } from '../../shared/fieldSize';
-import { Category } from '../../domain/interfaces/category.interface';
+import { Category } from '../../domain/interfaces/category';
 import { ECollectionsName } from '../collectionsName.enum';
 
 const categorySchema = new Schema({

@@ -9,7 +9,7 @@ import { responseFunctions as resFunc, responseFunctions as respFunc } from './b
 import { userRepository } from '../data/repository/user.repository';
 import { cryptService } from '../services/crypt.service';
 import { tokenService } from '../services/tokenService';
-import { User, UserAdd } from '../domain/interfaces/user.interface';
+import { User, UserAdd } from '../domain/interfaces/user';
 import { UserSchema } from '../data/schemas/user.schema';
 
 const entityName = 'Usuário';

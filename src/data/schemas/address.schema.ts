@@ -1,7 +1,7 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
 import { addressSizes } from '../../shared/fieldSize';
-import { Address } from '../../domain/interfaces/address.interface';
+import { Address } from '../../domain/interfaces/address';
 import { ECollectionsName } from '../collectionsName.enum';
 
 const addressSchema = new Schema({

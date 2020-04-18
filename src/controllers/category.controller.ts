@@ -1,7 +1,7 @@
 'use strict';
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { Category, CategoryAdd } from '../domain/interfaces/category.interface';
+import { Category, CategoryAdd } from '../domain/interfaces/category';
 import { categorySizes } from '../shared/fieldSize';
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
@@ -51,12 +51,11 @@ async function getById(
     );
 }
 
-/*TODO: Converter para patch*/
-async function put(req: Request, res: Response, next: NextFunction) {
-    const putObj = { title: req.body.title };
-    return ctrlFunc.put<Category>(
-      req, res, next, entityName, putObj, validateCategory,
-      (id, obj) => repoFunc.update(id, obj, CategorySchema)
+async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<Category>> {
+    return ctrlFunc.patch<Category>(
+      req, res, next, entityName, validateCategory,
+      (id, obj) => repoFunc.update(id, obj, CategorySchema),
+      ['title']
     );
 }
 
@@ -65,5 +64,5 @@ export const categoryController = {
     get: get,
     getById: getById,
     post: post,
-    put: put
+    patch: patch
 };

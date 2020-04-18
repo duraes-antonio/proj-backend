@@ -2,7 +2,7 @@
 import { Document, model, Model, Schema } from 'mongoose';
 import { productSizes } from '../../shared/fieldSize';
 import { ECollectionsName } from '../collectionsName.enum';
-import { Product } from '../../domain/interfaces/product.interface';
+import { Product } from '../../domain/interfaces/product';
 
 const productSchema = new Schema({
     amountAvailable: {

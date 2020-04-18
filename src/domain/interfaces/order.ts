@@ -1,7 +1,7 @@
 'use strict';
 
-import { ItemOrder } from './itemOrder.interface';
-import { Address } from './address.interface';
+import { ItemOrder } from './itemOrder';
+import { Address } from './address';
 import { EStateOrder } from '../enum/stateOrder';
 
 export interface Order {

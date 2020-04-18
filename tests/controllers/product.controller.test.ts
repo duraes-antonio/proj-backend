@@ -1,10 +1,10 @@
 'use strict';
 import { App } from '../../src/app';
-import { Product, ProductAdd } from '../../src/domain/interfaces/product.interface';
-import { UserAdd } from '../../src/domain/interfaces/user.interface';
+import { Product, ProductAdd } from '../../src/domain/interfaces/product';
+import { UserAdd } from '../../src/domain/interfaces/user';
 import { clearDatabase } from '../../utils/database';
 import { FilterProduct } from '../../src/domain/models/filters/filterProduct.model';
-import { Category } from '../../src/domain/interfaces/category.interface';
+import { Category } from '../../src/domain/interfaces/category';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -26,7 +26,12 @@ const productValid: ProductAdd = {
     amountAvailable: 100,
     percentOff: 10,
     freeDelivery: true,
-    categoriesId: []
+    categoriesId: [],
+    cost: 10,
+    height: 1,
+    length: 1,
+    weight: 1,
+    width: 1
 };
 
 let token: string;
@@ -66,7 +71,12 @@ const productRandom = function productRandom(
         percentOff: randomFunc.randomFloat(0, 100),
         categoriesId: categories ? categories.map(c => c.id) : [],
         freeDelivery: randomFunc.randomBoolean(),
-        amountAvailable: randomFunc.randomInt(0, 10000)
+        amountAvailable: randomFunc.randomInt(0, 10000),
+        cost: 10,
+        height: 1,
+        length: 1,
+        weight: 1,
+        width: 1
     };
 };
 
@@ -117,7 +127,12 @@ describe('get_filter', () => {
                 freeDelivery: true,
                 price: 150.99,
                 percentOff: 10,
-                amountAvailable: 10
+                amountAvailable: 10,
+                cost: 10,
+                height: 1,
+                length: 1,
+                weight: 1,
+                width: 1
             },
             {
                 title: 'Yugioh Booster Duelist Pack',
@@ -129,7 +144,12 @@ describe('get_filter', () => {
                 freeDelivery: false,
                 price: 73.45,
                 percentOff: 25,
-                amountAvailable: 17
+                amountAvailable: 17,
+                cost: 10,
+                height: 1,
+                length: 1,
+                weight: 1,
+                width: 1
             },
             productRandom(
               'Legendary Decks 1 E 2 - Decks Legendários Em Pt Em 12 X',

@@ -1,4 +1,4 @@
-import { Registable } from './auditable.interface';
+import { Registable } from './auditable';
 
 export interface Address extends Registable {
     readonly street: string;

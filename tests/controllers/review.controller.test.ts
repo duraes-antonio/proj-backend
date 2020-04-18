@@ -1,9 +1,9 @@
 'use strict';
 import { App } from '../../src/app';
-import { Review } from '../../src/domain/interfaces/review.interface';
+import { Review } from '../../src/domain/interfaces/review';
 import { clearDatabase } from '../../utils/database';
 import { EReviewSort, FilterReview } from '../../src/domain/models/filters/filterReview.model';
-import { UserAdd } from '../../src/domain/interfaces/user.interface';
+import { UserAdd } from '../../src/domain/interfaces/user';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

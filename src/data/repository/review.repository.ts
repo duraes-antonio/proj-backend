@@ -1,7 +1,7 @@
 'use strict';
 
 import { ReviewSchema } from '../schemas/review.schema';
-import { Review } from '../../domain/interfaces/review.interface';
+import { Review } from '../../domain/interfaces/review';
 
 async function has(userId: string, productId: string): Promise<boolean> {
     return await ReviewSchema.exists({ productId, userId } as Review);

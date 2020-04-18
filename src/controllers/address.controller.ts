@@ -4,7 +4,7 @@ import { PipelineValidation } from '../shared/validations';
 import { addressSizes as addrSize } from '../shared/fieldSize';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
 import { tokenService as tokenS } from '../services/tokenService';
-import { Address, AddressAdd } from '../domain/interfaces/address.interface';
+import { Address, AddressAdd } from '../domain/interfaces/address';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { AddressSchema } from '../data/schemas/address.schema';
@@ -13,8 +13,8 @@ import { TokenData } from '../services/interfaces/tokenData.interface';
 
 const entityName = 'Endereço';
 
-function validateAddress(addr: Address | AddressAdd): PipelineValidation {
-    return new PipelineValidation(msg.empty)
+function validateAddress(addr: Address | AddressAdd, allowUndefined = false): PipelineValidation {
+    return new PipelineValidation(msg.empty, allowUndefined)
       .atMaxLen('Cidade', addr.city, addrSize.cityMax, msg.maxLen)
       .atMaxLen('Bairro', addr.neighborhood, addrSize.neighborhoodMax, msg.maxLen)
       .atMaxValue('Número', addr.number, addrSize.numberMax, msg.maxValue)
@@ -23,7 +23,6 @@ function validateAddress(addr: Address | AddressAdd): PipelineValidation {
       .validCEP('CEP', addr.zipCode, msg.invalidFormat);
 }
 
-/*TODO: Check Owner*/
 async function delete_(req: Request, res: Response, next: NextFunction): Promise<Response> {
     const data = tokenS.decodeFromReq(req);
     return await ctrlFunc.delete<Address>(req, res, next, entityName,
@@ -51,6 +50,18 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
     );
 }
 
+async function patch(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    const data: TokenData = tokenS.decodeFromReq(req);
+    return await ctrlFunc.patch<AddressAdd>(
+      req, res, next, entityName,
+      (obj) => validateAddress(obj, true),
+      (id: string, obj: AddressAdd) => repoFunc.findAndUpdate(
+        id, { ...obj, userId: data.id }, AddressSchema, { userId: data.id }
+      ),
+      ['number', 'zipcode', 'street', 'neighborhood', 'city', 'state']
+    );
+}
+
 async function post(req: Request, res: Response, next: NextFunction): Promise<Response> {
     const data: TokenData = tokenS.decodeFromReq(req);
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -62,11 +73,10 @@ async function post(req: Request, res: Response, next: NextFunction): Promise<Re
     );
 }
 
-/*TODO: Criar e testar Patchs*/
-
 export const addressController = {
     delete: delete_,
     get: get,
     getById: getById,
+    patch: patch,
     post: post
 };

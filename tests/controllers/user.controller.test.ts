@@ -1,5 +1,5 @@
 'use strict';
-import { UserAdd } from '../../src/domain/interfaces/user.interface';
+import { UserAdd } from '../../src/domain/interfaces/user';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { tokenService } from '../../src/services/tokenService';
@@ -107,7 +107,7 @@ describe('Get By Id', () => {
       'Usuário não existente',
       async () => {
           const resGet = await request(app)
-            .get(`/user/${'12sdsadsa1d5sa1ds5d4ads'}`)
+            .get('/user/12sdsadsa1d5sa1ds5d4ads')
             .send();
 
           expect(resGet.status).toBe(400);

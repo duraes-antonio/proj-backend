@@ -1,5 +1,5 @@
 'use strict';
-import { Category } from '../../domain/interfaces/category.interface';
+import { Category } from '../../domain/interfaces/category';
 import { FilterCategory } from '../../domain/models/filters/filterCategory.model';
 import { CategorySchema } from '../schemas/category.schema';
 

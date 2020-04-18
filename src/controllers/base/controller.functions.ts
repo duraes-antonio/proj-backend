@@ -61,6 +61,44 @@ async function getById<T>(
     }
 }
 
+async function patch<T>(
+  req: Request, res: Response, next: NextFunction,
+  entity: string, fnValidate: (obj: T) => PipelineValidation,
+  bdUpdate: (id: string, payload: T) => Promise<T | null>, allowFields: string[]
+): Promise<Response> {
+
+    try {
+        if (!validIdHex(req.params.id)) {
+            return resFunc.invalidId(res, req.params.id);
+        }
+
+        const patchObj = req.body;
+        const pipeline = fnValidate(patchObj);
+
+        if (!pipeline.valid) {
+            return resFunc.badRequest(res, pipeline.errors);
+        }
+
+        const invalidNameFields: string[] = Object.keys(patchObj).filter(key =>
+          !allowFields.some(fieldName => fieldName.toLowerCase() === key.toLowerCase())
+        );
+
+        if (invalidNameFields.length) {
+            return resFunc.invalidFieldsPatch(res, invalidNameFields);
+        }
+
+        const objUpdated = await bdUpdate(req.params.id, patchObj);
+
+        if (!objUpdated) {
+            return resFunc.notFound(res, entity, 'id', req.params.id);
+        }
+
+        return resFunc.success(res, objUpdated);
+    } catch (err) {
+        return resFunc.unknown(res, err);
+    }
+}
+
 async function post<T>(
   req: Request, res: Response, next: NextFunction,
   bdCreate: (payload: T) => Promise<T>,
@@ -122,6 +160,7 @@ export const controllerFunctions = {
     delete: delete_,
     get: get,
     getById: getById,
+    patch: patch,
     post: post,
     put: put
 };

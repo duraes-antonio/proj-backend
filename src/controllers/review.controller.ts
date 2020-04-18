@@ -10,7 +10,7 @@ import { TokenData } from '../services/interfaces/tokenData.interface';
 import { EReviewSort, FilterReview } from '../domain/models/filters/filterReview.model';
 import { reviewRepository } from '../data/repository/review.repository';
 import { Messages } from '../shared/consts/messages';
-import { Review } from '../domain/interfaces/review.interface';
+import { Review } from '../domain/interfaces/review';
 import { ReviewSchema } from '../data/schemas/review.schema';
 
 export const entityName = 'Avaliação';

@@ -1,6 +1,7 @@
 'use strict';
 import { Document, Model } from 'mongoose';
 import { FilterBasic } from '../domain/interfaces/filters/filterBasic.interface';
+import { ObjectId } from 'bson';
 
 async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
     const saved: Document = await new model({
@@ -63,10 +64,24 @@ async function update<T>(id: string, obj: T, model: Model<Document & T>): Promis
       : null;
 }
 
+async function findAndUpdate<T>(
+  id: string, obj: T, model: Model<Document & T>, conditions: any
+): Promise<T | null> {
+    const updated: any = await model.findOneAndUpdate(
+      { _id: new ObjectId(id), ...conditions },
+      { $set: { ...obj } },
+      { new: true }
+    );
+    return updated && Object.keys(updated).length
+      ? { ...(updated._doc), id: updated._id }
+      : null;
+}
+
 export const repositoryFunctions = {
     create: create,
     delete: delete_,
     find: find,
     findById: findById,
+    findAndUpdate: findAndUpdate,
     update: update
 };

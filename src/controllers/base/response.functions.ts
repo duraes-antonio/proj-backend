@@ -13,14 +13,18 @@ function created<T>(res: Response, data: T): Response<T> {
     return res.status(201).send(data);
 }
 
-function forbidden(res: Response): Response<Message> {
-    return res.status(403).send(msgS.deniedAccessItem());
-}
-
 function duplicated(
   res: Response, entity: string, propName: string, propVal: string
 ): Response<Message> {
     return res.status(409).send(msgS.duplicate(entity, propName, propVal));
+}
+
+function forbidden(res: Response): Response<Message> {
+    return res.status(403).send(msgS.deniedAccessItem());
+}
+
+function invalidFieldsPatch(res: Response, fields: string[]): Response<string[]> {
+    return res.status(400).send(msgS.fieldsInvalid(fields));
 }
 
 function invalidId(res: Response, id: string): Response<Message> {
@@ -47,6 +51,7 @@ export const responseFunctions = {
     created: created,
     duplicated: duplicated,
     forbidden: forbidden,
+    invalidFieldsPatch: invalidFieldsPatch,
     invalidId: invalidId,
     notFound: notFound,
     success: success,

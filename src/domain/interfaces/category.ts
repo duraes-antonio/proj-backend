@@ -1,6 +1,6 @@
 'use strict';
 
-import { Registable } from './auditable.interface';
+import { Registable } from './auditable';
 
 export interface Category extends Registable {
     readonly title: string;

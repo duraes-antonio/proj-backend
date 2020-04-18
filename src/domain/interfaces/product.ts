@@ -1,9 +1,10 @@
 'use strict';
-import { Registable } from './auditable.interface';
+import { Registable } from './auditable';
 
 export interface Product extends ProductAdd, Registable {
     readonly avgReview: number;
     readonly priceWithDiscount: number;
+    readonly visible: boolean;
 }
 
 export interface ProductAdd {
@@ -15,4 +16,9 @@ export interface ProductAdd {
     readonly price: number;
     readonly title: string;
     readonly urlMainImage?: string;
+    readonly cost: number;
+    readonly height: number;
+    readonly width: number;
+    readonly length: number;
+    readonly weight: number;
 }

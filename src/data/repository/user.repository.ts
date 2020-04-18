@@ -1,7 +1,7 @@
 'use strict';
 
 import { UserSchema } from '../schemas/user.schema';
-import { User } from '../../domain/interfaces/user.interface';
+import { User } from '../../domain/interfaces/user';
 
 async function findByEmail(email: string): Promise<User | null> {
     return await UserSchema.findOne({ email: email });

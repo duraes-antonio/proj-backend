@@ -5,6 +5,9 @@ export const validationErrorMsg = {
     minLen(fieldName: string, minLenght: number): string {
         return `O campo ${fieldName} deve possuir no mínimo ${minLenght} caracteres`;
     },
+    maxLenList(fieldName: string, maxLenght: number): string {
+        return `O campo ${fieldName} deve possuir no máximo ${maxLenght} item`;
+    },
     minLenList(fieldName: string, minLenght: number): string {
         return `O campo ${fieldName} deve possuir ao menos ${minLenght} item`;
     },
@@ -47,6 +50,9 @@ export const serviceDataMsg = {
             message:
               `O item ${entity}, de ${propName} '${propValue}' já existe`
         };
+    },
+    fieldsInvalid(fields: string[]): { message: string } {
+        return { message: `Os seguintes campos não são permitidos: ${fields.map(f => `"${f}"`).join(', ')}.` };
     },
     invalidId(id: string): { message: string } {
         return { message: `O ID '${id}' não é válido para um documento` };

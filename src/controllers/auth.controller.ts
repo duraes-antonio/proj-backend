@@ -9,8 +9,8 @@ import { TokenData } from '../services/interfaces/tokenData.interface';
 import { userRepository } from '../data/repository/user.repository';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { UserAdd } from '../domain/interfaces/user.interface';
-import { TokenInvalid } from '../domain/interfaces/tokenInvalid.interface';
+import { UserAdd } from '../domain/interfaces/user';
+import { TokenInvalid } from '../domain/interfaces/token-invalid';
 import { TokenInvalidSchema } from '../data/schemas/token.schema';
 
 function validateUser(user: UserAdd): PipelineValidation {
@@ -19,7 +19,8 @@ function validateUser(user: UserAdd): PipelineValidation {
       .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
 }
 
-async function authenticate(req: Request, res: Response) {
+async function authenticate(req: Request, res: Response):
+  Promise<Response | Response<{ token: string; user: TokenData }>> {
     const pipe = validateUser(req.body);
 
     if (!pipe.valid) {
@@ -44,6 +45,7 @@ async function authenticate(req: Request, res: Response) {
               user: {
                   avatarUrl: user.avatarUrl,
                   email: user.email,
+                  id: user.id,
                   name: user.name,
                   roles: user.roles
               }
@@ -53,9 +55,12 @@ async function authenticate(req: Request, res: Response) {
     }
 }
 
-async function refreshToken(req: Request, res: Response, next: NextFunction) {
+async function refreshToken(req: Request, res: Response, next: NextFunction):
+  Promise<{ token: string; user: TokenData }> {
     const uInfo: TokenData = await tokenS.decodeFromReq(req);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
     return ctrlFunc.post(
       req, res, next,
       async () => {
@@ -63,15 +68,19 @@ async function refreshToken(req: Request, res: Response, next: NextFunction) {
           return {
               token: token,
               user: {
+                  avatarUrl: uInfo.avatarUrl,
                   email: uInfo.email,
-                  name: uInfo.name
+                  id: uInfo.email,
+                  name: uInfo.name,
+                  roles: uInfo.roles
               }
           };
       }
     );
 }
 
-async function invalidate(req: Request, res: Response, next: NextFunction) {
+async function invalidate(req: Request, res: Response, next: NextFunction):
+  Promise<Response> {
     const token = tokenS.extract(req);
 
     if (!token) {
@@ -85,6 +94,8 @@ async function invalidate(req: Request, res: Response, next: NextFunction) {
         userId: uInfo.id
     };
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
     return ctrlFunc.post<TokenInvalid>(
       req, res, next, () => repoFunc.create(tokenInv, TokenInvalidSchema)
     );

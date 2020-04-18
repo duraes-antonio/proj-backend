@@ -1,8 +1,8 @@
 'use strict';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { Address, AddressAdd } from '../../src/domain/interfaces/address.interface';
-import { UserAdd } from '../../src/domain/interfaces/user.interface';
+import { Address, AddressAdd } from '../../src/domain/interfaces/address';
+import { UserAdd } from '../../src/domain/interfaces/user';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -89,6 +89,65 @@ describe('post', () => {
           expect(res.status).toBe(201);
           const body: Address = res.body;
           expect(body).toMatchObject(addrRight);
+      });
+});
+
+describe('patch', () => {
+    let addressSaved: Address;
+
+    beforeAll(async () => {
+        clearDatabase(await appInstance.databaseInstance);
+        const res = await request(app)
+          .post(route)
+          .set('x-access-token', token1)
+          .send(addrRight);
+        expect(res.status).toBe(201);
+        addressSaved = res.body;
+    });
+
+    it.each([
+        { 'invalidField': 4, 'city': 'validField' },
+        { 'notExist': 'string' },
+        { 'id': 'notAllowed' },
+        { 'userId': 'notAllowed' }
+    ])
+    ('invalid_field',
+      async (data) => {
+          const res = await request(app)
+            .patch(`${route}/${addressSaved.id}`)
+            .set('x-access-token', token1)
+            .send(data);
+          expect(res.status).toBe(400);
+      });
+
+    it.each([
+        { number: 42 },
+        { zipCode: '29167666' },
+        { street: 'New Street' },
+        { neighborhood: 'Garden Carapina' },
+        { city: 'Victory' },
+        { state: 'Saint Spirit' },
+        {
+            number: 42,
+            zipCode: '29167666',
+            street: 'New Street',
+            neighborhood: 'Garden Carapina',
+            city: 'Victory',
+            state: 'Saint Spirit'
+        }
+    ])
+    ('valid',
+      async (data) => {
+          const res = await request(app)
+            .patch(`${route}/${addressSaved.id}`)
+            .set('x-access-token', token1)
+            .send(data);
+          const resGet = await request(app)
+            .get(`${route}/${addressSaved.id}`)
+            .set('x-access-token', token1)
+            .send();
+          console.log(resGet.body);
+          expect(resGet.body).toMatchObject(data);
       });
 });
 

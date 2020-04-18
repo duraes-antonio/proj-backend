@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { Product, ProductAdd } from '../domain/interfaces/product.interface';
+import { Product, ProductAdd } from '../domain/interfaces/product';
 import { productSizes as prodSizes } from '../shared/fieldSize';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
@@ -18,9 +18,19 @@ function validateProduct(prod: Product | ProductAdd): PipelineValidation {
       .atMaxLen('Descrição', prod.title, prodSizes.titleMax, msg.maxLen)
       .atMaxValue('Preço', prod.price, prodSizes.priceMax, msg.maxValue)
       .atLeastValue('Preço', prod.price, prodSizes.priceMin, msg.minValue)
-
+      .atLeastValue('Custo', prod.cost, prodSizes.costMax, msg.maxValue)
+      .atMaxValue('Custo', prod.cost, prodSizes.costMax, msg.maxValue)
       .atLeastValue('Desconto', prod.percentOff, prodSizes.percentOffMin, msg.minValue)
       .atMaxValue('Desconto', prod.percentOff, prodSizes.percentOffMax, msg.maxValue)
+
+      .atLeastValue('Altura', prod.height, prodSizes.heightMin, msg.minValue)
+      .atMaxValue('Altura', prod.height, prodSizes.heightMax, msg.maxValue)
+      .atLeastValue('Comprimento', prod.length, prodSizes.lengthMin, msg.minValue)
+      .atMaxValue('Comprimento', prod.length, prodSizes.lengthMax, msg.maxValue)
+      .atLeastValue('Largura', prod.width, prodSizes.widthMin, msg.minValue)
+      .atMaxValue('Largura', prod.width, prodSizes.widthMax, msg.maxValue)
+      .atLeastValue('Peso', prod.weight, prodSizes.weightMin, msg.minValue)
+      .atMaxValue('Peso', prod.weight, prodSizes.weightMax, msg.maxValue)
 
       .atLeastValue('Quantidade disponível', prod.amountAvailable, prodSizes.amountAvailableMin, msg.minValue)
       .atMaxValue('Quantidade disponível', prod.amountAvailable, prodSizes.amountAvailableMax, msg.maxValue)
