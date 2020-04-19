@@ -1,9 +1,11 @@
 import { UserAdd } from '../src/domain/models/user';
 import { EUserRole } from '../src/domain/enum/role.enum';
 import { App } from '../src/app';
-import request from 'supertest';
 import { TestObject } from './test-object';
 import { serviceDataMsg } from '../src/shared/buildMsg';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 async function getTokenValid(user: UserAdd, app: App): Promise<string> {
     const resPostUser = await request(app)
