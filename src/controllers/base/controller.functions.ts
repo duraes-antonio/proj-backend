@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { responseFunctions as resFunc } from './response.functions';
 import { PipelineValidation } from '../../shared/validations';
-import { FilterBasic } from '../../domain/models/filters/filterBasic.interface';
+import { FilterBasic } from '../../domain/models/filters/filter-basic';
 
 function validIdHex(id: string): boolean {
     return /^[0-9a-fA-F]{24}$/.test(id);
@@ -73,18 +73,19 @@ async function patch<T>(
         }
 
         const patchObj = req.body;
+        const invalidNameFields: string[] = Object.keys(patchObj)
+          .filter(key =>
+            !allowFields.some(fieldName => fieldName.toLowerCase() === key.toLowerCase())
+          );
+
+        if (invalidNameFields.length) {
+            return resFunc.invalidFieldsPatch(res, invalidNameFields);
+        }
+
         const pipeline = fnValidate(patchObj);
 
         if (!pipeline.valid) {
             return resFunc.badRequest(res, pipeline.errors);
-        }
-
-        const invalidNameFields: string[] = Object.keys(patchObj).filter(key =>
-          !allowFields.some(fieldName => fieldName.toLowerCase() === key.toLowerCase())
-        );
-
-        if (invalidNameFields.length) {
-            return resFunc.invalidFieldsPatch(res, invalidNameFields);
         }
 
         const objUpdated = await bdUpdate(req.params.id, patchObj);
