@@ -12,3 +12,9 @@ export interface ReviewAdd {
     readonly title: string;
     readonly productId: string;
 }
+
+export interface ReviewPatch {
+    readonly comment?: string;
+    readonly rating?: number;
+    readonly title?: string;
+}

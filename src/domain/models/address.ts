@@ -1,15 +1,5 @@
 import { Registable } from './auditable';
 
-export interface Address extends Registable {
-    readonly street: string;
-    readonly number: number;
-    readonly zipCode: string;
-    readonly neighborhood: string;
-    readonly city: string;
-    readonly state: string;
-    readonly userId: string;
-}
-
 export interface AddressAdd {
     readonly street: string;
     readonly number: number;
@@ -17,4 +7,17 @@ export interface AddressAdd {
     readonly neighborhood: string;
     readonly city: string;
     readonly state: string;
+}
+
+export interface Address extends Registable, AddressAdd {
+    readonly userId: string;
+}
+
+export interface AddressPatch {
+    readonly street?: string;
+    readonly number?: number;
+    readonly zipCode?: string;
+    readonly neighborhood?: string;
+    readonly city?: string;
+    readonly state?: string;
 }

@@ -1,6 +1,6 @@
 'use strict';
 
-import { ItemOrder } from './itemOrder';
+import { ItemOrder } from './item-order';
 import { Address } from './address';
 import { EStateOrder } from '../enum/stateOrder';
 
