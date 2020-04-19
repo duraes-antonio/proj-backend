@@ -1,13 +1,20 @@
 export const addressSizes = {
+    cityMin: 5,
     cityMax: 64,
+    numberMin: 0,
     numberMax: Number.MAX_SAFE_INTEGER,
+    neighborhoodMin: 4,
     neighborhoodMax: 64,
-    stateMax: 64,
+    stateMin: 2,
+    stateMax: 2,
+    streetMin: 5,
     streetMax: 128,
+    zipCodeMin: 9,
     zipCodeMax: 9
 };
 
 export const categorySizes = {
+    titleMin: 2,
     titleMax: 128
 };
 

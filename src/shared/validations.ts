@@ -58,9 +58,7 @@ export class PipelineValidation {
     }
 
     hasValue(field: string, value: any): PipelineValidation {
-        if (!validation.hasValue(value)) {
-            this.errors.push(this.fnEmpty(field));
-        }
+        this.isEmpty(value, field);
         return this;
     }
 
@@ -162,7 +160,7 @@ export class PipelineValidation {
 
     private isEmpty(value: any, field: string): boolean {
         if (!validation.hasValue(value)) {
-            if (!this._ignoreUndefined || value === null) {
+            if (!this._ignoreUndefined || value !== undefined) {
                 this.errors.push(this.fnEmpty(field));
             }
             return true;
