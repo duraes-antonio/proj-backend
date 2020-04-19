@@ -1,5 +1,6 @@
 const getNCharText = (length: number): string => {
-    return [...Array(length).keys()].map(() => 'A').join('');
+    return [...Array(Math.max(0, length)).keys()]
+      .map(() => 'A').join('');
 };
 
 /*Adaptado de: https://gist.github.com/solenoid/1372386*/

@@ -1,4 +1,5 @@
 import { Mongoose } from 'mongoose';
+import { App } from '../src/app';
 
 export async function clearDatabase(mongoose: Mongoose): Promise<void[]> {
     return await Promise.all(
@@ -7,3 +8,9 @@ export async function clearDatabase(mongoose: Mongoose): Promise<void[]> {
       })
     );
 }
+
+export const closeConnection = (app: App): void => {
+    app.databaseInstance.then((db) => {
+        db.disconnect();
+    });
+};
