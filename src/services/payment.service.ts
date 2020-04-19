@@ -27,7 +27,6 @@ async function payItemsPaypal(order: Order): Promise<void> {
     }
     const prods: Product[] = await productRepository.find(
       {
-          countTotal: 0,
           currentPage: 1,
           perPage: 1000
       });

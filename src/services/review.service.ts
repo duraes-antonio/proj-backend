@@ -9,7 +9,7 @@ function validate(review: ReviewAdd, ignoreUndefined = false): PipelineValidatio
       .atMaxLen('Title', review.title, sizes.titleMax, msg.maxLen)
 
       .atLeastLen('Comment', review.comment, sizes.commentMin, msg.minLen)
-      .atMaxLen('', review.comment, sizes.commentMax, msg.maxLen)
+      .atMaxLen('Comment', review.comment, sizes.commentMax, msg.maxLen)
 
       .atLeastValue('Rating', review.rating, sizes.ratingMin, msg.minValue)
       .atMaxValue('Rating', review.rating, sizes.ratingMax, msg.maxValue)

@@ -3,7 +3,7 @@ import { App } from '../../src/app';
 import { Product, ProductAdd } from '../../src/domain/models/product';
 import { UserAdd } from '../../src/domain/models/user';
 import { clearDatabase } from '../../utils/database';
-import { FilterProduct } from '../../src/domain/models/filters/filterProduct.model';
+import { FilterProduct } from '../../src/domain/models/filters/filter-product';
 import { Category } from '../../src/domain/models/category';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 

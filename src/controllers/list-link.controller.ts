@@ -1,5 +1,5 @@
 'use strict';
-import { FilterBasic } from '../domain/models/filters/filterBasic.interface';
+import { FilterBasic } from '../domain/models/filters/filter-basic';
 import { Link, LinkAdd } from '../domain/models/link';
 import { List } from '../domain/models/lists/list';
 import { NextFunction, Request, Response } from 'express';

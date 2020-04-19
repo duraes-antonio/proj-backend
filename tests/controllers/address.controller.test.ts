@@ -1,12 +1,14 @@
 'use strict';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { Address, AddressAdd } from '../../src/domain/models/address';
-import { UserAdd } from '../../src/domain/models/user';
-import { EUserRole } from '../../src/domain/enum/role.enum';
+import { Address, AddressAdd, AddressPatch } from '../../src/domain/models/address';
+import { invalidFieldsPatch, invalidIds, shared, usersAdd } from '../shared-data';
+import { StringOptional, testRest } from '../shared-methods-http';
+import { validationErrorMsg } from '../../src/shared/buildMsg';
+import { generators } from '../../utils/generators';
+import { addressSizes } from '../../src/shared/fieldSize';
+import { TestObject } from '../test-object';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
 const route = '/address';
@@ -15,7 +17,7 @@ const addrRight: AddressAdd = {
     city: 'Serra',
     neighborhood: 'JC',
     number: 38,
-    state: 'Espírito Santo',
+    state: 'ES',
     street: 'Rua Nelson',
     zipCode: '28161788'
 };
@@ -25,28 +27,8 @@ const addresses: AddressAdd[] = [
     { ...addrRight, zipCode: '21478599' },
     { ...addrRight, zipCode: '29161699' }
 ];
-const user: UserAdd = {
-    email: 'joao@teste.com',
-    name: 'João',
-    password: 'senha123',
-    roles: [EUserRole.CUSTOMER]
-};
-const user2: UserAdd = {
-    email: 'joao2@teste.com',
-    name: 'João',
-    password: 'senha123',
-    roles: [EUserRole.CUSTOMER]
-};
-
-let token1: string, token2: string;
-
-async function getTokenValid(user: UserAdd): Promise<string> {
-    const resPostUser = await request(app)
-      .post('/user')
-      .send(user);
-    expect(resPostUser.status).toBe(201);
-    return resPostUser.body.token;
-}
+let tokenJoao: string;
+let tokenAdmin: string;
 
 function cmp(a: Address | AddressAdd, b: Address | AddressAdd): number {
     if (a.zipCode < b.zipCode) {
@@ -59,125 +41,58 @@ function cmp(a: Address | AddressAdd, b: Address | AddressAdd): number {
 }
 
 beforeAll(async () => {
-    clearDatabase(await appInstance.databaseInstance);
-    token1 = await getTokenValid(user);
-    token2 = await getTokenValid(user2);
+    await clearDatabase(await appInstance.databaseInstance);
+    tokenJoao = await shared.getTokenValid(usersAdd.joao, app);
+    tokenAdmin = await shared.getTokenValid(usersAdd.admin, app);
 });
 
-describe('post', () => {
-    beforeEach(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-    });
-
-    it(
-      'empty',
-      async () => {
-          const res = await request(app)
-            .post(route)
-            .set('x-access-token', token1)
-            .send({});
-          expect(res.status).toBe(400);
-      });
-
-    it(
-      'valid',
-      async () => {
-          const res = await request(app)
-            .post(route)
-            .set('x-access-token', token1)
-            .send(addrRight);
-          expect(res.status).toBe(201);
-          const body: Address = res.body;
-          expect(body).toMatchObject(addrRight);
-      });
-});
-
-describe('patch', () => {
-    let addressSaved: Address;
+describe('delete', () => {
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .set('x-access-token', token1)
-          .send(addrRight);
-        expect(res.status).toBe(201);
-        addressSaved = res.body;
+        await clearDatabase(await appInstance.databaseInstance);
     });
 
-    it.each([
-        { 'invalidField': 4, 'city': 'validField' },
-        { 'notExist': 'string' },
-        { 'id': 'notAllowed' },
-        { 'userId': 'notAllowed' }
-    ])
-    ('invalid_field',
-      async (data) => {
-          const res = await request(app)
-            .patch(`${route}/${addressSaved.id}`)
-            .set('x-access-token', token1)
-            .send(data);
-          expect(res.status).toBe(400);
+    it.each<[StringOptional, number]>(invalidIds)
+    (
+      'id = %s; status be %d',
+      async (input, expected) => {
+          const res = await testRest.delete(app, route, input, tokenAdmin);
+          expect(res.status).toBe(expected);
       });
 
-    it.each([
-        { number: 42 },
-        { zipCode: '29167666' },
-        { street: 'New Street' },
-        { neighborhood: 'Garden Carapina' },
-        { city: 'Victory' },
-        { state: 'Saint Spirit' },
-        {
-            number: 42,
-            zipCode: '29167666',
-            street: 'New Street',
-            neighborhood: 'Garden Carapina',
-            city: 'Victory',
-            state: 'Saint Spirit'
-        }
-    ])
-    ('valid',
-      async (data) => {
-          const res = await request(app)
-            .patch(`${route}/${addressSaved.id}`)
-            .set('x-access-token', token1)
-            .send(data);
-          const resGet = await request(app)
-            .get(`${route}/${addressSaved.id}`)
-            .set('x-access-token', token1)
-            .send();
-          console.log(resGet.body);
-          expect(resGet.body).toMatchObject(data);
-      });
+    it('not_owner', async () => {
+        const res = await testRest.post(app, route, addrRight, tokenJoao);
+        expect(res.status).toBe(201);
+        const resDel = await testRest.delete(app, route, res.body.id, tokenAdmin);
+        expect(resDel.status).toBe(404);
+    });
+
+    it('valid', async () => {
+        const res = await testRest.post(app, route, addrRight, tokenJoao);
+        expect(res.status).toBe(201);
+        const resDel = await testRest.delete(app, route, res.body.id, tokenJoao);
+        expect(resDel.status).toBe(200);
+    });
 });
 
 describe('get', () => {
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
+        await clearDatabase(await appInstance.databaseInstance);
         await Promise.all(addresses
           .map(async a => {
-              await request(app)
-                .post(route)
-                .set('x-access-token', token1)
-                .send(a);
+              const res = await testRest.post(app, route, a, tokenJoao);
+              expect(res.status).toBe(201);
           })
         );
-        await request(app)
-          .post(route)
-          .set('x-access-token', token2)
-          .send(addrRight);
+        await testRest.post(app, route, addrRight, tokenAdmin);
     });
 
     it(
       'valid',
       async () => {
-          const res = await request(app)
-            .get(route)
-            .set('x-access-token', token1)
-            .send();
+          const res = await testRest.get(app, route, {}, tokenJoao);
           expect(res.status).toBe(200);
-          expect((res.body as Address[]).length === addresses.length)
-            .toBeTruthy();
+          expect((res.body as Address[]).length).toBe(addresses.length);
           expect((res.body as Address[]).sort(cmp))
             .toMatchObject(addresses.sort(cmp));
       });
@@ -187,55 +102,179 @@ describe('get_by_id', () => {
     let addressSaved: Address;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .set('x-access-token', token1)
-          .send(addrRight);
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await testRest.post(app, route, addrRight, tokenJoao);
         expect(res.status).toBe(201);
         addressSaved = res.body;
     });
 
+    it.each<[StringOptional, number]>(invalidIds)
+    (
+      'id = %s; status be %d',
+      async (input, expected) => {
+          const res = await testRest.delete(app, route, input, tokenAdmin);
+          expect(res.status).toBe(expected);
+      });
+
     it(
       'valid',
       async () => {
-          const res = await request(app)
-            .get(`${route}/${addressSaved.id}`)
-            .set('x-access-token', token1)
-            .send();
+          const res = await testRest.getById(app, route, addressSaved.id, tokenJoao);
           expect(res.body).toMatchObject(addrRight);
       });
 });
 
-describe('delete', () => {
+describe('patch', () => {
+    let addressSaved: Address;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await testRest.post(app, route, addrRight, tokenJoao);
+        expect(res.status).toBe(201);
+        addressSaved = res.body;
     });
 
-    it('not_owner', async () => {
-        const res = await request(app)
-          .post(route)
-          .set('x-access-token', token1)
-          .send(addrRight);
-        expect(res.status).toBe(201);
-        const resDel = await request(app)
-          .delete(`${route}/${res.body.id}`)
-          .set('x-access-token', token2)
-          .send();
-        expect(resDel.status).toBe(404);
+    it.each<TestObject<AddressPatch>>([
+        {
+            data: { city: '' },
+            message: validationErrorMsg.empty('city'),
+            expectStatus: 400
+        },
+        {
+            data: { city: generators.getNCharText(addressSizes.cityMin - 1) },
+            message: validationErrorMsg.minLen('city', addressSizes.cityMin),
+            expectStatus: 400
+        },
+        {
+            data: { city: generators.getNCharText(addressSizes.cityMax + 1) },
+            message: validationErrorMsg.maxLen('city', addressSizes.cityMax),
+            expectStatus: 400
+        },
+
+        {
+            data: { neighborhood: '' },
+            message: validationErrorMsg.empty('neighborhood'),
+            expectStatus: 400
+        },
+        {
+            data: { neighborhood: generators.getNCharText(addressSizes.neighborhoodMin - 1) },
+            message: validationErrorMsg.minLen('neighborhood', addressSizes.neighborhoodMin),
+            expectStatus: 400
+        },
+        {
+            data: { neighborhood: generators.getNCharText(addressSizes.neighborhoodMax + 1) },
+            message: validationErrorMsg.maxLen('neighborhood', addressSizes.neighborhoodMax),
+            expectStatus: 400
+        },
+
+        {
+            data: { number: -1 },
+            message: validationErrorMsg.minValue('number', addressSizes.numberMin),
+            expectStatus: 400
+        },
+        {
+            data: { number: addressSizes.numberMax + 1 },
+            message: validationErrorMsg.maxValue('number', addressSizes.numberMax),
+            expectStatus: 400
+        },
+
+        {
+            data: { state: '' },
+            message: validationErrorMsg.empty('state'),
+            expectStatus: 400
+        },
+        {
+            data: { state: generators.getNCharText(addressSizes.stateMin - 1) },
+            message: validationErrorMsg.exactlyLen('state', addressSizes.stateMin),
+            expectStatus: 400
+        },
+        {
+            data: { state: generators.getNCharText(addressSizes.stateMax + 1) },
+            message: validationErrorMsg.exactlyLen('state', addressSizes.stateMax),
+            expectStatus: 400
+        },
+
+        {
+            data: { street: '' },
+            message: validationErrorMsg.empty('street'),
+            expectStatus: 400
+        },
+        {
+            data: { street: generators.getNCharText(addressSizes.streetMin - 1) },
+            message: validationErrorMsg.minLen('street', addressSizes.streetMin),
+            expectStatus: 400
+        },
+        {
+            data: { street: generators.getNCharText(addressSizes.streetMax + 1) },
+            message: validationErrorMsg.maxLen('street', addressSizes.streetMax),
+            expectStatus: 400
+        },
+
+        {
+            data: { zipCode: '' },
+            message: validationErrorMsg.empty('zipCode'),
+            expectStatus: 400
+        },
+        {
+            data: { zipCode: generators.getNCharText(addressSizes.zipCodeMin) },
+            message: validationErrorMsg.invalidFormat('zipCode'),
+            expectStatus: 400
+        },
+        {
+            data: { zipCode: '29161-699' },
+            message: validationErrorMsg.invalidFormat('zipCode'),
+            expectStatus: 400
+        },
+        ...invalidFieldsPatch
+    ] as TestObject<AddressPatch>[])
+    ('invalid_field',
+      async (data) => {
+          const res = await testRest.patch(app, route, addressSaved.id, data, tokenJoao);
+          expect(res.status).toBe(400);
+      });
+
+    it.each([
+        { number: 1541 },
+        { zipCode: '29167666' },
+        { street: 'Rua do Seu Jorge' },
+        { neighborhood: 'Feu Rosa' },
+        { city: 'Serra' },
+        { state: 'ES' },
+        {
+            number: 42,
+            zipCode: '29167666',
+            street: 'Rua da Joana',
+            neighborhood: 'Jardim Camburi',
+            city: 'Vitória',
+            state: 'ES'
+        }
+    ])
+    ('valid',
+      async (data) => {
+          await testRest.patch(app, route, addressSaved.id, data, tokenJoao);
+          const resGet = await testRest.getById(app, route, addressSaved.id, tokenJoao);
+          expect(resGet.body).toMatchObject(data);
+      });
+});
+
+describe('post', () => {
+    beforeEach(async () => {
+        await clearDatabase(await appInstance.databaseInstance);
     });
 
-    it('valid', async () => {
-        const res = await request(app)
-          .post(route)
-          .set('x-access-token', token1)
-          .send(addrRight);
-        expect(res.status).toBe(201);
-        const resDel = await request(app)
-          .delete(`${route}/${res.body.id}`)
-          .set('x-access-token', token1)
-          .send();
-        expect(resDel.status).toBe(200);
-    });
+    it(
+      'empty',
+      async () => {
+          const res = await testRest.post(app, route, {}, tokenJoao);
+          expect(res.status).toBe(400);
+      });
+
+    it(
+      'valid',
+      async () => {
+          const res = await testRest.post(app, route, addrRight, tokenJoao);
+          expect(res.status).toBe(201);
+          const body: Address = res.body;
+          expect(body).toMatchObject(addrRight);
+      });
 });

@@ -2,18 +2,22 @@
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { Category, CategoryAdd } from '../../src/domain/models/category';
-import { FilterCategory } from '../../src/domain/models/filters/filterCategory.model';
+import { FilterCategory } from '../../src/domain/models/filters/filter-category';
+import { TestObject } from '../test-object';
+import { serviceDataMsg, validationErrorMsg } from '../../src/shared/buildMsg';
+import { generators } from '../../utils/generators';
+import { categorySizes } from '../../src/shared/fieldSize';
+import { invalidFieldsPatch, invalidIds, shared, usersAdd } from '../shared-data';
+import { testRest } from '../shared-methods-http';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const request = require('supertest');
 const appInstance = new App();
 const app = appInstance.express;
 const route = '/category';
 
-const categoryRight: CategoryAdd = {
+const categoryAdd: CategoryAdd = {
     title: 'Card'
 };
-const categories: CategoryAdd[] = [
+const categoryAddList: CategoryAdd[] = [
     { title: 'Cards' },
     { title: 'Deck Ultra-Raro' },
     { title: 'Action Figures' },
@@ -22,183 +26,132 @@ const categories: CategoryAdd[] = [
     { title: 'Deck Raros' },
     { title: 'Deck Comuns' }
 ];
+let token: string;
+let tokenAdmin: string;
 
-describe('post', () => {
+const postCategory = async (categ: CategoryAdd, token: string): Promise<Category> => {
+    const res = await testRest.post(app, route, categoryAdd, token);
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject(categ);
+    return res.body;
+};
+
+beforeAll(async () => {
+    await clearDatabase(await appInstance.databaseInstance);
+    token = await shared.getTokenValid(usersAdd.joao, app);
+    tokenAdmin = await shared.getTokenValid(usersAdd.admin, app);
+});
+
+describe('delete', () => {
+    let categSaved: Category;
+
     beforeEach(async () => {
-        clearDatabase(await appInstance.databaseInstance);
+        await clearDatabase(await appInstance.databaseInstance);
+        categSaved = await postCategory(categoryAdd, tokenAdmin);
     });
 
-    it(
-      'empty',
-      async () => {
-          const res = await request(app)
-            .post(route)
-            .send({});
-          expect(res.status).toBe(400);
+    it.each(invalidIds)
+    ('invalid',
+      async (id, expectedStatus) => {
+          const res = await testRest.delete(app, route, id, tokenAdmin);
+          expect(res.status).toBe(expectedStatus);
       });
 
     it(
-      'title_long',
+      'not_admin',
       async () => {
-          const strPart = '12345678912345678912345678';
-          const res = await request(app)
-            .post(route)
-            .send({
-                title: [1, 2, 3, 4, 5]
-                  .map(() => strPart)
-                  .join(strPart)
-            });
-          expect(res.status).toBe(400);
+          const res = await testRest.delete(app, route, categSaved.id, token);
+          expect(res.status).toBe(403);
+          expect(res.body.message).toBe(serviceDataMsg.onlyAdmin().message);
       });
 
     it(
       'valid',
       async () => {
-          const res = await request(app)
-            .post(route)
-            .send(categoryRight);
-          expect(res.status).toBe(201);
+          const res = await testRest.delete(app, route, categSaved.id, tokenAdmin);
+          expect(res.status).toBe(200);
+          const resGetAfterDel = await testRest.getById(app, route, categSaved.id, tokenAdmin);
+          expect(resGetAfterDel.status).toBe(404);
       });
 });
 
 describe('get_by_id', () => {
-
     let categSaved: Category;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .send(categoryRight);
-        expect(res.status).toBe(201);
-        categSaved = res.body;
+        await clearDatabase(await appInstance.databaseInstance);
+        categSaved = await postCategory(categoryAdd, tokenAdmin);
     });
 
-    it(
-      'id_invalid',
-      async () => {
-          const res = await request(app)
-            .get(`${route}/${1}`)
-            .send();
-          expect(res.status).toBe(400);
-      });
-
-    it(
-      'object_inexistent',
-      async () => {
-          const res = await request(app)
-            .get(`${route}/41224d776a326fb40f000001`)
-            .send();
-          expect(res.status).toBe(404);
+    it.each(invalidIds)
+    ('invalid',
+      async (id, expectedStatus) => {
+          const res = await testRest.getById(app, route, id, token);
+          expect(res.status).toBe(expectedStatus);
       });
 
     it(
       'valid',
       async () => {
-          const resPost = await request(app).post(route).send(categoryRight);
-          expect(resPost.status).toBe(201);
-          categSaved = resPost.body;
-
-          const res = await request(app)
-            .get(`${route}/${categSaved.id}`)
-            .send();
+          const res = await testRest.getById(app, route, categSaved.id, token);
           expect(res.status).toBe(200);
-          expect(res.body).toHaveProperty('id', categSaved.id);
-          expect(res.body).toHaveProperty('title', categSaved.title);
+          expect(res.body).toMatchObject(categSaved);
       });
 });
 
 describe('get', () => {
-
+    const filter: FilterCategory = {
+        currentPage: 1,
+        perPage: 10,
+        text: 'deck'
+    };
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        await Promise.all(categories
+        await clearDatabase(await appInstance.databaseInstance);
+        await Promise.all(categoryAddList
           .map(async c => {
-              const res = await request(app)
-                .post(route)
-                .send(c);
+              const res = await testRest.post(app, route, c, tokenAdmin);
               expect(res.status).toBe(201);
           })
         );
     });
 
     it(
-      'text_card',
+      'text_deck',
       async () => {
-          const filter = new FilterCategory();
-          filter.text = 'card';
-
-          const res = await request(app)
-            .get(route)
-            .send(filter);
-          const body: Category[] = res.body;
+          const res = await testRest.get(app, route, filter, token);
+          const categories: Category[] = res.body;
           expect(res.status).toBe(200);
-          expect(body.length).toBeTruthy();
-          expect(body.every(
+          expect(categories.length).toBeTruthy();
+          const allContaisText = categories.every(
             c => c.title
               .toLowerCase()
               .includes(filter.text)
-          )).toBeTruthy();
+          );
+          expect(allContaisText).toBeTruthy();
       });
 
     it(
       'filter',
       async () => {
-          const filter: FilterCategory = {
-              countTotal: 0,
-              currentPage: 1,
-              perPage: 2,
-              text: 'Card'
-          };
-
-          const res = await request(app)
-            .get(`${route}`)
-            .send(filter);
+          const res = await testRest.get(app, route, { ...filter, perPage: 2 }, token);
           const body: Category[] = res.body;
           expect(res.status).toBe(200);
-          expect(body.length == 2);
-          expect(body
-            .every(c => c.title.includes(filter.text))
-          ).toBeTruthy();
-      });
-});
-
-describe('delete', () => {
-
-    let categSaved: Category;
-
-    beforeEach(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .send(categoryRight);
-        expect(res.status).toBe(201);
-        categSaved = res.body;
-    });
-
-    it(
-      'id_invalid',
-      async () => {
-          const res = await request(app)
-            .delete(`${route}/${categSaved.id.replace(/[0-9]/g, 'z')}`)
-            .send();
-          expect(res.status).toBe(400);
+          expect(body.length === 2);
+          const allContainsText = body
+            .every(c => c.title
+              .toLowerCase()
+              .includes(filter.text)
+            );
+          expect(allContainsText).toBeTruthy();
       });
 
     it(
-      'valid',
+      'no_text',
       async () => {
-          const res = await request(app)
-            .delete(`${route}/${categSaved.id}`)
-            .send();
+          const res = await testRest.get(app, route, { ...filter, text: '', currentPage: 1 }, token);
+          const body: Category[] = res.body;
           expect(res.status).toBe(200);
-
-          const resGetAfterDel = await request(app).get(route).send();
-
-          expect(resGetAfterDel.status).toBe(200);
-          expect((resGetAfterDel.body as Category[])
-            .some(c => c.id == categSaved.id)
-          ).toBe(false);
+          expect(body.length === filter.perPage);
       });
 });
 
@@ -206,55 +159,107 @@ describe('patch', () => {
     let categSaved: Category;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app).post(route).send(categoryRight);
-        expect(res.status).toBe(201);
-        categSaved = res.body;
+        await clearDatabase(await appInstance.databaseInstance);
+        categSaved = await postCategory(categoryAdd, tokenAdmin);
     });
 
-    it.each([
-        { 'invalidField': 4, 'city': 'validField' },
-        { 'notExist': 'string' },
-        { 'id': 'notAllowed' },
-        { 'createdAt': 'notAllowed' },
-        { 'createdAt': 'notAllowed' }
+    it.each<TestObject<CategoryAdd>>([
+        {
+            data: { title: '' },
+            message: validationErrorMsg.empty('title'),
+            expectStatus: 400
+        },
+        {
+            data: { title: generators.getNCharText(categorySizes.titleMin - 1) },
+            message: validationErrorMsg.minLen('title', categorySizes.titleMin),
+            expectStatus: 400
+        },
+        {
+            data: { title: generators.getNCharText(categorySizes.titleMax + 1) },
+            message: validationErrorMsg.maxLen('title', categorySizes.titleMax),
+            expectStatus: 400
+        },
+        ...invalidFieldsPatch
     ])
-    ('invalid_field',
-      async (data) => {
-          const res = await request(app)
-            .patch(`${route}/${categSaved.id}`)
-            .send(data);
-          expect(res.status).toBe(400);
+    ('invalid',
+      async (test: TestObject<CategoryAdd>) => {
+          const res = await testRest.patch(app, route, categSaved.id, test.data, tokenAdmin);
+          expect(res.status).toBe(test.expectStatus);
+          expect((res.body.message ?? res.body[0] as string).toLowerCase())
+            .toBe(test.message.toLowerCase());
       });
 
-    it.each([
-        { 'title': null },
-        { 'title': '' },
-        { 'title': new Array(20).fill('0123456789').join() }
-    ])
-    ('invalid_value',
-      async (data) => {
-          const res = await request(app)
-            .patch(`${route}/${categSaved.id}`)
-            .send(data);
-          expect(res.status).toBe(400);
+    it(
+      'not_admin',
+      async () => {
+          const res = await testRest.patch(app, route, categSaved.id, {}, token);
+          expect(res.status).toBe(403);
+          expect(res.body.message).toBe(serviceDataMsg.onlyAdmin().message);
       });
 
-    it.each([
-        { 'title': 'Title Right' }
-    ])
-    (
-      'valid',
-      async (data) => {
-          const res = await request(app)
-            .patch(`${route}/${categSaved.id}`)
-            .send(data);
-          expect(res.status).toBe(200);
+    it.each([{ 'title': 'new Title' }])
+    ('valid', async (data) => {
+        const res = await testRest.patch(app, route, categSaved.id, data, tokenAdmin);
+        expect(res.status).toBe(200);
 
-          const resGet = await request(app)
-            .get(`${route}/${categSaved.id}`)
-            .send();
-          expect(resGet.status).toBe(200);
-          expect(resGet.body).toMatchObject(data);
+        const resGet = await testRest.getById(app, route, categSaved.id, token);
+        expect(resGet.status).toBe(200);
+        expect(resGet.body).toMatchObject(data);
+    });
+});
+
+describe('post', () => {
+    beforeEach(async () => {
+        await clearDatabase(await appInstance.databaseInstance);
+    });
+
+    it('valid', async () => await postCategory(categoryAdd, tokenAdmin));
+
+    it(
+      'not_admin',
+      async () => {
+          const res = await testRest.post(app, route, {}, token);
+          expect(res.status).toBe(403);
+          expect(res.body.message).toBe(serviceDataMsg.onlyAdmin().message);
+      });
+
+    it.each<TestObject<CategoryAdd>>([
+        {
+            data: {},
+            message: validationErrorMsg.empty('title'),
+            expectStatus: 400
+        },
+        {
+            data: { title: '' },
+            message: validationErrorMsg.empty('title'),
+            expectStatus: 400
+        },
+        {
+            data: { title: null },
+            message: validationErrorMsg.empty('title'),
+            expectStatus: 400
+        },
+        {
+            data: { title: undefined },
+            message: validationErrorMsg.empty('title'),
+            expectStatus: 400
+        },
+        {
+            data: { title: generators.getNCharText(categorySizes.titleMin - 1) },
+            message: validationErrorMsg.minLen('title', categorySizes.titleMin),
+            expectStatus: 400
+        },
+        {
+            data: { title: generators.getNCharText(categorySizes.titleMax + 1) },
+            message: validationErrorMsg.maxLen('title', categorySizes.titleMax),
+            expectStatus: 400
+        }
+    ] as TestObject<CategoryAdd>[])
+    ('invalid',
+      async (test: TestObject<CategoryAdd>) => {
+          const res = await testRest.post(app, route, test.data, tokenAdmin);
+          expect(res.status).toBe(test.expectStatus);
+          expect((res.body[0] as string).toLowerCase())
+            .toBe(test.message.toLowerCase());
       });
 });

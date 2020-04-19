@@ -5,10 +5,11 @@ import { Link } from '../../src/domain/models/link';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 import { clearDatabase } from '../../utils/database';
 import { generators } from '../../utils/generators';
-import * as request from 'supertest';
 import { validationErrorMsg } from '../../src/shared/buildMsg';
 import { listSizes } from '../../src/shared/fieldSize';
 import { TestObject } from '../test-object';
+import { testRest } from '../shared-methods-http';
+import { shared, usersAdd } from '../shared-data';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -24,7 +25,8 @@ const listLinkAddAdmin: ListAdd<Link> = {
     readRole: EUserRole.ADMIN,
     itemsId: ['5e9a788e45612d9fc24957a6', '5e9a789696f26819054aa3fd']
 };
-const invalidDataPatchPost: TestObject<ListAdd<Link>>[] = [
+
+const invalidDataPatchPost: TestObject<ListAdd<Link | object>>[] = [
     {
         data: { ...listLinkAdd, title: generators.getNCharText(65) },
         expectStatus: 400,
@@ -60,59 +62,46 @@ const validsListsAdd: ListAdd<Link>[] = [
     },
     { ...listLinkAdd, readRole: EUserRole.UNKNOWN }
 ];
+let token: string;
 
-const closeConnection = (): void => {
-    appInstance.databaseInstance.then((db) => {
-        db.disconnect();
-    });
-};
-
-afterAll(async () => {
-    closeConnection();
+beforeAll(async () => {
+    token = await shared.getTokenValid(usersAdd.admin, app);
 });
 
 describe('delete', () => {
     let listSaved: List<Link>;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .send(listLinkAdd);
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await testRest.post(app, route, listLinkAdd, token);
         expect(res.status).toBe(201);
         listSaved = res.body;
         expect(listSaved).toMatchObject(listLinkAdd);
     });
 
     it('valid ', async () => {
-        const res = await request(app)
-          .delete(`${route}/${listSaved.id}`)
-          .send();
+        const res = await testRest.delete(app, route, listSaved.id, token);
         expect(res.status).toBe(200);
-        const resGet = await request(app)
-          .get(`${route}/${listSaved.id}`)
-          .send();
+        const resGet = await testRest.getById(app, route, listSaved.id, token);
         expect(resGet.status).toBe(404);
     });
+
+    // TODO testar com ids inválidos
 });
 
 describe('get', () => {
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
+        await clearDatabase(await appInstance.databaseInstance);
         await Promise.all([listLinkAdd, listLinkAddAdmin]
           .map(async c => {
-              const res = await request(app)
-                .post(route)
-                .send(c);
+              const res = await testRest.post(app, route, c, token);
               expect(res.status).toBe(201);
           })
         );
     });
 
     it('valid ', async () => {
-        const resGet = await request(app)
-          .get(route)
-          .send();
+        const resGet = await testRest.get(app, route, {}, token);
         expect(resGet.status).toBe(200);
         expect(resGet.body).toMatchObject([listLinkAdd, listLinkAddAdmin]);
     });
@@ -122,32 +111,29 @@ describe('get_by_id', () => {
     let listSaved: List<Link>;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .send(listLinkAdd);
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await testRest.post(app, route, listLinkAdd, token);
         expect(res.status).toBe(201);
         listSaved = res.body;
         expect(listSaved).toMatchObject(listLinkAdd);
     });
 
     it('valid ', async () => {
-        const res = await request(app)
-          .get(`${route}/${listSaved.id}`)
-          .send();
+        const res = await testRest.getById(app, route, listSaved.id, token);
         expect(res.status).toBe(200);
         expect(res.body).toMatchObject(listSaved);
     });
+
+
+    // TODO testar com ids inválidos
 });
 
 describe('patch', () => {
     let listAddSavedId: string;
 
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
-        const res = await request(app)
-          .post(route)
-          .send(listLinkAdd);
+        await clearDatabase(await appInstance.databaseInstance);
+        const res = await testRest.post(app, route, listLinkAdd, token);
         expect(res.status).toBe(201);
         expect(res.body).toMatchObject(listLinkAdd);
         listAddSavedId = res.body.id;
@@ -155,18 +141,14 @@ describe('patch', () => {
 
     it.each<ListAdd<Link>>(validsListsAdd)
     ('valid ', async (listAdd) => {
-        const res = await request(app)
-          .patch(`${route}/${listAddSavedId}`)
-          .send(listAdd);
+        const res = await testRest.patch(app, route, listAddSavedId, listAdd, token);
         expect(res.status).toBe(200);
         expect(res.body).toMatchObject(listAdd);
     });
 
-    it.each<TestObject<ListAdd<Link>>>(invalidDataPatchPost)
-    ('invalid ', async (test) => {
-        const res = await request(app)
-          .patch(`${route}/${listAddSavedId}`)
-          .send(test.data);
+    it.each<TestObject<ListAdd<Link | object>>>(invalidDataPatchPost)
+    ('invalid ', async (test: TestObject<ListAdd<Link | object>>) => {
+        const res = await testRest.patch(app, route, listAddSavedId, test.data, token);
         expect(res.status).toBe(test.expectStatus);
         expect(res.body[0].toLowerCase()).toBe(test.message.toLowerCase());
     });
@@ -174,23 +156,19 @@ describe('patch', () => {
 
 describe('post', () => {
     beforeAll(async () => {
-        clearDatabase(await appInstance.databaseInstance);
+        await clearDatabase(await appInstance.databaseInstance);
     });
 
     it.each<ListAdd<Link>>(validsListsAdd)
     ('valid ', async (listAdd) => {
-        const res = await request(app)
-          .post(route)
-          .send(listAdd);
+        const res = await testRest.post(app, route, listAdd, token);
         expect(res.status).toBe(201);
         expect(res.body).toMatchObject(listAdd);
     });
 
-    it.each<TestObject<ListAdd<Link>>>(invalidDataPatchPost)
+    it.each<TestObject<ListAdd<Link | object>>>(invalidDataPatchPost)
     ('invalid ', async (test) => {
-        const res = await request(app)
-          .post(route)
-          .send(test.data);
+        const res = await testRest.post(app, route, test.data, token);
         expect(res.status).toBe(test.expectStatus);
         expect(res.body[0].toLowerCase()).toBe(test.message.toLowerCase());
     });

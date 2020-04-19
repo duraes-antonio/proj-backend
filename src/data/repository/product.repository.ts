@@ -1,6 +1,6 @@
 'use strict';
 import { Product } from '../../domain/models/product';
-import { FilterProduct } from '../../domain/models/filters/filterProduct.model';
+import { FilterProduct } from '../../domain/models/filters/filter-product';
 import { EProductSort } from '../../domain/enum/productSort.enum';
 import { ObjectId } from 'bson';
 import { ProductSchema } from '../schemas/product.schema';

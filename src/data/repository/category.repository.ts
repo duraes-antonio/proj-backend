@@ -1,6 +1,6 @@
 'use strict';
 import { Category } from '../../domain/models/category';
-import { FilterCategory } from '../../domain/models/filters/filterCategory.model';
+import { FilterCategory } from '../../domain/models/filters/filter-category';
 import { CategorySchema } from '../schemas/category.schema';
 
 interface CategoryQuery {

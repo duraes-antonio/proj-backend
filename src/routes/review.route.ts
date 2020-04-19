@@ -7,8 +7,8 @@ const router = Router();
 
 router.delete('/:id', tokenS.verify, reviewController.delete);
 router.get('/', reviewController.get);
+router.get('/:id', reviewController.getById);
 router.post('/', tokenS.verify, reviewController.post);
-router.put('/:id', tokenS.verify, reviewController.patch);
-
+router.patch('/:id', tokenS.verify, reviewController.patch);
 
 export { router as reviewRoutes };

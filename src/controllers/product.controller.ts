@@ -7,7 +7,6 @@ import { productSizes as prodSizes } from '../shared/fieldSize';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { productRepository as prodRepo } from '../data/repository/product.repository';
-import { FilterProduct } from '../domain/models/filters/filterProduct.model';
 import { ProductSchema } from '../data/schemas/product.schema';
 
 export const entityName = 'Produto';
@@ -59,11 +58,8 @@ async function post(
 async function get(
   req: Request, res: Response, next: NextFunction
 ): Promise<Response<Product>> {
-    const reqKeys = ['currentPage', 'perPage'];
-    const filterKeys = Object.keys(req.body);
-    const filterValid = reqKeys.every(k => filterKeys.includes(k));
     return await ctrlFunc.get<Product>(req, res, next,
-      () => prodRepo.find(filterValid ? req.body : new FilterProduct())
+      (filter) => prodRepo.find(filter)
     );
 }
 

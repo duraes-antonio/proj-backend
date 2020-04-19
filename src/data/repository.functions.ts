@@ -1,6 +1,6 @@
 'use strict';
 import { Document, Model } from 'mongoose';
-import { FilterBasic } from '../domain/models/filters/filterBasic.interface';
+import { FilterBasic } from '../domain/models/filters/filter-basic';
 import { ObjectId } from 'bson';
 
 async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
@@ -39,7 +39,7 @@ async function find<T>(
 
 async function findById<T>(id: string, model: Model<Document & T>): Promise<T | null> {
     const obj: any = await model.findById(id).lean();
-    return obj ? { ...obj._doc, id: obj._id } : null;
+    return obj ? { ...obj, id: obj._id } : null;
 }
 
 async function update<T>(id: string, obj: T, model: Model<Document & T>): Promise<T | null> {
