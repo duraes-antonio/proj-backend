@@ -21,8 +21,8 @@ export const categorySizes = {
 export const listSizes = {
     titleMin: 2,
     titleMax: 64,
-    lengthMin: 0,
-    lengthMax: 10
+    itemsIdMin: 0,
+    itemsIdMax: 10
 };
 
 export const linkSizes = {
@@ -37,6 +37,8 @@ export const productSizes = {
     avgReviewMax: 5,
     avgReviewMin: 0,
     costMin: 0,
+    categoriesIdMin: 0,
+    categoriesIdMax: 10,
     costMax: 9999999,
     descMin: 10,
     descMax: 4000,
@@ -48,7 +50,7 @@ export const productSizes = {
     percentOffMin: 0,
     priceMin: 0,
     priceMax: Number.MAX_SAFE_INTEGER,
-    titleMin: 20,
+    titleMin: 5,
     titleMax: 128,
     weightMin: 0.01,
     weightMax: 9999,
@@ -67,9 +69,11 @@ export const reviewSizes = {
 };
 
 export const userSizes = {
+    emailMin: 5,
     emailMax: 128,
+    nameMin: 5,
     nameMax: 128,
-    passwordMax: 128,
     passwordMin: 8,
+    passwordMax: 128,
     phoneMax: 16
 };

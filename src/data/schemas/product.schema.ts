@@ -25,6 +25,12 @@ const productSchema = new Schema({
         type: [Schema.Types.ObjectId],
         ref: ECollectionsName.CATEGORY
     },
+    cost: {
+        min: productSizes.costMin,
+        max: productSizes.costMax,
+        required: true,
+        type: Number
+    },
     desc: {
         index: true,
         maxlength: productSizes.descMax,
@@ -36,6 +42,18 @@ const productSchema = new Schema({
         default: false,
         required: true,
         type: Boolean
+    },
+    height: {
+        min: productSizes.heightMin,
+        max: productSizes.heightMax,
+        required: true,
+        type: Number
+    },
+    length: {
+        min: productSizes.lengthMin,
+        max: productSizes.lengthMax,
+        required: true,
+        type: Number
     },
     percentOff: {
         default: 0,
@@ -70,6 +88,18 @@ const productSchema = new Schema({
         required: false,
         trim: true,
         type: String
+    },
+    weight: {
+        min: productSizes.weightMin,
+        max: productSizes.weightMax,
+        required: true,
+        type: Number
+    },
+    width: {
+        min: productSizes.widthMin,
+        max: productSizes.widthMax,
+        required: true,
+        type: Number
     },
 
     createdAt: {

@@ -12,6 +12,25 @@ class MatchQuery {
     $text?: any;
 }
 
+const productFieldsProjection = {
+    avgReview: 1,
+    priceWithDiscount: 1,
+    visible: 1,
+    amountAvailable: 1,
+    categoriesId: 1,
+    desc: 1,
+    freeDelivery: 1,
+    percentOff: 1,
+    price: 1,
+    title: 1,
+    urlMainImage: 1,
+    cost: 1,
+    height: 1,
+    width: 1,
+    length: 1,
+    weight: 1
+};
+
 function buildMatchQuery(filter: FilterProduct): MatchQuery {
     const match: MatchQuery = {};
 
@@ -67,19 +86,6 @@ function buildSortParams(): Map<EProductSort, any> {
 
 const sortOptions = buildSortParams();
 
-const fieldsSelect = {
-    avgReview: 1,
-    amountAvailable: 1,
-    categoriesId: 1,
-    createdAt: 1,
-    desc: 1,
-    freeDelivery: 1,
-    percentOff: 1,
-    price: 1,
-    title: 1,
-    urlMainImage: 1
-};
-
 async function find(filter: FilterProduct): Promise<Product[]> {
     const match = buildMatchQuery(filter);
 
@@ -90,9 +96,10 @@ async function find(filter: FilterProduct): Promise<Product[]> {
     }
 
     const projectField: any = {
-        ...fieldsSelect,
         avgInt: { $floor: '$avgReview' },
-        id: '$_id'
+        id: '$_id',
+        _id: false,
+        ...productFieldsProjection
     };
 
     if (filter.discounts && filter.discounts.length) {
@@ -123,16 +130,16 @@ async function find(filter: FilterProduct): Promise<Product[]> {
         match2.discountOk = true;
     }
 
-    return await queryRaw
+    return queryRaw
       .match(match2)
       .sort(sortBy)
-      .skip(+filter.perPage * (Math.max(+filter.currentPage, 1) - 1))
+      .skip(+filter.perPage * Math.max(+filter.currentPage - 1, 0))
       .limit(+filter.perPage)
       ;
 }
 
 async function findCount(filter: FilterProduct): Promise<number> {
-    return await ProductSchema.count(buildMatchQuery(filter));
+    return ProductSchema.count(buildMatchQuery(filter));
 }
 
 export const productRepository = {

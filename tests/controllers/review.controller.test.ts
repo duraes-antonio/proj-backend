@@ -5,13 +5,12 @@ import { clearDatabase } from '../../utils/database';
 import { EReviewSort, FilterReview } from '../../src/domain/models/filters/filter-review';
 import { UserAdd } from '../../src/domain/models/user';
 import { EUserRole } from '../../src/domain/enum/role.enum';
-import { TestObject } from '../test-object';
 import { serviceDataMsg, validationErrorMsg } from '../../src/shared/buildMsg';
 import { generators } from '../../utils/generators';
 import { reviewSizes } from '../../src/shared/fieldSize';
 import { utilService } from '../../src/shared/util';
 import { StringOptional, testRest } from '../shared-methods-http';
-import { invalidIds, shared } from '../shared-data';
+import { invalidIds, sharedDataTest, TestObject } from '../shared-data';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -47,7 +46,7 @@ let token: string;
 
 beforeAll(async () => {
     await clearDatabase(await appInstance.databaseInstance);
-    token = await shared.getTokenValid(user, app);
+    token = await sharedDataTest.getTokenValid(user, app);
 });
 
 describe('delete', () => {
@@ -57,7 +56,7 @@ describe('delete', () => {
     });
 
     it('valid', async () => {
-        const resPost = await testRest.post(app, route, payload, token);
+        const resPost = await testRest.postAndMatch(app, route, payload, token);
         expect(resPost.status).toBe(201);
         const review: Review = resPost.body;
 
@@ -83,7 +82,7 @@ describe('get', () => {
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
         await Promise.all(reviews
-          .map(async r => await testRest.post(app, route, r, token))
+          .map(async r => await testRest.postAndMatch(app, route, r, token))
         );
     });
 
@@ -123,7 +122,7 @@ describe('get_by_id', () => {
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        const res = await testRest.post(app, route, payload, token);
+        const res = await testRest.postAndMatch(app, route, payload, token);
         expect(res.status).toBe(201);
         expect(res.body).toMatchObject(payload);
         reviewSaved = res.body;
@@ -151,7 +150,7 @@ describe('patch', () => {
 
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        const res = await testRest.post(app, route, payload, token);
+        const res = await testRest.postAndMatch(app, route, payload, token);
         expect(res.status).toBe(201);
         expect(res.body).toMatchObject(payload);
         reviewSaved = res.body;
@@ -248,18 +247,17 @@ describe('post', () => {
     it(
       'valid',
       async () => {
-          const res = await testRest.post(app, route, payload, token);
+          const res = await testRest.postAndMatch(app, route, payload, token);
           expect(res.status).toBe(201);
           expect(res.body).toMatchObject(payload);
       });
 
     it('duplicated', async () => {
-        const res = await testRest.post(app, route, payload, token);
+        const res = await testRest.postAndMatch(app, route, payload, token);
         expect(res.status).toBe(201);
         expect(res.body).toMatchObject(payload);
 
-        const resDuplic = await testRest.post(app, route, payload, token);
-        expect(resDuplic.status).toBe(409);
+        const resDuplic = await testRest.post(app, route, payload, token, 409);
     });
 
     it.each<TestObject<ReviewAdd>>([
@@ -323,8 +321,7 @@ describe('post', () => {
     ] as TestObject<ReviewAdd>[])
     ('invalid',
       async (test: TestObject<ReviewAdd>) => {
-          const res = await testRest.post(app, route, test.data, token);
-          expect(res.status).toBe(test.expectStatus);
+          const res = await testRest.post(app, route, test.data, token, test.expectStatus);
           expect((res.body[0] as string).toLowerCase())
             .toBe(test.message.toLowerCase());
       });

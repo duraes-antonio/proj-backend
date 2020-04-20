@@ -15,8 +15,13 @@ const getMongoOBjectId = (): string => {
     return timestamp + hexRandon;
 };
 
+const getMongoOBjectIds = (length: number): string[] => {
+    return [...Array(length).keys()].map(() => getMongoOBjectId());
+};
+
 
 export const generators = {
     getNCharText,
-    getMongoOBjectId
+    getMongoOBjectId,
+    getMongoOBjectIds
 };

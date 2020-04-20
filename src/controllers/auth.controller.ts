@@ -5,7 +5,7 @@ import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
 import { cryptService as cryptS } from '../services/crypt.service';
 import { tokenService as tokenS } from '../services/token.service';
-import { TokenData } from '../services/interfaces/tokenData.interface';
+import { TokenData } from '../domain/models/token-data';
 import { userRepository } from '../data/repository/user.repository';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
@@ -81,12 +81,7 @@ async function refreshToken(req: Request, res: Response, next: NextFunction):
 
 async function invalidate(req: Request, res: Response, next: NextFunction):
   Promise<Response> {
-    const token = tokenS.extract(req);
-
-    if (!token) {
-        return res.status(401).send(serviceDataMsg.tokenEmpty());
-    }
-
+    const token = tokenS.extract(req) as string;
     const uInfo: TokenData = await tokenS.decode(token);
     const tokenInv: TokenInvalid = {
         createdAt: new Date(),

@@ -42,25 +42,24 @@ async function findById<T>(id: string, model: Model<Document & T>): Promise<T | 
     return obj ? { ...obj, id: obj._id } : null;
 }
 
-async function update<T>(id: string, obj: T, model: Model<Document & T>): Promise<T | null> {
-    const updated = await model.findByIdAndUpdate(
-      id,
-      { $set: { ...obj } },
-      { new: true }
-    );
-    return updated && Object.keys(updated).length
-      ? { ...updated, id: updated._id }
-      : null;
-}
-
 async function findAndUpdate<T>(
-  id: string, obj: T, model: Model<Document & T>, conditions: any
+  id: string, obj: T, model: Model<Document & T>, conditions?: any
 ): Promise<T | null> {
-    const updated: any = await model.findOneAndUpdate(
-      { _id: new ObjectId(id), ...conditions },
-      { $set: { ...obj } },
-      { new: true }
-    );
+    let updated: any;
+
+    if (conditions) {
+        updated = await model.findOneAndUpdate(
+          { _id: new ObjectId(id), ...conditions },
+          { $set: { ...obj } },
+          { new: true }
+        );
+    } else {
+        updated = await model.findByIdAndUpdate(
+          id,
+          { $set: { ...obj } },
+          { new: true }
+        );
+    }
     return updated?._doc ? { ...updated._doc, id: updated._doc._id } : null;
 }
 
@@ -70,5 +69,4 @@ export const repositoryFunctions = {
     find: find,
     findById: findById,
     findAndUpdate: findAndUpdate,
-    update: update
 };

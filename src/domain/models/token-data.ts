@@ -1,6 +1,5 @@
 'use strict';
-
-import { EUserRole } from '../../domain/enum/role.enum';
+import { EUserRole } from '../enum/role.enum';
 
 export interface TokenData {
     avatarUrl?: string;

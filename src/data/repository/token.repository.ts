@@ -3,7 +3,7 @@
 import { TokenInvalidDBModel, TokenInvalidSchema } from '../schemas/token.schema';
 
 async function find(userId: string, token: string): Promise<TokenInvalidDBModel | null> {
-    return await TokenInvalidSchema.findOne(
+    return TokenInvalidSchema.findOne(
       { userId: userId, token: token },
       'token userId'
     );

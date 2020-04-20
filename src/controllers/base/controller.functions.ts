@@ -34,7 +34,8 @@ async function get<T>(
   bdFind: (filter: FilterBasic) => Promise<T[]>
 ): Promise<Response> {
     try {
-        const objs: T[] = await bdFind(req.query);
+        const filter = req.query && Object.keys(req.query).length ? req.query : req.body;
+        const objs: T[] = await bdFind(filter);
         return resFunc.success(res, objs);
     } catch (err) {
         return resFunc.unknown(res, err);
@@ -100,7 +101,7 @@ async function patch<T>(
     }
 }
 
-async function post<T>(
+async function postGeneric<T>(
   req: Request, res: Response, next: NextFunction,
   bdCreate: (payload: T) => Promise<T>,
   fnValidate?: (obj: T) => PipelineValidation,
@@ -128,40 +129,31 @@ async function post<T>(
     }
 }
 
-async function put<T>(
+async function post<T>(
   req: Request, res: Response, next: NextFunction,
-  entity: string, putObj: any, fnValidate: (obj: T) => PipelineValidation,
-  bdUpdate: (id: string, payload: T) => Promise<T | null>
+  bdCreate: (payload: T) => Promise<T>,
+  fnValidate?: (obj: T) => PipelineValidation
 ): Promise<Response> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    return await postGeneric<T>(req, res, next, bdCreate, fnValidate);
+}
 
-    try {
-        if (!validIdHex(req.params.id)) {
-            return resFunc.invalidId(res, req.params.id);
-        }
-
-        const pipe = fnValidate(putObj);
-
-        if (!pipe.valid) {
-            return resFunc.badRequest(res, pipe.errors);
-        }
-
-        const objUpdated = await bdUpdate(req.params.id, putObj);
-
-        if (!objUpdated) {
-            return resFunc.notFound(res, entity, 'id', req.params.id);
-        }
-
-        return resFunc.success(res);
-    } catch (err) {
-        return resFunc.unknown(res, err);
-    }
+async function postAndReturnCreated<T>(
+  req: Request, res: Response, next: NextFunction,
+  bdCreate: (payload: T) => Promise<T>,
+  fnValidate?: (obj: T) => PipelineValidation
+): Promise<T> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    return await postGeneric<T>(req, res, next, bdCreate, fnValidate, false);
 }
 
 export const controllerFunctions = {
     delete: delete_,
-    get: get,
-    getById: getById,
-    patch: patch,
-    post: post,
-    put: put
+    get,
+    getById,
+    patch,
+    post,
+    postAndReturnCreated
 };

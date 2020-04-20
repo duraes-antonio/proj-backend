@@ -6,7 +6,7 @@ import { listSizes } from '../shared/fieldSize';
 function validateListAdd<T>(list: ListAdd<T>, ignoreUndefined = false): PipelineValidation {
     return new PipelineValidation(msg.empty, ignoreUndefined)
       .hasValue('ReadRole', list.readRole)
-      .atMaxLenList('ItemsId', list.itemsId, listSizes.lengthMax, msg.maxLenList)
+      .atMaxLenList('ItemsId', list.itemsId, listSizes.itemsIdMax, msg.maxLenList)
       .atLeastLen('Title', list.title, listSizes.titleMin, msg.minLen)
       .atMaxLen('Title', list.title, listSizes.titleMax, msg.maxLen);
 }

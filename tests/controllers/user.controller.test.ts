@@ -1,154 +1,103 @@
 'use strict';
-import { UserAdd } from '../../src/domain/models/user';
 import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
-import { tokenService } from '../../src/services/token.service';
-import { EUserRole } from '../../src/domain/enum/role.enum';
+import { StringOptional, testRest } from '../shared-methods-http';
+import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
+import { userSizes } from '../../src/shared/fieldSize';
 
 const appInstance = new App();
 const app = appInstance.express;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const request = require('supertest');
+const route = '/user';
+const usersValid = [usersAdd.admin, usersAdd.joao, usersAdd.maria];
+const invalidDataPatchPost = [
+    ...sharedDataTest.getTestsForStringFields(['name', 'password'], userSizes)
+];
 
-const userRight: UserAdd = {
-    email: 'gseis@gmail.com',
-    name: 'Antônio',
-    password: '12345678',
-    roles: [EUserRole.CUSTOMER]
-};
-
-describe('Post', () => {
-    beforeEach(async () => {
+describe('get', () => {
+    beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
+        await Promise.all(usersValid
+          .map(async u => await testRest.post(app, route, u, '', 201))
+        );
     });
 
-    it(
-      'Usuário vazio',
-      async () => {
-          const res = await request(app)
-            .post('/user')
-            .send({});
-          expect(res.status).toBe(400);
-      });
-
-    it(
-      'Usuário sem email, senha ou nome',
-      async () => {
-          const userEmpty = await request(app)
-            .post('/user')
-            .send({});
-          expect(userEmpty.status).toBe(400);
-
-          const userWithoutEmail = await request(app)
-            .post('/user')
-            .send({ ...userRight, email: null });
-          expect(userWithoutEmail.status).toBe(400);
-
-          const userWithoutName = await request(app)
-            .post('/user')
-            .send({ ...userRight, name: '' });
-          expect(userWithoutName.status).toBe(400);
-
-          const userWithoutPass = await request(app)
-            .post('/user')
-            .send({ ...userRight, password: '' });
-          expect(userWithoutPass.status).toBe(400);
-      });
-
-
-    it(
-      'Usuário com email duplicado',
-      async () => {
-          const res = await request(app)
-            .post('/user')
-            .send(userRight);
-          expect(res.status).toBe(201);
-
-          const resDuplicated = await request(app)
-            .post('/user')
-            .send(userRight);
-          expect(resDuplicated.status).toBe(409);
-      });
-
-    it(
-      'Usuário válido',
-      async () => {
-          const res = await request(app)
-            .post('/user')
-            .send(userRight);
-          expect(res.status).toBe(201);
-      });
+    it('valid ', async () =>
+      await testRest.getAndMatch(
+        app, route, {},
+        usersValid.map(u => {
+            const clone = { ...u };
+            delete clone['password'];
+            return clone;
+        })
+      )
+    );
 });
 
-describe('Get By Id', () => {
-    beforeEach(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+describe('get_by_id', () => {
+
+    beforeAll(async () => await clearDatabase(await appInstance.databaseInstance));
+
+    it('valid', async () => {
+        const resPost = await testRest.post(app, route, usersAdd.joao, '', 201);
+        const cloneExpected = { ...usersAdd.joao };
+        delete cloneExpected['password'];
+        expect(resPost.body.user).toMatchObject(cloneExpected);
     });
 
-    it(
-      'Usuário válido',
-      async () => {
-
-          const resCreate = await request(app)
-            .post('/user')
-            .send(userRight);
-          expect(resCreate.status).toBe(201);
-
-          const tokenData = await tokenService.decode(resCreate.body.token);
-
-          const resGet = await request(app)
-            .get(`/user/${tokenData.id}`)
-            .send();
-
-          expect(resGet.status).toBe(200);
-      });
-
-    it(
-      'Usuário não existente',
-      async () => {
-          const resGet = await request(app)
-            .get('/user/12sdsadsa1d5sa1ds5d4ads')
-            .send();
-
-          expect(resGet.status).toBe(400);
-      });
+    it.each<[StringOptional, number]>(invalidIds)
+    ('id = %s; status be %d', async (id, status) =>
+      await testRest.getByIdInvalidIds(app, route, id, status)
+    );
 });
 
-/*TODO: Pensar na criação de patchs para atualizações*/
-/*
-describe('Put', () => {
-    beforeEach(async () => {
+describe('patch', () => {
+    let idValid: string;
+    let token: string;
+
+    beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
+        const res = await testRest.post(app, route, usersAdd.joao);
+        token = res.body.token;
+        idValid = res.body.user.id;
     });
 
-    it(
-      'Valid User',
-      async () => {
+    it.each<TestObject<object>>([...invalidDataPatchPost, ...invalidFieldsPatch])
+    ('invalid - %s', async (testCase) => {
+        const res = await testRest.patch(app, route, idValid, testCase.data, token);
+        expect(res.status).toBe(testCase.expectStatus);
+        expect((res.body.message ?? res.body[0] as string).toLowerCase())
+          .toBe(testCase.message.toLowerCase());
+    });
 
-          const resCreate = await request(app)
-            .post('/user')
-            .send(userRight);
-          expect(resCreate.status).toBe(201);
-
-          const tokenData = await tokenService.decode(resCreate.body.token);
-          const resPut = await request(app)
-            .put(`/user/${tokenData.id}`)
-            .send({
-                  avatarUrl: 'https:www.google.com',
-                  name: 'Novo nome',
-                  password: '87654321'
-              }
-            );
-          expect(resPut.status).toBe(200);
-      });
-
-    it(
-      'Invalid Id',
-      async () => {
-          const resGet = await request(app)
-            .get(`/user/${'000000000000'}`)
-            .send();
-          expect(resGet.status).toBe(400);
-      });
+    it.each<any>([
+        { password: '123456ab' },
+        { name: 'Marcos da Silva' }
+    ])
+    ('valid - %s: %s', async (dataPatch) => {
+        const resPatch = await testRest.patch(app, route, idValid, dataPatch, token);
+        const cloneExpected = { ...usersAdd.joao, ...dataPatch };
+        delete cloneExpected['password'];
+        expect(resPatch.body).toMatchObject(cloneExpected);
+    });
 });
-*/
+
+describe('post', () => {
+    beforeEach(async () => await clearDatabase(await appInstance.databaseInstance));
+
+    it.each<TestObject<object>>(invalidDataPatchPost)
+    ('invalid - %s', async (test) => {
+        const res = await testRest.post(
+          app, route, { ...usersAdd.joao, ...test.data }, '', test.expectStatus
+        );
+        expect(res.body[0].toLowerCase()).toBe(test.message.toLowerCase());
+    });
+
+    it('duplicated', async () => await testRest.postDuplicated(app, route, usersAdd.joao));
+
+    it('valid ', async () => {
+        const resPost = await testRest.post(app, route, usersAdd.joao);
+        const cloneExpected = { ...usersAdd.joao };
+        delete cloneExpected['password'];
+        expect(resPost.body.user).toMatchObject(cloneExpected);
+    });
+});

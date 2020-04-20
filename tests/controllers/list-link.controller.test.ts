@@ -1,15 +1,13 @@
 'use strict';
 import { App } from '../../src/app';
-import { List, ListAdd } from '../../src/domain/models/lists/list';
+import { ListAdd } from '../../src/domain/models/lists/list';
 import { Link } from '../../src/domain/models/link';
 import { EUserRole } from '../../src/domain/enum/role.enum';
 import { clearDatabase } from '../../utils/database';
 import { generators } from '../../utils/generators';
-import { validationErrorMsg } from '../../src/shared/buildMsg';
 import { listSizes } from '../../src/shared/fieldSize';
-import { TestObject } from '../test-object';
-import { testRest } from '../shared-methods-http';
-import { shared, usersAdd } from '../shared-data';
+import { StringOptional, testRest } from '../shared-methods-http';
+import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -26,32 +24,10 @@ const listLinkAddAdmin: ListAdd<Link> = {
     itemsId: ['5e9a788e45612d9fc24957a6', '5e9a789696f26819054aa3fd']
 };
 
-const invalidDataPatchPost: TestObject<ListAdd<Link | object>>[] = [
-    {
-        data: { ...listLinkAdd, title: generators.getNCharText(65) },
-        expectStatus: 400,
-        message: validationErrorMsg.maxLen('title', listSizes.titleMax)
-    },
-    {
-        data: { ...listLinkAdd, title: generators.getNCharText(1) },
-        expectStatus: 400,
-        message: validationErrorMsg.minLen('title', listSizes.titleMin)
-    },
-    {
-        data: {
-            ...listLinkAdd,
-            itemsId: Array(11).map(() => generators.getMongoOBjectId())
-        },
-        expectStatus: 400,
-        message: validationErrorMsg.maxLenList('itemsId', listSizes.lengthMax)
-    },
-    {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
-        data: { ...listLinkAdd, readRole: null },
-        expectStatus: 400,
-        message: validationErrorMsg.empty('readRole')
-    }
+const invalidDataPatchPost: TestObject<object>[] = [
+    ...sharedDataTest.getTestsForStringFields(['title'], listSizes),
+    ...sharedDataTest.getTestsForListFields(['itemsId'], listSizes),
+    ...sharedDataTest.getTestsForCheckEmptyFields('readRole', 400)
 ];
 const validsListsAdd: ListAdd<Link>[] = [
     { ...listLinkAdd, title: generators.getNCharText(64) },
@@ -63,114 +39,88 @@ const validsListsAdd: ListAdd<Link>[] = [
     { ...listLinkAdd, readRole: EUserRole.UNKNOWN }
 ];
 let token: string;
+let tokenAdmin: string;
 
 beforeAll(async () => {
-    token = await shared.getTokenValid(usersAdd.admin, app);
+    await clearDatabase(await appInstance.databaseInstance);
+    token = await sharedDataTest.getTokenValid(usersAdd.joao, app);
+    tokenAdmin = await sharedDataTest.getTokenValid(usersAdd.admin, app);
 });
 
 describe('delete', () => {
-    let listSaved: List<Link>;
 
-    beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-        const res = await testRest.post(app, route, listLinkAdd, token);
-        expect(res.status).toBe(201);
-        listSaved = res.body;
-        expect(listSaved).toMatchObject(listLinkAdd);
-    });
+    it.each<[StringOptional, number]>(invalidIds)
+    ('id = %s; status be %d', async (id, status) =>
+      await testRest.deleteInvalidIds(app, route, id, status, tokenAdmin)
+    );
 
-    it('valid ', async () => {
-        const res = await testRest.delete(app, route, listSaved.id, token);
-        expect(res.status).toBe(200);
-        const resGet = await testRest.getById(app, route, listSaved.id, token);
-        expect(resGet.status).toBe(404);
-    });
+    it('not_admin', async () => await testRest.deleteOnlyAdmin(app, route, token));
 
-    // TODO testar com ids inválidos
+    it('valid', async () =>
+      await testRest.postAndDelete(app, route, listLinkAdd, tokenAdmin)
+    );
 });
 
 describe('get', () => {
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
         await Promise.all([listLinkAdd, listLinkAddAdmin]
-          .map(async c => {
-              const res = await testRest.post(app, route, c, token);
-              expect(res.status).toBe(201);
-          })
+          .map(async c => await testRest.postAndMatch(app, route, c, tokenAdmin))
         );
     });
 
     it('valid ', async () => {
-        const resGet = await testRest.get(app, route, {}, token);
-        expect(resGet.status).toBe(200);
-        expect(resGet.body).toMatchObject([listLinkAdd, listLinkAddAdmin]);
+        await testRest.getAndMatch(
+          app, route, {}, [listLinkAdd, listLinkAddAdmin], tokenAdmin
+        );
     });
 });
 
 describe('get_by_id', () => {
-    let listSaved: List<Link>;
 
-    beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-        const res = await testRest.post(app, route, listLinkAdd, token);
-        expect(res.status).toBe(201);
-        listSaved = res.body;
-        expect(listSaved).toMatchObject(listLinkAdd);
-    });
+    it.each<[StringOptional, number]>(invalidIds)
+    ('id = %s; status be %d', async (id, status) =>
+      await testRest.getByIdInvalidIds(app, route, id, status, tokenAdmin)
+    );
 
-    it('valid ', async () => {
-        const res = await testRest.getById(app, route, listSaved.id, token);
-        expect(res.status).toBe(200);
-        expect(res.body).toMatchObject(listSaved);
-    });
-
-
-    // TODO testar com ids inválidos
+    it('valid', async () =>
+      await testRest.postAndGetById(app, route, listLinkAdd, tokenAdmin)
+    );
 });
 
 describe('patch', () => {
-    let listAddSavedId: string;
+    const idValid = generators.getMongoOBjectId();
 
-    beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-        const res = await testRest.post(app, route, listLinkAdd, token);
-        expect(res.status).toBe(201);
-        expect(res.body).toMatchObject(listLinkAdd);
-        listAddSavedId = res.body.id;
+    it.each<[StringOptional, number]>(invalidIds)
+    ('id = %s; status be %d', async (id, status) =>
+      await testRest.patchInvalidIds(app, route, id, status, tokenAdmin));
+
+    it.each<TestObject<object>>([...invalidDataPatchPost, ...invalidFieldsPatch])
+    ('invalid - %s', async (testCase) => {
+        const res = await testRest.patch(app, route, idValid, testCase.data, tokenAdmin);
+        expect(res.status).toBe(testCase.expectStatus);
+        expect((res.body.message ?? res.body[0] as string).toLowerCase())
+          .toBe(testCase.message.toLowerCase());
     });
+
+    it('not_admin', async () => await testRest.patchOnlyAdmin(app, route, token));
 
     it.each<ListAdd<Link>>(validsListsAdd)
-    ('valid ', async (listAdd) => {
-        const res = await testRest.patch(app, route, listAddSavedId, listAdd, token);
-        expect(res.status).toBe(200);
-        expect(res.body).toMatchObject(listAdd);
-    });
-
-    it.each<TestObject<ListAdd<Link | object>>>(invalidDataPatchPost)
-    ('invalid ', async (test: TestObject<ListAdd<Link | object>>) => {
-        const res = await testRest.patch(app, route, listAddSavedId, test.data, token);
-        expect(res.status).toBe(test.expectStatus);
-        expect(res.body[0].toLowerCase()).toBe(test.message.toLowerCase());
-    });
+    ('valid - %s', async (dataPatch) =>
+      await testRest.postAndPatch(app, route, listLinkAdd, dataPatch, tokenAdmin)
+    );
 });
 
 describe('post', () => {
-    beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-    });
 
     it.each<ListAdd<Link>>(validsListsAdd)
-    ('valid ', async (listAdd) => {
-        const res = await testRest.post(app, route, listAdd, token);
-        expect(res.status).toBe(201);
-        expect(res.body).toMatchObject(listAdd);
-    });
+    ('valid ', async (listAdd) =>
+      await testRest.postAndMatch(app, route, listAdd, tokenAdmin)
+    );
 
-    it.each<TestObject<ListAdd<Link | object>>>(invalidDataPatchPost)
-    ('invalid ', async (test) => {
-        const res = await testRest.post(app, route, test.data, token);
-        expect(res.status).toBe(test.expectStatus);
+    it.each<TestObject<object>>(invalidDataPatchPost)
+    ('invalid - %s', async (test) => {
+        const res = await testRest.post(app, route, { ...listLinkAdd, ...test.data }, tokenAdmin, test.expectStatus);
         expect(res.body[0].toLowerCase()).toBe(test.message.toLowerCase());
     });
 });
-

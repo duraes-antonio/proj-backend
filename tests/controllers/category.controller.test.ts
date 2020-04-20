@@ -3,12 +3,10 @@ import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { Category, CategoryAdd } from '../../src/domain/models/category';
 import { FilterCategory } from '../../src/domain/models/filters/filter-category';
-import { TestObject } from '../test-object';
-import { serviceDataMsg, validationErrorMsg } from '../../src/shared/buildMsg';
-import { generators } from '../../utils/generators';
 import { categorySizes } from '../../src/shared/fieldSize';
-import { invalidFieldsPatch, invalidIds, shared, usersAdd } from '../shared-data';
+import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
 import { testRest } from '../shared-methods-http';
+import { generators } from '../../utils/generators';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -29,74 +27,37 @@ const categoryAddList: CategoryAdd[] = [
 let token: string;
 let tokenAdmin: string;
 
-const postCategory = async (categ: CategoryAdd, token: string): Promise<Category> => {
-    const res = await testRest.post(app, route, categoryAdd, token);
-    expect(res.status).toBe(201);
-    expect(res.body).toMatchObject(categ);
-    return res.body;
-};
-
 beforeAll(async () => {
     await clearDatabase(await appInstance.databaseInstance);
-    token = await shared.getTokenValid(usersAdd.joao, app);
-    tokenAdmin = await shared.getTokenValid(usersAdd.admin, app);
+    token = await sharedDataTest.getTokenValid(usersAdd.joao, app);
+    tokenAdmin = await sharedDataTest.getTokenValid(usersAdd.admin, app);
 });
 
 describe('delete', () => {
-    let categSaved: Category;
-
-    beforeEach(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-        categSaved = await postCategory(categoryAdd, tokenAdmin);
-    });
-
     it.each(invalidIds)
-    ('invalid',
-      async (id, expectedStatus) => {
-          const res = await testRest.delete(app, route, id, tokenAdmin);
-          expect(res.status).toBe(expectedStatus);
-      });
+    ('invalid - %s', async (id, expectedStatus) =>
+      await testRest.deleteInvalidIds(app, route, id, expectedStatus, tokenAdmin)
+    );
 
-    it(
-      'not_admin',
-      async () => {
-          const res = await testRest.delete(app, route, categSaved.id, token);
-          expect(res.status).toBe(403);
-          expect(res.body.message).toBe(serviceDataMsg.onlyAdmin().message);
-      });
+    it('not_admin', async () =>
+      await testRest.deleteOnlyAdmin(app, route, token)
+    );
 
-    it(
-      'valid',
-      async () => {
-          const res = await testRest.delete(app, route, categSaved.id, tokenAdmin);
-          expect(res.status).toBe(200);
-          const resGetAfterDel = await testRest.getById(app, route, categSaved.id, tokenAdmin);
-          expect(resGetAfterDel.status).toBe(404);
-      });
+    it('valid', async () =>
+      await testRest.postAndDelete(app, route, categoryAdd, tokenAdmin)
+    );
 });
 
 describe('get_by_id', () => {
-    let categSaved: Category;
-
-    beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-        categSaved = await postCategory(categoryAdd, tokenAdmin);
-    });
 
     it.each(invalidIds)
-    ('invalid',
-      async (id, expectedStatus) => {
-          const res = await testRest.getById(app, route, id, token);
-          expect(res.status).toBe(expectedStatus);
-      });
+    ('invalid - %s', async (id, expectedStatus) =>
+      await testRest.getByIdInvalidIds(app, route, id, expectedStatus, tokenAdmin)
+    );
 
-    it(
-      'valid',
-      async () => {
-          const res = await testRest.getById(app, route, categSaved.id, token);
-          expect(res.status).toBe(200);
-          expect(res.body).toMatchObject(categSaved);
-      });
+    it('valid', async () =>
+      await testRest.postAndGetById(app, route, categoryAdd, tokenAdmin)
+    );
 });
 
 describe('get', () => {
@@ -108,27 +69,22 @@ describe('get', () => {
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
         await Promise.all(categoryAddList
-          .map(async c => {
-              const res = await testRest.post(app, route, c, tokenAdmin);
-              expect(res.status).toBe(201);
-          })
+          .map(async c => await testRest.postAndMatch(app, route, c, tokenAdmin))
         );
     });
 
-    it(
-      'text_deck',
-      async () => {
-          const res = await testRest.get(app, route, filter, token);
-          const categories: Category[] = res.body;
-          expect(res.status).toBe(200);
-          expect(categories.length).toBeTruthy();
-          const allContaisText = categories.every(
-            c => c.title
-              .toLowerCase()
-              .includes(filter.text)
-          );
-          expect(allContaisText).toBeTruthy();
-      });
+    it('text_deck', async () => {
+        const res = await testRest.get(app, route, filter, token);
+        const categories: Category[] = res.body;
+        expect(res.status).toBe(200);
+        expect(categories.length).toBeTruthy();
+        const allContaisText = categories.every(
+          c => c.title
+            .toLowerCase()
+            .includes(filter.text)
+        );
+        expect(allContaisText).toBeTruthy();
+    });
 
     it(
       'filter',
@@ -156,110 +112,41 @@ describe('get', () => {
 });
 
 describe('patch', () => {
-    let categSaved: Category;
-
-    beforeAll(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
-        categSaved = await postCategory(categoryAdd, tokenAdmin);
-    });
+    const validId = generators.getMongoOBjectId() as string;
 
     it.each<TestObject<CategoryAdd>>([
-        {
-            data: { title: '' },
-            message: validationErrorMsg.empty('title'),
-            expectStatus: 400
-        },
-        {
-            data: { title: generators.getNCharText(categorySizes.titleMin - 1) },
-            message: validationErrorMsg.minLen('title', categorySizes.titleMin),
-            expectStatus: 400
-        },
-        {
-            data: { title: generators.getNCharText(categorySizes.titleMax + 1) },
-            message: validationErrorMsg.maxLen('title', categorySizes.titleMax),
-            expectStatus: 400
-        },
+        ...sharedDataTest.getTestsForStringFields(['title'], categorySizes),
         ...invalidFieldsPatch
     ])
-    ('invalid',
-      async (test: TestObject<CategoryAdd>) => {
-          const res = await testRest.patch(app, route, categSaved.id, test.data, tokenAdmin);
-          expect(res.status).toBe(test.expectStatus);
-          expect((res.body.message ?? res.body[0] as string).toLowerCase())
-            .toBe(test.message.toLowerCase());
-      });
+    ('invalid', async (test: TestObject<CategoryAdd>) => {
+        const res = await testRest.patch(app, route, validId, test.data, tokenAdmin);
+        expect(res.status).toBe(test.expectStatus);
+        expect((res.body.message ?? res.body[0] as string).toLowerCase())
+          .toBe(test.message.toLowerCase());
+    });
 
-    it(
-      'not_admin',
-      async () => {
-          const res = await testRest.patch(app, route, categSaved.id, {}, token);
-          expect(res.status).toBe(403);
-          expect(res.body.message).toBe(serviceDataMsg.onlyAdmin().message);
-      });
+    it('not_admin', async () => await testRest.patchOnlyAdmin(app, route, token));
 
     it.each([{ 'title': 'new Title' }])
-    ('valid', async (data) => {
-        const res = await testRest.patch(app, route, categSaved.id, data, tokenAdmin);
-        expect(res.status).toBe(200);
-
-        const resGet = await testRest.getById(app, route, categSaved.id, token);
-        expect(resGet.status).toBe(200);
-        expect(resGet.body).toMatchObject(data);
-    });
+    ('valid', async (dataPatch) =>
+      await testRest.postAndPatch(app, route, categoryAdd, dataPatch, tokenAdmin)
+    );
 });
 
 describe('post', () => {
-    beforeEach(async () => {
-        await clearDatabase(await appInstance.databaseInstance);
+
+    it('valid', async () =>
+      await testRest.post(app, route, categoryAdd, tokenAdmin, 201)
+    );
+
+    it('not_admin', async () => await testRest.postOnlyAdmin(app, route, token));
+
+    it.each<TestObject<any>>([
+        ...sharedDataTest.getTestsForStringFields(['title'], categorySizes)
+    ])
+    ('invalid', async (test: TestObject<CategoryAdd>) => {
+        const res = await testRest.post(app, route, test.data, tokenAdmin, test.expectStatus);
+        expect((res.body.message ?? res.body[0] as string).toLowerCase())
+          .toBe(test.message.toLowerCase());
     });
-
-    it('valid', async () => await postCategory(categoryAdd, tokenAdmin));
-
-    it(
-      'not_admin',
-      async () => {
-          const res = await testRest.post(app, route, {}, token);
-          expect(res.status).toBe(403);
-          expect(res.body.message).toBe(serviceDataMsg.onlyAdmin().message);
-      });
-
-    it.each<TestObject<CategoryAdd>>([
-        {
-            data: {},
-            message: validationErrorMsg.empty('title'),
-            expectStatus: 400
-        },
-        {
-            data: { title: '' },
-            message: validationErrorMsg.empty('title'),
-            expectStatus: 400
-        },
-        {
-            data: { title: null },
-            message: validationErrorMsg.empty('title'),
-            expectStatus: 400
-        },
-        {
-            data: { title: undefined },
-            message: validationErrorMsg.empty('title'),
-            expectStatus: 400
-        },
-        {
-            data: { title: generators.getNCharText(categorySizes.titleMin - 1) },
-            message: validationErrorMsg.minLen('title', categorySizes.titleMin),
-            expectStatus: 400
-        },
-        {
-            data: { title: generators.getNCharText(categorySizes.titleMax + 1) },
-            message: validationErrorMsg.maxLen('title', categorySizes.titleMax),
-            expectStatus: 400
-        }
-    ] as TestObject<CategoryAdd>[])
-    ('invalid',
-      async (test: TestObject<CategoryAdd>) => {
-          const res = await testRest.post(app, route, test.data, tokenAdmin);
-          expect(res.status).toBe(test.expectStatus);
-          expect((res.body[0] as string).toLowerCase())
-            .toBe(test.message.toLowerCase());
-      });
 });

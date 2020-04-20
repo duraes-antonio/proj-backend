@@ -42,7 +42,7 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<Category>> {
     return ctrlFunc.patch<Category>(
       req, res, next, entityName, categoryService.validate,
-      (id, obj) => repoFunc.update(id, obj, CategorySchema),
+      (id, obj) => repoFunc.findAndUpdate(id, obj, CategorySchema),
       ['title']
     );
 }

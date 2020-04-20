@@ -42,7 +42,8 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
 
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<List<Link>>> {
     return ctrlFunc.patch<List<Link>>(
-      req, res, next, entityName, listService.validateListAdd,
+      req, res, next, entityName,
+      (list) => listService.validateListAdd(list, true),
       (id, obj) => repoFunc.findAndUpdate(id, obj, ListLinkSchema, {}),
       ['title', 'readRole', 'itemsId']
     );

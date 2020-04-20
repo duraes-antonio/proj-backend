@@ -1,40 +1,13 @@
 'use strict';
 import { NextFunction, Request, Response } from 'express';
-import { PipelineValidation } from '../shared/validations';
-import { validationErrorMsg as msg } from '../shared/buildMsg';
 import { Product, ProductAdd } from '../domain/models/product';
-import { productSizes as prodSizes } from '../shared/fieldSize';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { productRepository as prodRepo } from '../data/repository/product.repository';
 import { ProductSchema } from '../data/schemas/product.schema';
+import { productService } from '../services/product.service';
 
 export const entityName = 'Produto';
-
-function validateProduct(prod: Product | ProductAdd): PipelineValidation {
-    return new PipelineValidation(msg.empty)
-      .atMaxLen('Título', prod.title, prodSizes.titleMax, msg.maxLen)
-      .atMaxLen('Descrição', prod.title, prodSizes.titleMax, msg.maxLen)
-      .atMaxValue('Preço', prod.price, prodSizes.priceMax, msg.maxValue)
-      .atLeastValue('Preço', prod.price, prodSizes.priceMin, msg.minValue)
-      .atLeastValue('Custo', prod.cost, prodSizes.costMax, msg.maxValue)
-      .atMaxValue('Custo', prod.cost, prodSizes.costMax, msg.maxValue)
-      .atLeastValue('Desconto', prod.percentOff, prodSizes.percentOffMin, msg.minValue)
-      .atMaxValue('Desconto', prod.percentOff, prodSizes.percentOffMax, msg.maxValue)
-
-      .atLeastValue('Altura', prod.height, prodSizes.heightMin, msg.minValue)
-      .atMaxValue('Altura', prod.height, prodSizes.heightMax, msg.maxValue)
-      .atLeastValue('Comprimento', prod.length, prodSizes.lengthMin, msg.minValue)
-      .atMaxValue('Comprimento', prod.length, prodSizes.lengthMax, msg.maxValue)
-      .atLeastValue('Largura', prod.width, prodSizes.widthMin, msg.minValue)
-      .atMaxValue('Largura', prod.width, prodSizes.widthMax, msg.maxValue)
-      .atLeastValue('Peso', prod.weight, prodSizes.weightMin, msg.minValue)
-      .atMaxValue('Peso', prod.weight, prodSizes.weightMax, msg.maxValue)
-
-      .atLeastValue('Quantidade disponível', prod.amountAvailable, prodSizes.amountAvailableMin, msg.minValue)
-      .atMaxValue('Quantidade disponível', prod.amountAvailable, prodSizes.amountAvailableMax, msg.maxValue)
-      ;
-}
 
 async function delete_(req: Request, res: Response, next: NextFunction): Promise<Response> {
     return await ctrlFunc.delete(
@@ -43,55 +16,44 @@ async function delete_(req: Request, res: Response, next: NextFunction): Promise
     );
 }
 
-async function post(
-  req: Request, res: Response, next: NextFunction
-): Promise<Response<Product>> {
+async function post(req: Request, res: Response, next: NextFunction): Promise<Response<Product>> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     return await ctrlFunc.post<ProductAdd>(
       req, res, next,
       () => repoFunc.create(req.body, ProductSchema),
-      validateProduct
+      productService.validate
     );
 }
 
-async function get(
-  req: Request, res: Response, next: NextFunction
-): Promise<Response<Product>> {
+async function get(req: Request, res: Response, next: NextFunction): Promise<Response<Product[]>> {
     return await ctrlFunc.get<Product>(req, res, next,
       (filter) => prodRepo.find(filter)
     );
 }
 
-async function getById(req: Request, res: Response, next: NextFunction): Promise<Response> {
+async function getById(req: Request, res: Response, next: NextFunction): Promise<Response<Product>> {
     return await ctrlFunc.getById<Product>(
       req, res, next, entityName,
       (id) => repoFunc.findById(id, ProductSchema)
     );
 }
 
-/*TODO: Converter para patch*/
-async function put(req: Request, res: Response, next: NextFunction) {
-    const putObj = {
-        desc: req.body.desc,
-        price: req.body.price,
-        percentOff: req.body.percentOff,
-        freeDelivery: req.body.freeDelivery,
-        amountAvailable: req.body.amountAvailable,
-        categoriesId: req.body.categoriesId,
-        title: req.body.title,
-        urlMainImage: req.body.urlMainImage
-    };
-    return ctrlFunc.put<Product>(
-      req, res, next, entityName, putObj, validateProduct,
-      (id: string, obj: any) => repoFunc.update(id, obj, ProductSchema)
-    );
+async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<Product>> {
+    return ctrlFunc.patch<Product>(
+      req, res, next, entityName,
+      (product) => productService.validate(product, true),
+      (id, obj) => repoFunc.findAndUpdate(id, obj, ProductSchema),
+      [
+          'title', 'desc', 'price', 'cost', 'percentOff', 'height', 'length',
+          'width', 'weight', 'amountAvailable', 'freeDelivery', 'categoriesId', 'visible'
+      ]);
 }
 
 export const productController = {
     delete: delete_,
-    get: get,
-    getById: getById,
-    post: post,
-    put: put
+    get,
+    getById,
+    post,
+    patch
 };

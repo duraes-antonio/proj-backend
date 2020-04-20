@@ -3,7 +3,7 @@ import { config } from '../config';
 import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg } from '../shared/buildMsg';
 import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
-import { TokenData } from './interfaces/tokenData.interface';
+import { TokenData } from '../domain/models/token-data';
 import { UserDBModel } from '../data/schemas/user.schema';
 import { User } from '../domain/models/user';
 import { JsonWebTokenError } from 'jsonwebtoken';

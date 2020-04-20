@@ -52,7 +52,7 @@ async function find(filter: FilterCategory): Promise<Category[]> {
 }
 
 async function findCount(filter: FilterCategory): Promise<number> {
-    return await CategorySchema.count(parseQuery(filter));
+    return CategorySchema.count(parseQuery(filter));
 }
 
 export const categoryRepository = {
