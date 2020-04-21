@@ -109,7 +109,6 @@ const postAndPatch = async <T>(
   app: App, route: string, data: T, patchData: object, token?: string
 ): Promise<void> => {
     const resPost = await postAndMatch(app, route, data, token);
-    console.log(resPost.header);
     const resPatch = await patch(
       app, route, resPost.body.id, patchData, token ?? resPost.header
     );

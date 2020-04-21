@@ -38,7 +38,7 @@ function parseQuery(filter: FilterCategory): CategoryQuery {
 }
 
 async function find(filter: FilterCategory): Promise<Category[]> {
-    const res = await CategorySchema.find(
+    const queryResult = await CategorySchema.find(
       parseQuery(filter),
       { 'score': { '$meta': 'textScore' } }
     ).select({ id: 1, title: 1, createdAt: 1 })
@@ -46,16 +46,20 @@ async function find(filter: FilterCategory): Promise<Category[]> {
       .skip(+filter.perPage * (+filter.currentPage - 1))
       .limit(+filter.perPage)
       .lean();
-    return res.map(obj => {
+    return queryResult.map(obj => {
         return { ...obj, id: obj._id };
     });
 }
 
 async function findCount(filter: FilterCategory): Promise<number> {
-    return CategorySchema.count(parseQuery(filter));
+    const queryResult = await CategorySchema.find(
+      parseQuery(filter),
+      { 'score': { '$meta': 'textScore' } }
+    ).lean();
+    return queryResult.length;
 }
 
 export const categoryRepository = {
-    findCount: findCount,
-    find: find
+    findCount,
+    find
 };

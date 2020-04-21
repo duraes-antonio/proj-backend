@@ -7,6 +7,7 @@ import { categoryRepository as categRepo } from '../data/repository/category.rep
 import { FilterCategory } from '../domain/models/filters/filter-category';
 import { CategorySchema } from '../data/schemas/category.schema';
 import { categoryService } from '../services/category.service';
+import { responseFunctions } from './base/response.functions';
 
 export const entityName = 'Categoria';
 
@@ -32,6 +33,11 @@ async function get(req: Request, res: Response, next: NextFunction): Promise<Res
     );
 }
 
+async function getCount(req: Request, res: Response, next: NextFunction): Promise<Response<number>> {
+    const filter = req.query && Object.keys(req.query).length ? req.query : req.body;
+    return responseFunctions.success(res, await categRepo.findCount(filter));
+}
+
 async function getById(req: Request, res: Response, next: NextFunction): Promise<Response<Category>> {
     return ctrlFunc.getById<Category>(
       req, res, next, entityName,
@@ -49,8 +55,9 @@ async function patch(req: Request, res: Response, next: NextFunction): Promise<R
 
 export const categoryController = {
     delete: delete_,
-    get: get,
-    getById: getById,
-    post: post,
-    patch: patch
+    get,
+    getCount,
+    getById,
+    post,
+    patch
 };

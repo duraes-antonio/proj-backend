@@ -32,12 +32,14 @@ async function delete_<T>(
 async function get<T>(
   req: Request, res: Response, next: NextFunction,
   bdFind: (filter: FilterBasic) => Promise<T[]>
-): Promise<Response> {
+): Promise<Response<T[]>> {
     try {
         const filter = req.query && Object.keys(req.query).length ? req.query : req.body;
         const objs: T[] = await bdFind(filter);
         return resFunc.success(res, objs);
     } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
         return resFunc.unknown(res, err);
     }
 }

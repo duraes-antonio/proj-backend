@@ -6,6 +6,7 @@ import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { productRepository as prodRepo } from '../data/repository/product.repository';
 import { ProductSchema } from '../data/schemas/product.schema';
 import { productService } from '../services/product.service';
+import { responseFunctions } from './base/response.functions';
 
 export const entityName = 'Produto';
 
@@ -32,6 +33,11 @@ async function get(req: Request, res: Response, next: NextFunction): Promise<Res
     );
 }
 
+async function getCount(req: Request, res: Response, next: NextFunction): Promise<Response<number>> {
+    const filter = req.query && Object.keys(req.query).length ? req.query : req.body;
+    return responseFunctions.success(res, await prodRepo.findCount(filter));
+}
+
 async function getById(req: Request, res: Response, next: NextFunction): Promise<Response<Product>> {
     return await ctrlFunc.getById<Product>(
       req, res, next, entityName,
@@ -54,6 +60,7 @@ export const productController = {
     delete: delete_,
     get,
     getById,
+    getCount,
     post,
     patch
 };

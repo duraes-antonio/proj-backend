@@ -4,13 +4,13 @@ import { ECollectionsName } from '../collections-name.enum';
 import { listSizes } from '../../shared/fieldSize';
 import { List } from '../../domain/models/lists/list';
 import { EUserRole } from '../../domain/enum/role.enum';
-import { Link } from '../../domain/models/link';
+import { Product } from '../../domain/models/product';
 
-const listLinkSchema = new Schema({
+const listProductSchema = new Schema({
     itemsId: {
         default: [],
         type: [Schema.Types.ObjectId],
-        ref: ECollectionsName.LINK
+        ref: ECollectionsName.PRODUCT
     },
 
     readRole: {
@@ -32,15 +32,16 @@ const listLinkSchema = new Schema({
         type: Date
     }
 });
-listLinkSchema.virtual(
+
+listProductSchema.virtual(
   'items',
   {
-      ref: ECollectionsName.LINK,
+      ref: ECollectionsName.PRODUCT,
       localField: 'itemsId',
       foreignField: '_id'
   });
 
-export const ListLinkSchema: Model<ListLinkDBModel> = model<ListLinkDBModel>(ECollectionsName.LIST_LINK, listLinkSchema);
+export const ListProductSchema: Model<ListProductDBModel> = model<ListProductDBModel>(ECollectionsName.LIST_PRODUCT, listProductSchema);
 
-export interface ListLinkDBModel extends Document, List<Link> {
+export interface ListProductDBModel extends Document, List<Product> {
 }

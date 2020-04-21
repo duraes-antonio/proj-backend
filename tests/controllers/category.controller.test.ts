@@ -78,27 +78,31 @@ describe('get', () => {
         const categories: Category[] = res.body;
         expect(res.status).toBe(200);
         expect(categories.length).toBeTruthy();
-        const allContaisText = categories.every(
+        const allContaisText = categories.filter(
           c => c.title
             .toLowerCase()
             .includes(filter.text)
         );
-        expect(allContaisText).toBeTruthy();
+        expect(allContaisText).toMatchObject(res.body);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(allContaisText.length);
     });
 
     it(
       'filter',
       async () => {
-          const res = await testRest.get(app, route, { ...filter, perPage: 2 }, token);
+          const newFilter = { ...filter };
+          const res = await testRest.get(app, route, newFilter, token);
           const body: Category[] = res.body;
           expect(res.status).toBe(200);
-          expect(body.length === 2);
           const allContainsText = body
-            .every(c => c.title
+            .filter(c => c.title
               .toLowerCase()
-              .includes(filter.text)
+              .includes(newFilter.text)
             );
-          expect(allContainsText).toBeTruthy();
+          expect(allContainsText).toMatchObject(res.body);
+          const resCount = await testRest.get(app, `${route}/count`, newFilter, token);
+          expect(resCount.body.data).toBe(allContainsText.length);
       });
 
     it(
@@ -141,10 +145,10 @@ describe('post', () => {
 
     it('not_admin', async () => await testRest.postOnlyAdmin(app, route, token));
 
-    it.each<TestObject<any>>([
+    it.each<TestObject<object>>([
         ...sharedDataTest.getTestsForStringFields(['title'], categorySizes)
     ])
-    ('invalid', async (test: TestObject<CategoryAdd>) => {
+    ('invalid', async (test: TestObject<object>) => {
         const res = await testRest.post(app, route, test.data, tokenAdmin, test.expectStatus);
         expect((res.body.message ?? res.body[0] as string).toLowerCase())
           .toBe(test.message.toLowerCase());

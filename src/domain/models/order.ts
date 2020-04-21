@@ -2,7 +2,7 @@
 
 import { ItemOrder } from './item-order';
 import { Address } from './address';
-import { EStateOrder } from '../enum/stateOrder';
+import { EStateOrder } from '../enum/state-order';
 
 export interface Order {
     readonly id: number;

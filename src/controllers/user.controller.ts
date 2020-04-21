@@ -53,8 +53,7 @@ async function post(req: Request, res: Response, next: NextFunction): Promise<Re
 
     const objSaved = await ctrlFunc.postAndReturnCreated<User>(
       req, res, next,
-      async () => await repoFunc.create<User>(user, UserSchema),
-      undefined
+      async () => await repoFunc.create<User>(user, UserSchema)
     );
     return sendToken(res, objSaved);
 }

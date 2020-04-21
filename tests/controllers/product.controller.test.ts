@@ -7,6 +7,7 @@ import { StringOptional, testRest } from '../shared-methods-http';
 import { productSizes } from '../../src/shared/fieldSize';
 import { generators } from '../../utils/generators';
 import { FilterProduct } from '../../src/domain/models/filters/filter-product';
+import { EProductSort } from '../../src/domain/enum/product-sort.enum';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -73,6 +74,17 @@ const productRandom = function productRandom(
     };
 };
 
+function cmp(
+  fnAccess: (p: ProductAdd) => string | number, pA: ProductAdd,
+  pB: ProductAdd): number {
+    if (fnAccess(pA) > fnAccess(pB)) {
+        return 1;
+    } else if (fnAccess(pA) < fnAccess(pB)) {
+        return -1;
+    }
+    return 0;
+}
+
 beforeAll(async () => {
     await clearDatabase(await appInstance.databaseInstance);
     token = await sharedDataTest.getTokenValid(usersAdd.joao, app);
@@ -93,9 +105,10 @@ describe('delete', () => {
       await testRest.postAndDelete(app, route, productAdd, tokenAdmin));
 });
 
-describe('get_filter', () => {
+describe('get', () => {
     let products: ProductAdd[];
     const categories = generators.getMongoOBjectIds(3);
+
 
     beforeAll(async () => {
         products = [
@@ -204,14 +217,18 @@ describe('get_filter', () => {
         const filter: FilterProduct = {
             avgReview: [0, 2],
             currentPage: 1,
-            perPage: 10
+            perPage: 10,
+            sortBy: EProductSort.AVERAGE_REVIEW
         };
         const res = await testRest.get(app, route, filter, token);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
         const allValidReview = (res.body as Product[])
-          .every((p: Product) => (filter.avgReview as number[])
-            .includes(Math.floor(p.avgReview))
+          .filter((p: Product) =>
+            (filter.avgReview as number[])
+              .includes(Math.floor(p.avgReview))
           );
-        expect(allValidReview).toBeTruthy();
+        expect(resCount.body.data).toBe(allValidReview.length);
+        expect(allValidReview).toEqual(res.body);
     });
 
     it('rating_empty', async () => {
@@ -220,6 +237,8 @@ describe('get_filter', () => {
             perPage: 20
         };
         await testRest.getAndMatch(app, route, filter, products, token);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(products.length);
     });
 
     it('category', async () => {
@@ -231,6 +250,8 @@ describe('get_filter', () => {
         const dataMatch = products
           .filter(p => p.categoriesId.some(c => filter?.categoriesId?.includes(c)));
         await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(dataMatch.length);
     });
 
     it('text', async () => {
@@ -245,6 +266,8 @@ describe('get_filter', () => {
             || p.desc.toLowerCase().includes(filter.text))
         );
         await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(dataMatch.length);
     });
 
     it('free_delivery', async () => {
@@ -255,13 +278,16 @@ describe('get_filter', () => {
         };
         const dataMatch = products.filter(p => p.freeDelivery === filter.freeDelivery);
         await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(dataMatch.length);
     });
 
     it('discount', async () => {
         const filter: FilterProduct = {
-            discounts: [[0, 25], [50, 75]],
+            discounts: [[20, 45], [50, 75]],
             currentPage: 1,
-            perPage: 20
+            perPage: 20,
+            sortBy: EProductSort.DISCOUNTS
         };
         const dataMatch = products
           .filter(p => filter?.discounts
@@ -269,7 +295,12 @@ describe('get_filter', () => {
               p.percentOff >= pairOff[0] && p.percentOff <= pairOff[1]
             )
           );
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token, (a: ProductAdd, b: ProductAdd) =>
+            cmp((p: ProductAdd) => p.percentOff, a, b)
+        );
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(dataMatch.length);
     });
 
     it('price_min', async () => {
@@ -305,6 +336,8 @@ describe('get_filter', () => {
             p.price >= filter.priceMin && p.price <= filter.priceMax
           );
         await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        const resCount = await testRest.get(app, `${route}/count`, filter, token);
+        expect(resCount.body.data).toBe(dataMatch.length);
     });
 });
 

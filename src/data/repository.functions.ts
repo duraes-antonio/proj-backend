@@ -13,32 +13,39 @@ async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
 
 async function delete_<T>(id: string, model: Model<Document & T>, conditions?: object): Promise<T | null> {
     const q: object = conditions ? { ...conditions, _id: id } : { _id: id };
-    return await model.findOneAndDelete(q);
+    return model.findOneAndDelete(q);
 }
 
 async function find<T>(
-  model: Model<Document & T>, f?: FilterBasic, sort?: object, query?: object): Promise<T[]> {
+  model: Model<Document & T>, f?: FilterBasic, sort?: object,
+  query?: object, populateFields?: string
+): Promise<T[]> {
     let res: any[];
 
     if (f) {
         res = await model.find(query ?? {})
+          .populate(populateFields ?? '')
           .lean()
           .sort(sort ? sort : {})
           .skip((f.currentPage - 1) * f.perPage)
           .limit(f.perPage);
     } else {
         res = await model.find(query ?? {})
+          .populate(populateFields ?? '')
           .lean()
           .sort(sort ? sort : {});
     }
-
     return res.map(o => {
         return { ...o, id: o._id };
     });
 }
 
-async function findById<T>(id: string, model: Model<Document & T>): Promise<T | null> {
-    const obj: any = await model.findById(id).lean();
+async function findById<T>(
+  id: string, model: Model<Document & T>, populateFields?: string
+): Promise<T | null> {
+    const obj: any = await model.findById(id)
+      .populate(populateFields ?? '')
+      .lean();
     return obj ? { ...obj, id: obj._id } : null;
 }
 
@@ -68,5 +75,5 @@ export const repositoryFunctions = {
     delete: delete_,
     find: find,
     findById: findById,
-    findAndUpdate: findAndUpdate,
+    findAndUpdate: findAndUpdate
 };

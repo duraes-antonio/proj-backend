@@ -38,11 +38,12 @@ function notFound(
 }
 
 function success<T>(res: Response, data?: T): Response<T> {
-    return res.status(200).send(data ?? '');
+    const dataReturn = !data ? '' : (data instanceof Object ? data : { data });
+    return res.status(200).send(dataReturn);
 }
 
 function unknown(res: Response, err: Error):
-  Response<{message: string; data: Error}> {
+  Response<{ message: string; data: Error }> {
     return res.status(500).send({ ...msgS.unknown(), data: err });
 }
 

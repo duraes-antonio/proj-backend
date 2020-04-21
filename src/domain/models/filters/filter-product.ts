@@ -1,6 +1,6 @@
 'use strict';
 import { FilterBasic } from './filter-basic';
-import { EProductSort } from '../../enum/productSort.enum';
+import { EProductSort } from '../../enum/product-sort.enum';
 
 export interface FilterProduct extends FilterBasic {
     avgReview?: number[];

@@ -2,7 +2,7 @@
 import { Document, model, Model, Schema } from 'mongoose';
 import { categorySizes } from '../../shared/fieldSize';
 import { Category } from '../../domain/models/category';
-import { ECollectionsName } from '../collectionsName.enum';
+import { ECollectionsName } from '../collections-name.enum';
 
 const categorySchema = new Schema({
     title: {

@@ -9,7 +9,9 @@ import { productRoutes } from './routes/product.route';
 import { reviewRoutes } from './routes/review.route';
 import { paymentRoutes } from './routes/payment.route';
 import { addressRoutes } from './routes/address.route';
-import { listLinksRoutes } from './routes/list-links.route';
+import { listLinksRoutes } from './routes/list-items/list-links.route';
+import { listProductsRoutes } from './routes/list-items/list-products.route';
+import { linkRoutes } from './routes/list-items/link.route';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
@@ -53,7 +55,9 @@ export class App {
         this.express.use('/address', addressRoutes);
         this.express.use('/auth', authRoutes);
         this.express.use('/category', categoryRoutes);
+        this.express.use('/link', linkRoutes);
         this.express.use('/list-link', listLinksRoutes);
+        this.express.use('/list-product', listProductsRoutes);
         this.express.use('/payment', paymentRoutes);
         this.express.use('/product', productRoutes);
         this.express.use('/review', reviewRoutes);

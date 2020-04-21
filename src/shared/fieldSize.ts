@@ -28,6 +28,7 @@ export const listSizes = {
 export const linkSizes = {
     titleMax: 64,
     titleMin: 2,
+    urlMin: 10,
     urlMax: 2048
 };
 
@@ -65,7 +66,7 @@ export const reviewSizes = {
     ratingMin: 0,
     ratingMax: 5,
     titleMin: 10,
-    titleMax: 128,
+    titleMax: 128
 };
 
 export const userSizes = {

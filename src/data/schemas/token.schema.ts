@@ -1,7 +1,7 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
 import { TokenInvalid } from '../../domain/models/token-invalid';
-import { ECollectionsName } from '../collectionsName.enum';
+import { ECollectionsName } from '../collections-name.enum';
 
 const tokenSchema = new Schema({
     token: {

@@ -57,7 +57,7 @@ async function authenticate(req: Request, res: Response):
 
 async function refreshToken(req: Request, res: Response, next: NextFunction):
   Promise<{ token: string; user: TokenData }> {
-    const uInfo: TokenData = await tokenS.decodeFromReq(req);
+    const uInfo: TokenData = tokenS.decodeFromReq(req);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore

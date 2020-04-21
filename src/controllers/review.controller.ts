@@ -24,7 +24,7 @@ async function delete_(req: Request, res: Response, next: NextFunction): Promise
 }
 
 async function post(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const tokenData: TokenData = await tokenService.decodeFromReq(req);
+    const tokenData: TokenData = tokenService.decodeFromReq(req);
     const has: boolean = await reviewRepository.has(tokenData.id, req.body.productId);
 
     if (has) {
