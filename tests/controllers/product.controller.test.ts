@@ -109,8 +109,7 @@ describe('get', () => {
     let products: ProductAdd[];
     const categories = generators.getMongoOBjectIds(3);
 
-
-    beforeAll(async () => {
+    beforeEach(async () => {
         products = [
             {
                 title: 'Funk POP - Yugi',
