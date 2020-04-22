@@ -329,7 +329,10 @@ describe('get', () => {
             perPage: 20
         };
         const dataMatch = products.filter(p => !filter.priceMax || p.price <= filter.priceMax);
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token,
+          (a, b) => cmp((p) => p.price, a, b)
+        );
     });
 
     it('price_min_max', async () => {
@@ -343,7 +346,10 @@ describe('get', () => {
           .filter(p => filter.priceMin && filter.priceMax &&
             p.price >= filter.priceMin && p.price <= filter.priceMax
           );
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token,
+          (a, b) => cmp((p) => p.price, a, b)
+        );
         const resCount = await testRest.get(app, `${route}/count`, filter, token);
         expect(resCount.body.data).toBe(dataMatch.length);
     });
