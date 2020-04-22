@@ -74,7 +74,7 @@ const getAndMatch = async <T>(
     const body: T[] = res.body;
     expect(body.length === dataMatch.length).toBeTruthy();
     expect(cmp ? body.sort(cmp) : body)
-      .toMatchObject(cmp ? dataMatch.sort(cmp) : dataMatch);
+      .toContainEqual(cmp ? dataMatch.sort(cmp) : dataMatch);
 };
 
 const postAndMatch = async <T>(

@@ -109,7 +109,7 @@ describe('get', () => {
     let products: ProductAdd[];
     const categories = generators.getMongoOBjectIds(3);
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         products = [
             {
                 title: 'Funk POP - Yugi',
@@ -235,7 +235,10 @@ describe('get', () => {
             currentPage: 1,
             perPage: 20
         };
-        await testRest.getAndMatch(app, route, filter, products, token);
+        await testRest.getAndMatch(
+          app, route, filter, products, token,
+          (a, b) => cmp((p) => p.title, a, b)
+        );
         const resCount = await testRest.get(app, `${route}/count`, filter, token);
         expect(resCount.body.data).toBe(products.length);
     });
@@ -248,7 +251,10 @@ describe('get', () => {
         };
         const dataMatch = products
           .filter(p => p.categoriesId.some(c => filter?.categoriesId?.includes(c)));
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token,
+          (a, b) => cmp((p) => p.title, a, b)
+        );
         const resCount = await testRest.get(app, `${route}/count`, filter, token);
         expect(resCount.body.data).toBe(dataMatch.length);
     });
@@ -310,7 +316,10 @@ describe('get', () => {
             perPage: 20
         };
         const dataMatch = products.filter(p => !filter.priceMin || p.price >= filter.priceMin);
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token,
+          (a, b) => cmp((p) => p.price, a, b)
+        );
     });
 
     it('price_max', async () => {
