@@ -2,8 +2,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from '../base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../../data/repository.functions';
-import { listService } from '../../services/list.service';
-import { List, ListAdd } from '../../domain/models/lists/list';
+import { listService } from '../../services/list-items/list.service';
+import { List, ListAdd } from '../../domain/models/lists-item/list';
 import { Document, Model } from 'mongoose';
 
 async function delete_<T>(

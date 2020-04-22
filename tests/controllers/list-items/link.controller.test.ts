@@ -1,12 +1,12 @@
 'use strict';
-import { App } from '../../src/app';
-import { clearDatabase } from '../../utils/database';
-import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
-import { testRest } from '../shared-methods-http';
-import { generators } from '../../utils/generators';
-import { Link, LinkAdd } from '../../src/domain/models/link';
-import { FilterBasic } from '../../src/domain/models/filters/filter-basic';
-import { linkSizes } from '../../src/shared/fieldSize';
+import { App } from '../../../src/app';
+import { clearDatabase } from '../../../utils/database';
+import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
+import { testRest } from '../../shared-methods-http';
+import { generators } from '../../../utils/generators';
+import { Link, LinkAdd } from '../../../src/domain/models/lists-item/link';
+import { FilterBasic } from '../../../src/domain/models/filters/filter-basic';
+import { linkSizes } from '../../../src/shared/fieldSize';
 
 const appInstance = new App();
 const app = appInstance.express;

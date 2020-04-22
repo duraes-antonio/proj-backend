@@ -1,7 +1,7 @@
-import { LinkAdd } from '../domain/models/link';
-import { PipelineValidation } from '../shared/validations';
-import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { linkSizes } from '../shared/fieldSize';
+import { LinkAdd } from '../../domain/models/lists-item/link';
+import { PipelineValidation } from '../../shared/validations';
+import { validationErrorMsg as msg } from '../../shared/buildMsg';
+import { linkSizes } from '../../shared/fieldSize';
 
 function validate(data: LinkAdd, ignoreUndefined = false): PipelineValidation {
     return new PipelineValidation(msg.empty, ignoreUndefined)

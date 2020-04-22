@@ -1,7 +1,7 @@
-import { ListAdd } from '../domain/models/lists/list';
-import { PipelineValidation } from '../shared/validations';
-import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { listSizes } from '../shared/fieldSize';
+import { ListAdd } from '../../domain/models/lists-item/list';
+import { PipelineValidation } from '../../shared/validations';
+import { validationErrorMsg as msg } from '../../shared/buildMsg';
+import { listSizes } from '../../shared/fieldSize';
 
 function validateListAdd<T>(list: ListAdd<T>, ignoreUndefined = false): PipelineValidation {
     return new PipelineValidation(msg.empty, ignoreUndefined)

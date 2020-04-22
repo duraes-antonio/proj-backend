@@ -1,5 +1,5 @@
 'use strict';
-import { Registable } from './auditable';
+import { Registable } from '../auditable';
 
 export interface LinkAdd {
     readonly title: string;

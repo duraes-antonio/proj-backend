@@ -8,10 +8,14 @@ const regexEmail = /^(?=.{1,254}$)(?=.{1,64}@)[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:
 const regexPhone = /^\([1-9]{2}\)\s?(?:[2-8]|9[1-9])[0-9]{3}-?[0-9]{4}$/;
 
 const validation = {
-    atMaxLen(value: string, maxLenght: number): boolean {
+    atMaxLen(value: string | undefined, maxLenght: number): boolean {
+        // eslint-disable-next-line
+        // @ts-ignore
         return this.hasValue(value) && value.length <= maxLenght;
     },
-    atLeastLen(value: string, minLenght: number): boolean {
+    atLeastLen(value: string | undefined, minLenght: number): boolean {
+        // eslint-disable-next-line
+        // @ts-ignore
         return this.hasValue(value) && value.length >= minLenght;
     },
     atLeastLenList(value: ArrayLike<any>, minLenght: number): boolean {
@@ -63,7 +67,7 @@ export class PipelineValidation {
     }
 
     atMaxLen(
-      field: string, value: string, maxLenght: number,
+      field: string, value: string | undefined, maxLenght: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
 
@@ -74,7 +78,7 @@ export class PipelineValidation {
     }
 
     atLeastLen(
-      field: string, value: string, minLenght: number,
+      field: string, value: string | undefined, minLenght: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
         if (!this.isEmpty(value, field) && !validation.atLeastLen(value, minLenght)) {

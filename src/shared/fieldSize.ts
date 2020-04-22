@@ -32,6 +32,20 @@ export const linkSizes = {
     urlMax: 2048
 };
 
+export const marketSizes = {
+    avatarUrlMin: 16,
+    avatarUrlMax: 2048,
+    backgroundUrlMin: 16,
+    backgroundUrlMax: 2048,
+    indexMin: 0,
+    indexMax: 16,
+    nameMin: 2,
+    nameMax: 32,
+    urlMin: 16,
+    urlMax: 2048
+};
+
+
 export const productSizes = {
     amountAvailableMax: Number.MAX_SAFE_INTEGER,
     amountAvailableMin: 0,
@@ -67,6 +81,21 @@ export const reviewSizes = {
     ratingMax: 5,
     titleMin: 10,
     titleMax: 128
+};
+
+export const slideSizes = {
+    btnTitleMin: 2,
+    btnTitleMax: 64,
+    descMin: 16,
+    descMax: 512,
+    imageUrlMin: 16,
+    imageUrlMax: 2048,
+    indexMin: 0,
+    indexMax: 16,
+    titleMin: 4,
+    titleMax: 256,
+    urlMin: 16,
+    urlMax: 2048
 };
 
 export const userSizes = {

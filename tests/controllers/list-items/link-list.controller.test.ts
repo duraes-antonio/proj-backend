@@ -1,41 +1,27 @@
 'use strict';
-import { App } from '../../src/app';
-import { ListAdd } from '../../src/domain/models/lists/list';
-import { EUserRole } from '../../src/domain/enum/role.enum';
-import { clearDatabase } from '../../utils/database';
-import { generators } from '../../utils/generators';
-import { listSizes } from '../../src/shared/fieldSize';
-import { StringOptional, testRest } from '../shared-methods-http';
-import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
-import { Product, ProductAdd } from '../../src/domain/models/product';
+import { App } from '../../../src/app';
+import { ListAdd } from '../../../src/domain/models/lists-item/list';
+import { Link, LinkAdd } from '../../../src/domain/models/lists-item/link';
+import { EUserRole } from '../../../src/domain/enum/role.enum';
+import { clearDatabase } from '../../../utils/database';
+import { generators } from '../../../utils/generators';
+import { listSizes } from '../../../src/shared/fieldSize';
+import { StringOptional, testRest } from '../../shared-methods-http';
+import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
 
 const appInstance = new App();
 const app = appInstance.express;
-const route = '/list-product';
+const route = '/list-link';
 
-const listProductAdd: ListAdd<Product> = {
-    title: 'Produtos de teste - Cliente',
+const listLinkAdd: ListAdd<Link> = {
+    title: 'Lista de Links',
     readRole: EUserRole.CUSTOMER,
     itemsId: []
 };
-const listProductAddAdmin: ListAdd<Product> = {
-    title: 'Produtos de teste - Admin',
+const listLinkAddAdmin: ListAdd<Link> = {
+    title: 'Lista de Links - Admin',
     readRole: EUserRole.ADMIN,
     itemsId: []
-};
-const productAdd: ProductAdd = {
-    title: 'Produto de teste',
-    desc: 'Descrição de teste',
-    price: 150,
-    amountAvailable: 100,
-    percentOff: 10,
-    freeDelivery: true,
-    categoriesId: [],
-    cost: 10,
-    height: 1,
-    length: 1,
-    weight: 1,
-    width: 1
 };
 
 const invalidDataPatchPost: TestObject<object>[] = [
@@ -43,14 +29,14 @@ const invalidDataPatchPost: TestObject<object>[] = [
     ...sharedDataTest.getTestsForListFields(['itemsId'], listSizes),
     ...sharedDataTest.getTestsForCheckEmptyFields('readRole', 400)
 ];
-const validsListsAdd: ListAdd<Product>[] = [
-    { ...listProductAdd, title: generators.getNCharText(64) },
-    { ...listProductAdd, title: generators.getNCharText(2) },
+const validsListsAdd: ListAdd<Link>[] = [
+    { ...listLinkAdd, title: generators.getNCharText(64) },
+    { ...listLinkAdd, title: generators.getNCharText(2) },
     {
-        ...listProductAdd,
+        ...listLinkAdd,
         itemsId: [...Array(10)].map(() => generators.getMongoOBjectId())
     },
-    { ...listProductAdd, readRole: EUserRole.UNKNOWN }
+    { ...listLinkAdd, readRole: EUserRole.UNKNOWN }
 ];
 let token: string;
 let tokenAdmin: string;
@@ -59,9 +45,10 @@ beforeAll(async () => {
     await clearDatabase(await appInstance.databaseInstance);
     token = await sharedDataTest.getTokenValid(usersAdd.joao, app);
     tokenAdmin = await sharedDataTest.getTokenValid(usersAdd.admin, app);
-    const productId = (await testRest.post(app, '/product', productAdd, tokenAdmin)).body.id;
-    listProductAdd.itemsId.push(productId);
-    listProductAddAdmin.itemsId.push(productId);
+    const linkAdd: LinkAdd = { title: 'teste', url: 'www.google.com' };
+    const linkId = (await testRest.post(app, '/link', linkAdd, tokenAdmin)).body.id;
+    listLinkAdd.itemsId.push(linkId);
+    listLinkAddAdmin.itemsId.push(linkId);
 });
 
 describe('delete', () => {
@@ -74,21 +61,21 @@ describe('delete', () => {
     it('not_admin', async () => await testRest.deleteOnlyAdmin(app, route, token));
 
     it('valid', async () =>
-      await testRest.postAndDelete(app, route, listProductAdd, tokenAdmin)
+      await testRest.postAndDelete(app, route, listLinkAdd, tokenAdmin)
     );
 });
 
 describe('get', () => {
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
-        await Promise.all([listProductAdd, listProductAddAdmin]
+        await Promise.all([listLinkAdd, listLinkAddAdmin]
           .map(async c => await testRest.postAndMatch(app, route, c, tokenAdmin))
         );
     });
 
     it('valid ', async () => {
         await testRest.getAndMatch(
-          app, route, {}, [listProductAdd, listProductAddAdmin], tokenAdmin
+          app, route, {}, [listLinkAdd, listLinkAddAdmin], tokenAdmin
         );
     });
 });
@@ -101,7 +88,7 @@ describe('get_by_id', () => {
     );
 
     it('valid', async () =>
-      await testRest.postAndGetById(app, route, listProductAdd, tokenAdmin)
+      await testRest.postAndGetById(app, route, listLinkAdd, tokenAdmin)
     );
 });
 
@@ -122,22 +109,22 @@ describe('patch', () => {
 
     it('not_admin', async () => await testRest.patchOnlyAdmin(app, route, token));
 
-    it.each<ListAdd<Product>>(validsListsAdd)
+    it.each<ListAdd<Link>>(validsListsAdd)
     ('valid - %s', async (dataPatch) =>
-      await testRest.postAndPatch(app, route, listProductAdd, dataPatch, tokenAdmin)
+      await testRest.postAndPatch(app, route, listLinkAdd, dataPatch, tokenAdmin)
     );
 });
 
 describe('post', () => {
 
-    it.each<ListAdd<Product>>(validsListsAdd)
+    it.each<ListAdd<Link>>(validsListsAdd)
     ('valid ', async (listAdd) =>
       await testRest.postAndMatch(app, route, listAdd, tokenAdmin)
     );
 
     it.each<TestObject<object>>(invalidDataPatchPost)
     ('invalid - %s', async (test) => {
-        const res = await testRest.post(app, route, { ...listProductAdd, ...test.data }, tokenAdmin, test.expectStatus);
+        const res = await testRest.post(app, route, { ...listLinkAdd, ...test.data }, tokenAdmin, test.expectStatus);
         expect(res.body[0].toLowerCase()).toBe(test.message.toLowerCase());
     });
 });
