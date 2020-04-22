@@ -270,7 +270,10 @@ describe('get', () => {
           (p.title.toLowerCase().includes(filter.text)
             || p.desc.toLowerCase().includes(filter.text))
         );
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token,
+          (a, b) => cmp((p) => p.title, a, b)
+        );
         const resCount = await testRest.get(app, `${route}/count`, filter, token);
         expect(resCount.body.data).toBe(dataMatch.length);
     });
@@ -282,7 +285,10 @@ describe('get', () => {
             perPage: 20
         };
         const dataMatch = products.filter(p => p.freeDelivery === filter.freeDelivery);
-        await testRest.getAndMatch(app, route, filter, dataMatch, token);
+        await testRest.getAndMatch(
+          app, route, filter, dataMatch, token,
+          (a, b) => cmp((p) => p.title, a, b)
+        );
         const resCount = await testRest.get(app, `${route}/count`, filter, token);
         expect(resCount.body.data).toBe(dataMatch.length);
     });
