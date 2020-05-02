@@ -188,13 +188,14 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
 };
 
 const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
-    const urlNotifGet = `config.pagSeguro.urlGetNotific/${notifCode}`;
+    const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
     try {
         const notificationXML = await axios.get(
           `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`
         );
+        console.log(notificationXML, '******XML');
     } catch (e) {
-        throw new UnknownError(e);
+        throw new UnknownError(e.message);
     }
 };
 
