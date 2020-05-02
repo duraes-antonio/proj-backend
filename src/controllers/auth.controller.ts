@@ -54,25 +54,13 @@ async function authenticate(req: Request, res: Response):
 }
 
 async function refreshToken(req: Request, res: Response, next: NextFunction):
-  Promise<{ token: string; user: User }> {
+  Promise<Response<TokenReturn>> {
     const uInfo: User = tokenS.decodeFromReq(req);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
     return ctrlFunc.post(
       req, res, next,
       async () => {
           const token = tokenS.generate(uInfo);
-          return {
-              token: token,
-              user: {
-                  avatarUrl: uInfo.avatarUrl,
-                  email: uInfo.email,
-                  id: uInfo.email,
-                  name: uInfo.name,
-                  roles: uInfo.roles
-              }
-          };
+          return { token: token, user: uInfo };
       }
     );
 }

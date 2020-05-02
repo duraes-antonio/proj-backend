@@ -13,6 +13,15 @@ const invalidDataPatchPost = [
     ...sharedDataTest.getTestsForStringFields(['name', 'password'], userSizes)
 ];
 
+const cmpByName = (user1: { name: string }, user2: { name: string }): number => {
+    if (user1.name < user2.name) {
+        return -1;
+    } else if (user1.name > user2.name) {
+        return 1;
+    }
+    return 0;
+};
+
 describe('get', () => {
     beforeAll(async () => {
         await clearDatabase(await appInstance.databaseInstance);
@@ -28,7 +37,7 @@ describe('get', () => {
             const clone = { ...u };
             delete clone['password'];
             return clone;
-        })
+        }), undefined, cmpByName
       )
     );
 });

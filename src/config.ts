@@ -1,4 +1,4 @@
-enum EEnv {
+export enum EEnv {
     DEV = 'dev',
     PROD = 'prod',
     TEST = 'test',

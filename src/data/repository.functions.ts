@@ -9,24 +9,28 @@ const insertFieldId = (value: any): any => {
         return value;
     }
 
-    const clone = { ...value };
+    if (value instanceof Array) {
+        return value.map(item => insertFieldId(item));
+    } else {
+        const clone = { ...value };
 
-    Object.keys(value).forEach(key => {
+        Object.keys(value).forEach(key => {
 
-        if (clone[key] instanceof Array) {
-            (clone[key] as []).forEach((item, i) =>
-              clone[key][i] = insertFieldId(item)
-            );
-        } else {
-            if ('_id' in clone) {
-                clone.id = clone._id.toString();
+            if (clone[key] instanceof Array) {
+                (clone[key] as []).forEach((item, i) =>
+                  clone[key][i] = insertFieldId(item)
+                );
+            } else {
+                if ('_id' in clone) {
+                    clone.id = clone._id.toString();
+                }
+                clone[key] = insertFieldId(clone[key]);
             }
-            clone[key] = insertFieldId(clone[key]);
-        }
-    });
-    delete clone.__v;
-    delete clone._id;
-    return clone;
+        });
+        delete clone.__v;
+        delete clone._id;
+        return clone;
+    }
 };
 
 async function createMany<T>(payload: T[], model: Model<Document & T>): Promise<T[]> {

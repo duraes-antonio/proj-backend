@@ -1,5 +1,10 @@
 import sendgrid from '@sendgrid/mail';
 import { ClientResponse } from '@sendgrid/client/src/response';
+import { EEnv } from '../config';
+
+if (process.env.NODE_ENV === EEnv.PROD) {
+    sendgrid.setApiKey(process.env.SENDGRID_API_KEY as string);
+}
 
 export interface EmailTemplate {
     from: string;
@@ -9,7 +14,6 @@ export interface EmailTemplate {
 }
 
 const sendEmail = (template: EmailTemplate): Promise<[ClientResponse, {}]> => {
-    // sendgrid.setApiKey(config.sendgridApiKey);
     return sendgrid.send({
         from: template.from,
         to: template.to,

@@ -12,7 +12,7 @@
     "test_dev": "NODE_ENV=test_dev jest --coverage --detectOpenHandles --forceExit"
   },
   "dependencies": {
-    "@sendgrid/mail": "^6.5.3",
+    "@sendgrid/mail": "^7.1.0",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

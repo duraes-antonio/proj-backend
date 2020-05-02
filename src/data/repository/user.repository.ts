@@ -6,7 +6,7 @@ import { repositoryFunctions as repoFns } from '../repository.functions';
 
 async function findByEmail(email: string): Promise<User | null> {
     const user = await UserSchema.findOne({ email: email }).lean();
-    return Object.keys(user as object).length ? repoFns.insertFieldId(user) : null;
+    return user ? repoFns.insertFieldId(user) : user;
 }
 
 async function hasWithEmail(email: string): Promise<boolean> {

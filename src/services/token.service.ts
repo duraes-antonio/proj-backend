@@ -65,7 +65,21 @@ function generateToken(data: User | UserDBModel): string {
     if (!process.env.SECRET_KEY) {
         throw new Error('É necessário definir uma chave para a variável SECRET_KEY');
     }
-    return jwt.sign(data, process.env.SECRET_KEY, { expiresIn: 60 * 60 });
+    return jwt.sign(
+      {
+          id: data.id,
+          cpf: data.cpf,
+          phone: data.phone,
+          codeArea: data.codeArea,
+          createdAt: data.createdAt,
+          email: data.email,
+          name: data.name,
+          avatarUrl: data.avatarUrl,
+          roles: [...data.roles]
+      } as User,
+      process.env.SECRET_KEY,
+      { expiresIn: 60 * 60 }
+    );
 }
 
 export const tokenService = {
