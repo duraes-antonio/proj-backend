@@ -41,7 +41,7 @@ export class App {
 
     private database(connectionString: string): Promise<Mongoose> {
         return mongoose.connect(
-          `${connectionString}?retryWrites=false`,
+          connectionString,
           {
               useNewUrlParser: true,
               useCreateIndex: true,

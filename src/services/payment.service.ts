@@ -122,7 +122,7 @@ const payWithPaypal = async (order: OrderAdd): Promise<string> => {
 const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
     const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
     const order = await orderService.findById(orderId) as Order;
-    const url = `${config.pagSeguro.url}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
+    const url = `${config.pagSeguro.urlCheckout}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
     const queryPostItems: any = {};
 
     order.items.forEach((item: ItemOrder, index: number) => {
@@ -183,8 +183,20 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
     return transactionId;
 };
 
+const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
+    const urlNotifGet = `config.pagSeguro.urlGetNotific/${notifCode}`;
+    try {
+        const notificationXML = await axios.get(
+          `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`
+        );
+    } catch (e) {
+        throw new UnknownError(e);
+    }
+};
+
 export const paymentService = {
     payWithMercadoPago,
     payWithPagSeguro,
-    payWithPaypal
+    payWithPaypal,
+    updateStatusPagSeguro
 };

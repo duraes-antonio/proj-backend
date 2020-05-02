@@ -1,8 +1,9 @@
 'use strict';
 import { Request, Response, Router } from 'express';
 import { Customer, paymentService } from '../services/payment.service';
-import { tokenService } from '../services/token.service';
 import { User } from '../domain/models/user';
+import { tokenService } from '../services/token.service';
+import { emailService } from '../services/email.service';
 
 const router = Router();
 
@@ -29,5 +30,21 @@ router.post('/pag-seguro', async (req: Request, res: Response) => {
         throw e;
     }
 });
+
+router.post(
+  '/pag-seguro/notifications/:notificationCode',
+  async (req: Request, res: Response) => {
+      try {
+          await emailService.sendEmail({
+              to: 'garotoseis@gmail.com',
+              from: 'garotoseis@gmail.com',
+              subject: 'requisição PAGSEGURO',
+              body: req.query
+          });
+          paymentService.updateStatusPagSeguro(req.query.notificationCode);
+      } catch (e) {
+          throw e;
+      }
+  });
 
 export { router as paymentRoutes };

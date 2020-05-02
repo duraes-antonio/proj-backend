@@ -14,7 +14,8 @@ const mercadoPago = {
 const pagSeguro = {
     email: 'garotoseis@gmail.com',
     token: 'FB5111DBF8A045F6B9475457D91BC12C',
-    url: 'https://ws.sandbox.pagseguro.uol.com.br/v2/checkout'
+    urlCheckout: 'https://ws.sandbox.pagseguro.uol.com.br/v2/checkout',
+    urlGetNotific: 'https://ws.pagseguro.uol.com.br/v2/transactions/notifications'
 };
 
 

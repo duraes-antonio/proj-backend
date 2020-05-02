@@ -8,7 +8,7 @@ export interface EmailTemplate {
     body: string;
 }
 
-export function sendEmail(template: EmailTemplate): Promise<[ClientResponse, {}]> {
+const sendEmail = (template: EmailTemplate): Promise<[ClientResponse, {}]> => {
     // sendgrid.setApiKey(config.sendgridApiKey);
     return sendgrid.send({
         from: template.from,
@@ -16,4 +16,8 @@ export function sendEmail(template: EmailTemplate): Promise<[ClientResponse, {}]
         subject: template.subject,
         html: template.body
     });
-}
+};
+
+export const emailService = {
+    sendEmail
+};
