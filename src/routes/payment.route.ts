@@ -32,7 +32,7 @@ router.post('/pag-seguro', async (req: Request, res: Response) => {
 });
 
 router.post(
-  '/pag-seguro/notifications',
+  '/pag-seguro/notifications/:notificationCode/:notificationType',
   async (req: Request, res: Response) => {
       try {
           console.log(req.params, '******PARAMS');
