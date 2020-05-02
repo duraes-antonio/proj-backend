@@ -6,7 +6,7 @@ import { clearDatabase } from '../../../utils/database';
 import { generators } from '../../../utils/generators';
 import { listSizes } from '../../../src/shared/fieldSize';
 import { StringOptional, testRest } from '../../shared-methods-http';
-import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
+import { cmp, invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
 import { Slide, SlideAdd } from '../../../src/domain/models/lists-item/slide';
 
 const appInstance = new App();
@@ -82,7 +82,9 @@ describe('get', () => {
 
     it('valid ', async () => {
         await testRest.getAndMatch(
-          app, route, {}, [dataAdd, dataAddAdmin], tokenAdmin
+          app, route, {}, [dataAdd, dataAddAdmin], tokenAdmin,
+          (a: ListAdd<Slide>, b: ListAdd<Slide>) =>
+            cmp(a, b, (obj: ListAdd<Slide>) => obj.title)
         );
     });
 });

@@ -7,7 +7,7 @@ import { clearDatabase } from '../../../utils/database';
 import { generators } from '../../../utils/generators';
 import { listSizes } from '../../../src/shared/fieldSize';
 import { StringOptional, testRest } from '../../shared-methods-http';
-import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
+import { cmp, invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -75,7 +75,9 @@ describe('get', () => {
 
     it('valid ', async () => {
         await testRest.getAndMatch(
-          app, route, {}, [listLinkAdd, listLinkAddAdmin], tokenAdmin
+          app, route, {}, [listLinkAdd, listLinkAddAdmin], tokenAdmin,
+          (a: ListAdd<Link>, b: ListAdd<Link>) =>
+            cmp(a, b, (obj: ListAdd<Link>) => obj.title)
         );
     });
 });
