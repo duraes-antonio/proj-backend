@@ -6,6 +6,7 @@ import { UserDBModel } from '../data/schemas/user.schema';
 import { User } from '../domain/models/user';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { EmptyTokenError, ExpiredTokenError, InvalidTokenError } from '../domain/helpers/error';
+import { config } from '../config';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jwt = require('jsonwebtoken');
@@ -23,7 +24,7 @@ async function verifyToken(req: Request, res: Response, next: NextFunction) {
     if (token) {
         jwt.verify(
           token,
-          process.env.SECRET_KEY,
+          config.saltKey,
           async (err: JsonWebTokenError, data: User) => {
               if (err) {
                   res.status(401).send(serviceDataMsg.tokenInvalid());
@@ -39,7 +40,7 @@ async function verifyToken(req: Request, res: Response, next: NextFunction) {
 }
 
 async function decodeToken(token: string): Promise<User> {
-    return await jwt.verify(token, process.env.SECRET_KEY) as User;
+    return await jwt.verify(token, config.saltKey) as User;
 }
 
 function decodeTokenReq(req: Request): User {
@@ -50,7 +51,7 @@ function decodeTokenReq(req: Request): User {
     }
 
     try {
-        return jwt.verify(token, process.env.SECRET_KEY) as User;
+        return jwt.verify(token, config.saltKey) as User;
     } catch (e) {
         if (e instanceof TokenExpiredError) {
             throw new ExpiredTokenError();
@@ -61,7 +62,7 @@ function decodeTokenReq(req: Request): User {
 }
 
 function generateToken(data: User | UserDBModel): string {
-    if (!process.env.SECRET_KEY) {
+    if (!config.saltKey) {
         throw new Error('É necessário definir uma chave para a variável SECRET_KEY');
     }
     return jwt.sign(
@@ -76,7 +77,7 @@ function generateToken(data: User | UserDBModel): string {
           avatarUrl: data.avatarUrl,
           roles: [...data.roles]
       } as User,
-      process.env.SECRET_KEY,
+      config.saltKey,
       { expiresIn: 60 * 60 }
     );
 }

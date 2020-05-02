@@ -35,4 +35,5 @@ export const config = {
     connectionString: process.env.NODE_ENV
       ? getConnString(process.env.NODE_ENV as EEnv)
       : getConnString(EEnv.DEV),
+    saltKey: process.env.SECRET_KEY || '$2y$12$Z3WVfpZ8KxH5IvGXzo6A9u1dI9d8ChREs3sQ/sL9f1.StstSvJXny'
 };
