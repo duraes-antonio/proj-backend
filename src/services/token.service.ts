@@ -1,5 +1,4 @@
 'use strict';
-import { config } from '../config';
 import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg } from '../shared/buildMsg';
 import { tokenRepository as tokenRepo } from '../data/repository/token.repository';
@@ -24,7 +23,7 @@ async function verifyToken(req: Request, res: Response, next: NextFunction) {
     if (token) {
         jwt.verify(
           token,
-          config.saltKey,
+          process.env.SECRET_KEY,
           async (err: JsonWebTokenError, data: User) => {
               if (err) {
                   res.status(401).send(serviceDataMsg.tokenInvalid());
@@ -40,7 +39,7 @@ async function verifyToken(req: Request, res: Response, next: NextFunction) {
 }
 
 async function decodeToken(token: string): Promise<User> {
-    return await jwt.verify(token, config.saltKey) as User;
+    return await jwt.verify(token, process.env.SECRET_KEY) as User;
 }
 
 function decodeTokenReq(req: Request): User {
@@ -51,7 +50,7 @@ function decodeTokenReq(req: Request): User {
     }
 
     try {
-        return jwt.verify(token, config.saltKey) as User;
+        return jwt.verify(token, process.env.SECRET_KEY) as User;
     } catch (e) {
         if (e instanceof TokenExpiredError) {
             throw new ExpiredTokenError();
