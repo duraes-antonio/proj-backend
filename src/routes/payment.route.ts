@@ -35,6 +35,7 @@ router.post(
   '/pag-seguro/notifications/:notificationCode/:notificationType',
   async (req: Request, res: Response) => {
       try {
+          console.log(req);
           console.log(req.params, '******PARAMS');
           console.log(req.query, '******QUERY');
           console.log(req.body, '******BODY');
