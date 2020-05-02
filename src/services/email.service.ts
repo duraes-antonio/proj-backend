@@ -1,6 +1,8 @@
-import sendgrid from '@sendgrid/mail';
 import { ClientResponse } from '@sendgrid/client/src/response';
 import { EEnv } from '../config';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sendgrid = require('@sendgrid/mail');
 
 if (process.env.NODE_ENV === EEnv.PROD) {
     sendgrid.setApiKey(process.env.SENDGRID_API_KEY as string);
