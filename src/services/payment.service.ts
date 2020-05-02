@@ -1,6 +1,4 @@
-import axios from 'axios';
 import paypal from 'paypal-rest-sdk';
-import queryString from 'query-string';
 import { Order, OrderAdd, OrderInput } from '../domain/models/order';
 import { Product } from '../domain/models/product';
 import { ItemOrder } from '../domain/models/item-order';
@@ -10,8 +8,11 @@ import { orderService } from './order.service';
 import { PaymentMethod } from '../domain/enum/payment';
 import { DeliveryOptionType } from '../domain/models/shipping/delivery';
 import { UnknownError } from '../domain/helpers/error';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
+/* eslint-disable @typescript-eslint/no-var-requires */
+const axios = require('axios');
 const mercadoPago = require('mercadopago');
+const queryString = require('query-string');
 
 export type Customer = {
     name: string;
