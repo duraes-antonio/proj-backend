@@ -120,56 +120,59 @@ const payWithPaypal = async (order: OrderAdd): Promise<string> => {
 
 /*O ambiente sandbox só aceita emails com pós-fixo '@sandbox.pagseguro.com.br'*/
 const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
-    const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
-    const order = await orderService.findById(orderId) as Order;
-    const url = `${config.pagSeguro.urlCheckout}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
-    const queryPostItems: any = {};
 
-    order.items.forEach((item: ItemOrder, index: number) => {
-        queryPostItems[`itemId${index + 1}`] = item.productId;
-        queryPostItems[`itemDescription${index + 1}`] = item.product.title;
-        queryPostItems[`itemAmount${index + 1}`] = (item.product.price * (1 - item.product.percentOff / 100)).toFixed(2);
-        queryPostItems[`itemQuantity${index + 1}`] = item.quantity;
-    });
-    const queryPost = {
-        // Dados de pagamento
-        currency: 'BRL',
-        receiverEmail: config.pagSeguro.email,
-        extraAmount: '0.00',
-
-        // Dados sobre items do pedido
-        ...queryPostItems,
-
-        // Dados do comprador
-        senderName: customer.name,
-        senderCPF: customer.cpf,
-        senderAreaCode: customer.codeArea,
-        senderPhone: customer.phone,
-        senderEmail: customer.email,
-
-        // Dados de entrega
-        shippingAddressRequired: true,
-        shippingAddressStreet: order.addressTarget.street,
-        shippingAddressNumber: order.addressTarget.number,
-        shippingAddressComplement: '',
-        shippingAddressDistrict: order.addressTarget.neighborhood,
-        shippingAddressPostalCode: order.addressTarget.zipCode,
-        shippingAddressCity: order.addressTarget.city,
-        shippingAddressState: order.addressTarget.state,
-        shippingAddressCountry: 'BRA',
-        shippingType: order.optionDeliveryType === DeliveryOptionType.PAC ? 1 : 2,
-        shippingCost: order.costDelivery.toFixed(2)
-    };
-    const configRequest = {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    };
-
-    let res;
+    let res, order;
 
     try {
+        const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
+        order = await orderService.findById(orderId) as Order;
+        const url = `${config.pagSeguro.urlCheckout}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
+        const queryPostItems: any = {};
+
+        order.items.forEach((item: ItemOrder, index: number) => {
+            queryPostItems[`itemId${index + 1}`] = item.productId;
+            queryPostItems[`itemDescription${index + 1}`] = item.product.title;
+            queryPostItems[`itemAmount${index + 1}`] = (item.product.price * (1 - item.product.percentOff / 100)).toFixed(2);
+            queryPostItems[`itemQuantity${index + 1}`] = item.quantity;
+        });
+        const queryPost = {
+            // Dados de pagamento
+            currency: 'BRL',
+            receiverEmail: config.pagSeguro.email,
+            extraAmount: '0.00',
+
+            // Dados sobre items do pedido
+            ...queryPostItems,
+
+            // Dados do comprador
+            senderName: customer.name,
+            senderCPF: customer.cpf,
+            senderAreaCode: customer.codeArea,
+            senderPhone: customer.phone,
+            senderEmail: customer.email,
+
+            // Dados de entrega
+            shippingAddressRequired: true,
+            shippingAddressStreet: order.addressTarget.street,
+            shippingAddressNumber: order.addressTarget.number,
+            shippingAddressComplement: '',
+            shippingAddressDistrict: order.addressTarget.neighborhood,
+            shippingAddressPostalCode: order.addressTarget.zipCode,
+            shippingAddressCity: order.addressTarget.city,
+            shippingAddressState: order.addressTarget.state,
+            shippingAddressCountry: 'BRA',
+            shippingType: order.optionDeliveryType === DeliveryOptionType.PAC ? 1 : 2,
+            shippingCost: order.costDelivery.toFixed(2)
+        };
+        const configRequest = {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        };
+
+
         res = await axios.post(url, queryString.stringify(queryPost), configRequest);
     } catch (e) {
-        throw new UnknownError({ msg: e.message, name: e.name });
+        console.log(e);
+        throw new UnknownError({ msg: e.message, name: e.name, data: (e as Error).stack });
     }
 
     const arrMatchesIds = /<code>([\da-zA-Z]+)<\/code>/.exec(res.data);
