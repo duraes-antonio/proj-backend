@@ -1,8 +1,14 @@
 'use strict';
 
-export interface ItemOrder {
-    readonly id: number;
-    readonly amount: number;
+import { Registable } from './auditable';
+import { Product } from './product';
+
+export interface ItemOrderAdd {
+    readonly quantity: number;
+    readonly productId: string;
     readonly unitPrice: number;
-    readonly productId: number;
+}
+
+export interface ItemOrder extends ItemOrderAdd, Registable {
+    readonly product: Product;
 }

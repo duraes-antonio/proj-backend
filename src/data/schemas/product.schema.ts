@@ -5,10 +5,10 @@ import { ECollectionsName } from '../collections-name.enum';
 import { Product } from '../../domain/models/product';
 
 const productSchema = new Schema({
-    amountAvailable: {
+    quantity: {
         default: 0,
-        min: productSizes.amountAvailableMin,
-        max: productSizes.amountAvailableMax,
+        min: productSizes.quantityMin,
+        max: productSizes.quantityMax,
         required: true,
         type: Number
     },
@@ -100,6 +100,10 @@ const productSchema = new Schema({
         max: productSizes.widthMax,
         required: true,
         type: Number
+    },
+    visible: {
+        required: true,
+        type: Boolean
     },
 
     createdAt: {

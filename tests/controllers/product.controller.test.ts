@@ -16,7 +16,7 @@ const productAdd: ProductAdd = {
     title: 'Produto de teste',
     desc: 'Descrição de teste',
     price: 150,
-    amountAvailable: 100,
+    quantity: 100,
     percentOff: 10,
     freeDelivery: true,
     categoriesId: [],
@@ -24,17 +24,17 @@ const productAdd: ProductAdd = {
     height: 1,
     length: 1,
     weight: 1,
-    width: 1
+    width: 1,
+    visible: true
 };
 
 let token: string;
 let tokenAdmin: string;
 const invalidDataPatchPost: TestObject<object>[] = [
-    ...sharedDataTest.getTestsForListFields(['categoriesId'], productSizes),
     ...sharedDataTest.getTestsForStringFields(['title', 'desc'], productSizes),
     ...sharedDataTest.getTestsForCheckEmptyFields(['freeDelivery'], 400),
     ...sharedDataTest.getTestsForNumberFields(
-      ['price', 'cost', 'percentOff', 'height', 'length', 'width', 'weight', 'amountAvailable'],
+      ['price', 'cost', 'percentOff', 'height', 'length', 'width', 'weight', 'quantity'],
       productSizes)
 ];
 
@@ -65,12 +65,13 @@ const productRandom = function productRandom(
         percentOff: randomFunc.randomFloat(0, 100),
         categoriesId: categories ?? [],
         freeDelivery: randomFunc.randomBoolean(),
-        amountAvailable: randomFunc.randomInt(0, 10000),
+        quantity: randomFunc.randomInt(0, 10000),
         cost: 10,
         height: 1,
         length: 1,
         weight: 1,
-        width: 1
+        width: 1,
+        visible: true
     };
 };
 
@@ -119,12 +120,13 @@ describe('get', () => {
                 freeDelivery: true,
                 price: 150.99,
                 percentOff: 10,
-                amountAvailable: 10,
+                quantity: 10,
                 cost: 10,
                 height: 1,
                 length: 1,
                 weight: 1,
-                width: 1
+                width: 1,
+                visible: true
             },
             {
                 title: 'Yugioh Booster Duelist Pack',
@@ -136,12 +138,13 @@ describe('get', () => {
                 freeDelivery: false,
                 price: 73.45,
                 percentOff: 25,
-                amountAvailable: 17,
+                quantity: 17,
                 cost: 10,
                 height: 1,
                 length: 1,
                 weight: 1,
-                width: 1
+                width: 1,
+                visible: true
             },
             productRandom(
               'Legendary Decks 1 E 2 - Decks Legendários Em Pt Em 12 X',

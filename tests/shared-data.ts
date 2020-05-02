@@ -124,24 +124,38 @@ function getTestForCustomStrFields<T>(fields: string[], objectSizes: any): TestO
     ).flat();
 }
 
+type UserAddTest = {
+    admin: UserAdd;
+    joao: UserAdd;
+    maria: UserAdd;
+};
 
-export const usersAdd = {
+export const usersAdd: UserAddTest = {
     admin: {
+        codeArea: 27,
+        cpf: '51815426039',
         email: 'admin@teste.com',
         name: 'Admin',
         password: '12345678',
+        phone: '998227412',
         roles: [EUserRole.ADMIN]
     },
     joao: {
+        cpf: '46913159005',
+        codeArea: 21,
         email: 'joao@teste.com',
         name: 'João da Silva',
         password: '12345678',
+        phone: '997227411',
         roles: [EUserRole.CUSTOMER]
     },
     maria: {
+        codeArea: 11,
+        cpf: '37035230009',
         email: 'maria@teste.com',
         name: 'Maria Santos',
         password: '12345678',
+        phone: '995124411',
         roles: [EUserRole.CUSTOMER]
     }
 };

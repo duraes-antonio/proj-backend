@@ -9,7 +9,6 @@ import { tokenService } from '../services/token.service';
 import { User, UserAdd } from '../domain/models/user';
 import { UserSchema } from '../data/schemas/user.schema';
 import { userService } from '../services/user.service';
-import { TokenData } from '../domain/models/token-data';
 
 const entityName = 'Usuário';
 
@@ -59,7 +58,7 @@ async function post(req: Request, res: Response, next: NextFunction): Promise<Re
 }
 
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const dataToken: TokenData = tokenService.decodeFromReq(req);
+    const dataToken: User = tokenService.decodeFromReq(req);
     return ctrlFunc.patch<UserAdd>(
       req, res, next, entityName,
       (data) => userService.validate(data, true),

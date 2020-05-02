@@ -52,7 +52,8 @@ async function patch(req: Request, res: Response, next: NextFunction): Promise<R
       (id, obj) => repoFunc.findAndUpdate(id, obj, ProductSchema),
       [
           'title', 'desc', 'price', 'cost', 'percentOff', 'height', 'length',
-          'width', 'weight', 'amountAvailable', 'freeDelivery', 'categoriesId', 'visible'
+          'width', 'weight', 'quantity', 'freeDelivery', 'categoriesId', 'visible',
+          'urlMainImage'
       ]);
 }
 

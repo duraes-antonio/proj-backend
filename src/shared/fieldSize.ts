@@ -18,6 +18,11 @@ export const categorySizes = {
     titleMax: 128
 };
 
+export const itemOrderSizes = {
+    quantityMin: 1,
+    quantityMax: 99999
+};
+
 export const listSizes = {
     titleMin: 2,
     titleMax: 64,
@@ -45,10 +50,18 @@ export const marketSizes = {
     urlMax: 2048
 };
 
+export const orderSizes = {
+    costDeliveryMin: 0,
+    costDeliveryMax: 999999,
+    daysForDeliveryMin: 1,
+    daysForDeliveryMax: 99999,
+    itemsMin: 1,
+    itemsMax: 100
+};
 
 export const productSizes = {
-    amountAvailableMax: Number.MAX_SAFE_INTEGER,
-    amountAvailableMin: 0,
+    quantityMax: Number.MAX_SAFE_INTEGER,
+    quantityMin: 0,
     avgReviewMax: 5,
     avgReviewMin: 0,
     costMin: 0,
@@ -99,11 +112,14 @@ export const slideSizes = {
 };
 
 export const userSizes = {
+    cpfMin: 11,
+    cpfMax: 11,
     emailMin: 5,
     emailMax: 128,
     nameMin: 5,
     nameMax: 128,
     passwordMin: 8,
     passwordMax: 128,
-    phoneMax: 16
+    phoneMin: 8,
+    phoneMax: 9
 };

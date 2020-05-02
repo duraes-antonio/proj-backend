@@ -1,17 +1,50 @@
-import { Order } from '../domain/models/order';
-import { Product } from '../domain/models/product';
+import axios from 'axios';
 import paypal from 'paypal-rest-sdk';
+import queryString from 'query-string';
+import { Order, OrderAdd, OrderInput } from '../domain/models/order';
+import { Product } from '../domain/models/product';
+import { ItemOrder } from '../domain/models/item-order';
 import { productRepository } from '../data/repository/product.repository';
+import { config } from './config/config';
+import { orderService } from './order.service';
+import { PaymentMethod } from '../domain/enum/payment';
+import { DeliveryOptionType } from '../domain/models/shipping/delivery';
+import { UnknownError } from '../domain/helpers/error';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mercadoPago = require('mercadopago');
 
-const ppConfig = {
-    mode: 'sandbox',
-    ppSandboxAcc: 'sb-1guzs1303671@business.example.com',
-    token: 'access_token$sandbox$hj8cqm69twn66kkz$6d5682a1fe62837ab5987ff2a1403b5b',
-    clientId: 'AXg0OUZI4L1NOOWjPyQM-WRBA-gmkNJU4dn0ZZKDbgZ08UF-DaqIQbv0afTG5NrrEW15GmAx94nXuqeo',
-    secret: 'EHc8BkuG7LR92TxIshn6lE4I6aPa0axwYp5f1M3QFImlnMHN6pQwPd-qj64mZvUSU4UBma_AzRHLBQuv'
+export type Customer = {
+    name: string;
+    email: string;
+    cpf: string;
+    codeArea: number;
+    phone: string;
+}
+
+mercadoPago.configure({
+    'access_token': config.mercadoPago.accessToken
+});
+
+// TODO: Desenvolver implementação
+const payWithMercadoPago = async (): Promise<{ data: string }> => {
+    const preference = {
+        items: [
+            {
+                'title': 'Meu produto',
+                'unit_price': 100,
+                'quantity': 1
+            }
+        ]
+    };
+
+    const response = await mercadoPago.preferences.create(preference);
+    return { data: response.body.id };
 };
 
-async function payItemsPaypal(order: Order): Promise<void> {
+// TODO: Desenvolver implementação
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
+const payWithPaypal = async (order: OrderAdd): Promise<string> => {
     /*TODO:
        - Adicionar items a uma cesta;
        - Calcular preço de cada item;
@@ -19,12 +52,6 @@ async function payItemsPaypal(order: Order): Promise<void> {
        - Total (custo de entrega + custo de itens)
        */
     // TODO: Obter produtos
-    if (!order.date) {
-        order = {
-            ...order,
-            date: new Date()
-        };
-    }
     const prods: Product[] = await productRepository.find(
       {
           currentPage: 1,
@@ -41,7 +68,7 @@ async function payItemsPaypal(order: Order): Promise<void> {
             // @ts-ignore
             'quantity': order.items
               .find(i => i.productId === p.id.toString())
-              .amount
+              .quantity
         };
     });
     const itemsTotalPrice = cart
@@ -69,13 +96,13 @@ async function payItemsPaypal(order: Order): Promise<void> {
                     'shipping': deliveryCost.toFixed(2)
                 }
             },
-            'description': `${prods.length} itens - em ${order.date.toLocaleString()}`
+            'description': `${prods.length} itens`
         }]
     };
-    const paypalConfig = paypal.configure({
-        'client_id': ppConfig.clientId,
-        'client_secret': ppConfig.secret,
-        'mode': ppConfig.mode
+    const ppConfig = paypal.configure({
+        'client_id': config.paypal.clientId,
+        'client_secret': config.paypal.secret,
+        'mode': config.paypal.mode
     });
     const res = await paypal.payment.create(
       payment,
@@ -89,8 +116,75 @@ async function payItemsPaypal(order: Order): Promise<void> {
           }
       });
     const x = 10;
-}
+};
+
+/*O ambiente sandbox só aceita emails com pós-fixo '@sandbox.pagseguro.com.br'*/
+const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
+    const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
+    const order = await orderService.findById(orderId) as Order;
+    const url = `${config.pagSeguro.url}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
+    const queryPostItems: any = {};
+
+    order.items.forEach((item: ItemOrder, index: number) => {
+        queryPostItems[`itemId${index + 1}`] = item.productId;
+        queryPostItems[`itemDescription${index + 1}`] = item.product.title;
+        queryPostItems[`itemAmount${index + 1}`] = (item.product.price * (1 - item.product.percentOff / 100)).toFixed(2);
+        queryPostItems[`itemQuantity${index + 1}`] = item.quantity;
+    });
+    const queryPost = {
+        // Dados de pagamento
+        currency: 'BRL',
+        receiverEmail: config.pagSeguro.email,
+        extraAmount: '0.00',
+
+        // Dados sobre items do pedido
+        ...queryPostItems,
+
+        // Dados do comprador
+        senderName: customer.name,
+        senderCPF: customer.cpf,
+        senderAreaCode: customer.codeArea,
+        senderPhone: customer.phone,
+        senderEmail: customer.email,
+
+        // Dados de entrega
+        shippingAddressRequired: true,
+        shippingAddressStreet: order.addressTarget.street,
+        shippingAddressNumber: order.addressTarget.number,
+        shippingAddressComplement: '',
+        shippingAddressDistrict: order.addressTarget.neighborhood,
+        shippingAddressPostalCode: order.addressTarget.zipCode,
+        shippingAddressCity: order.addressTarget.city,
+        shippingAddressState: order.addressTarget.state,
+        shippingAddressCountry: 'BRA',
+        shippingType: order.optionDeliveryType === DeliveryOptionType.PAC ? 1 : 2,
+        shippingCost: order.costDelivery.toFixed(2)
+    };
+    const configRequest = {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    };
+
+    let res;
+
+    try {
+        res = await axios.post(url, queryString.stringify(queryPost), configRequest);
+    } catch (e) {
+        throw new UnknownError({ msg: e.message, name: e.name });
+    }
+
+    const arrMatchesIds = /<code>([\da-zA-Z]+)<\/code>/.exec(res.data);
+
+    if (!arrMatchesIds) {
+        throw new Error('Código da transação não foi retornado pelo PagSeguro. Contate o Administrador do sistema.');
+    }
+
+    const transactionId = arrMatchesIds[arrMatchesIds.length - 1];
+    orderService.update(order.id, { transactionId });
+    return transactionId;
+};
 
 export const paymentService = {
-    payItemsPaypal: payItemsPaypal
+    payWithMercadoPago,
+    payWithPagSeguro,
+    payWithPaypal
 };

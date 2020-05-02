@@ -26,9 +26,8 @@ function validate<T>(prod: ProductAdd, ignoreUndefined = false): PipelineValidat
       .atLeastValue('weight', prod.weight, prodSizes.weightMin, msg.minValue)
       .atMaxValue('weight', prod.weight, prodSizes.weightMax, msg.maxValue)
 
-      .atLeastValue('amountAvailable', prod.amountAvailable, prodSizes.amountAvailableMin, msg.minValue)
-      .atMaxValue('amountAvailable', prod.amountAvailable, prodSizes.amountAvailableMax, msg.maxValue)
-      .atMaxLenList('categoriesId', prod.categoriesId, prodSizes.categoriesIdMax, msg.maxLenList)
+      .atLeastValue('quantity', prod.quantity, prodSizes.quantityMin, msg.minValue)
+      .atMaxValue('quantity', prod.quantity, prodSizes.quantityMax, msg.maxValue)
       .hasValue('freeDelivery', prod.freeDelivery)
       ;
 }

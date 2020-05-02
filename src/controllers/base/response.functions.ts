@@ -1,8 +1,15 @@
 import { Response } from 'express';
 import { serviceDataMsg as msgS } from '../../shared/buildMsg';
+import { TypeMessage } from '../../domain/enum/type-message';
 
 export interface Message {
     message: string;
+    type?: TypeMessage;
+}
+
+export interface ItemStock {
+    productName: string;
+    quantityAvailable: number;
 }
 
 function badRequest(res: Response, errors: string[]): Response<string[]> {
@@ -31,10 +38,20 @@ function invalidId(res: Response, id: string): Response<Message> {
     return res.status(400).send(msgS.invalidId(id));
 }
 
+function notEnoughStock(res: Response, stockInfo: ItemStock[]): Response<Message> {
+    return res.status(400).send(msgS.notEnoughStock(stockInfo));
+}
+
 function notFound(
   res: Response, entity: string, propName: string, propVal: string | number
 ): Response<Message> {
     return res.status(404).send(msgS.notFound(entity, propName, propVal));
+}
+
+function notFoundMany(
+  res: Response, entity: string, propName: string, propVal: string[] | number[]
+): Response<Message> {
+    return res.status(404).send(msgS.notFoundMany(entity, propName, propVal));
 }
 
 function success<T>(res: Response, data?: T): Response<T> {
@@ -54,7 +71,9 @@ export const responseFunctions = {
     forbidden: forbidden,
     invalidFieldsPatch: invalidFieldsPatch,
     invalidId: invalidId,
+    notEnoughStock,
     notFound: notFound,
+    notFoundMany,
     success: success,
     unknown: unknown
 };

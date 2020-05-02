@@ -4,7 +4,6 @@ import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { tokenService } from '../services/token.service';
-import { TokenData } from '../domain/models/token-data';
 import { EReviewSort, FilterReview } from '../domain/models/filters/filter-review';
 import { reviewRepository } from '../data/repository/review.repository';
 import { Messages } from '../shared/consts/messages';
@@ -12,6 +11,7 @@ import { Review } from '../domain/models/review';
 import { ReviewSchema } from '../data/schemas/review.schema';
 import { reviewService } from '../services/review.service';
 import { EUserRole } from '../domain/enum/role.enum';
+import { User } from '../domain/models/user';
 
 export const entityName = 'Avaliação';
 
@@ -24,7 +24,7 @@ async function delete_(req: Request, res: Response, next: NextFunction): Promise
 }
 
 async function post(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const tokenData: TokenData = tokenService.decodeFromReq(req);
+    const tokenData: User = tokenService.decodeFromReq(req);
     const has: boolean = await reviewRepository.has(tokenData.id, req.body.productId);
 
     if (has) {

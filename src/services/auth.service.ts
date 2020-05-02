@@ -1,13 +1,13 @@
 'use strict';
 import { NextFunction, Request, Response } from 'express';
 import { tokenService } from './token.service';
-import { TokenData } from '../domain/models/token-data';
 import { EUserRole } from '../domain/enum/role.enum';
 import { serviceDataMsg } from '../shared/buildMsg';
 import { Message, responseFunctions } from '../controllers/base/response.functions';
+import { User } from '../domain/models/user';
 
 function isAdmin(req: Request): boolean {
-    const data: TokenData = tokenService.decodeFromReq(req);
+    const data: User = tokenService.decodeFromReq(req);
     return data.roles.indexOf(EUserRole.ADMIN) > -1;
 }
 
@@ -23,7 +23,7 @@ function allowAdmin(req: Request, res: Response, next: NextFunction):
 async function checkIsOwner<T>(
   req: Request, res: Response, entity: T, entityOwnerId: string
 ): Promise<Response | void> {
-    const tokenData: TokenData = tokenService.decodeFromReq(req);
+    const tokenData: User = tokenService.decodeFromReq(req);
 
     if (entityOwnerId !== tokenData.id) {
         return responseFunctions.forbidden(res);

@@ -6,8 +6,8 @@ import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { AddressSchema } from '../data/schemas/address.schema';
 import { ObjectId } from 'bson';
-import { TokenData } from '../domain/models/token-data';
 import { addressService } from '../services/address.service';
+import { User } from '../domain/models/user';
 
 const entityName = 'Endereço';
 
@@ -39,7 +39,7 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
 }
 
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<Address>> {
-    const data: TokenData = tokenS.decodeFromReq(req);
+    const data: User = tokenS.decodeFromReq(req);
     return await ctrlFunc.patch<AddressAdd>(
       req, res, next, entityName,
       (obj) => addressService.validate(obj, true),
@@ -51,7 +51,7 @@ async function patch(req: Request, res: Response, next: NextFunction): Promise<R
 }
 
 async function post(req: Request, res: Response, next: NextFunction): Promise<Response<Address>> {
-    const data: TokenData = tokenS.decodeFromReq(req);
+    const data: User = tokenS.decodeFromReq(req);
     return await ctrlFunc.post<AddressAdd>(
       req, res, next,
       (obj: AddressAdd) =>

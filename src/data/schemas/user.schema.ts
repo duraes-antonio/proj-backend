@@ -11,6 +11,17 @@ const userSchema = new Schema({
         required: false,
         type: String
     },
+    codeArea: {
+        required: true,
+        type: Number
+    },
+    cpf: {
+        maxlength: userSizes.cpfMax,
+        required: true,
+        trim: true,
+        type: String,
+        unique: true
+    },
     email: {
         maxlength: userSizes.nameMax,
         required: true,
@@ -26,6 +37,13 @@ const userSchema = new Schema({
     },
     password: {
         maxlength: userSizes.passwordMax,
+        required: true,
+        trim: true,
+        type: String
+    },
+    phone: {
+        minlength: userSizes.phoneMin,
+        maxlength: userSizes.phoneMax,
         required: true,
         trim: true,
         type: String

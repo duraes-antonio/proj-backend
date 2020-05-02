@@ -3,17 +3,59 @@ import { Document, Model } from 'mongoose';
 import { FilterBasic } from '../domain/models/filters/filter-basic';
 import { ObjectId } from 'bson';
 
+const insertFieldId = (value: any): any => {
+
+    if (!(value instanceof Object) || value instanceof ObjectId || value instanceof Date) {
+        return value;
+    }
+
+    const clone = { ...value };
+
+    Object.keys(value).forEach(key => {
+
+        if (clone[key] instanceof Array) {
+            (clone[key] as []).forEach((item, i) =>
+              clone[key][i] = insertFieldId(item)
+            );
+        } else {
+            if ('_id' in clone) {
+                clone.id = clone._id.toString();
+            }
+            clone[key] = insertFieldId(clone[key]);
+        }
+    });
+    delete clone.__v;
+    delete clone._id;
+    return clone;
+};
+
+async function createMany<T>(payload: T[], model: Model<Document & T>): Promise<T[]> {
+    const saveds: any = await model.insertMany(payload, { rawResult: true });
+    return saveds.ops
+      .map((item: Document & T) => {
+          return { ...item, id: item._id.toString() };
+      });
+}
+
 async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
-    const saved: any = await new model({
+    const saved = await new model({
         ...obj,
         createdAt: new Date()
     }).save();
-    return { ...saved._doc, id: saved._id };
+    return insertFieldId((saved as any)._doc);
 }
 
 async function delete_<T>(id: string, model: Model<Document & T>, conditions?: object): Promise<T | null> {
     const q: object = conditions ? { ...conditions, _id: id } : { _id: id };
     return model.findOneAndDelete(q);
+}
+
+async function deleteMany<T>(ids: string[], model: Model<Document & T & any>): Promise<object> {
+    return model.deleteMany({
+        _id: {
+            $in: [ids.map(id => new ObjectId(id))]
+        }
+    });
 }
 
 async function find<T>(
@@ -35,22 +77,20 @@ async function find<T>(
           .lean()
           .sort(sort ? sort : {});
     }
-    return res.map(o => {
-        return { ...o, id: o._id };
-    });
+    return insertFieldId(res);
 }
 
 async function findById<T>(
-  id: string, model: Model<Document & T>, populateFields?: string
+  id: string, model: Model<Document & T>, populateFields?: string | object
 ): Promise<T | null> {
     const obj: any = await model.findById(id)
       .populate(populateFields ?? '')
       .lean();
-    return obj ? { ...obj, id: obj._id } : null;
+    return obj ? insertFieldId(obj) : null;
 }
 
 async function findAndUpdate<T>(
-  id: string, obj: T, model: Model<Document & T>, conditions?: any
+  id: string, obj: any, model: Model<Document & T>, conditions?: any
 ): Promise<T | null> {
     let updated: any;
 
@@ -67,13 +107,16 @@ async function findAndUpdate<T>(
           { new: true }
         );
     }
-    return updated?._doc ? { ...updated._doc, id: updated._doc._id } : null;
+    return updated?._doc ? insertFieldId(updated._doc) : null;
 }
 
 export const repositoryFunctions = {
     create: create,
+    createMany,
     delete: delete_,
+    deleteMany,
     find: find,
     findById: findById,
-    findAndUpdate: findAndUpdate
+    findAndUpdate: findAndUpdate,
+    insertFieldId
 };

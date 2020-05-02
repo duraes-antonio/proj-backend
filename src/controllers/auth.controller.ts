@@ -5,11 +5,10 @@ import { PipelineValidation } from '../shared/validations';
 import { userSizes } from '../shared/fieldSize';
 import { cryptService as cryptS } from '../services/crypt.service';
 import { tokenService as tokenS } from '../services/token.service';
-import { TokenData } from '../domain/models/token-data';
 import { userRepository } from '../data/repository/user.repository';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { UserAdd } from '../domain/models/user';
+import { User, UserAdd } from '../domain/models/user';
 import { TokenInvalid } from '../domain/models/token-invalid';
 import { TokenInvalidSchema } from '../data/schemas/token.schema';
 
@@ -19,8 +18,13 @@ function validateUser(user: UserAdd): PipelineValidation {
       .atMaxLen('Senha', user.password, userSizes.passwordMax, msg.maxLen);
 }
 
+type TokenReturn = {
+    token: string;
+    user: User;
+};
+
 async function authenticate(req: Request, res: Response):
-  Promise<Response | Response<{ token: string; user: TokenData }>> {
+  Promise<Response | Response<TokenReturn>> {
     const pipe = validateUser(req.body);
 
     if (!pipe.valid) {
@@ -39,25 +43,19 @@ async function authenticate(req: Request, res: Response):
         }
 
         const token = tokenS.generate(user);
-        return res.status(200)
-          .send({
-              token: token,
-              user: {
-                  avatarUrl: user.avatarUrl,
-                  email: user.email,
-                  id: user.id,
-                  name: user.name,
-                  roles: user.roles
-              }
-          });
+        const resp: TokenReturn = {
+            token: token,
+            user: { ...user, password: '' }
+        };
+        return res.status(200).send(resp);
     } catch (err) {
         return res.status(500).send(serviceDataMsg.unknown());
     }
 }
 
 async function refreshToken(req: Request, res: Response, next: NextFunction):
-  Promise<{ token: string; user: TokenData }> {
-    const uInfo: TokenData = tokenS.decodeFromReq(req);
+  Promise<{ token: string; user: User }> {
+    const uInfo: User = tokenS.decodeFromReq(req);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
@@ -82,7 +80,7 @@ async function refreshToken(req: Request, res: Response, next: NextFunction):
 async function invalidate(req: Request, res: Response, next: NextFunction):
   Promise<Response> {
     const token = tokenS.extract(req) as string;
-    const uInfo: TokenData = await tokenS.decode(token);
+    const uInfo: User = await tokenS.decode(token);
     const tokenInv: TokenInvalid = {
         createdAt: new Date(),
         token: token,

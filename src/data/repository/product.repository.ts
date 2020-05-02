@@ -16,7 +16,7 @@ const productFieldsProjection = {
     avgReview: 1,
     priceWithDiscount: 1,
     visible: 1,
-    amountAvailable: 1,
+    quantity: 1,
     categoriesId: 1,
     desc: 1,
     freeDelivery: 1,
@@ -58,7 +58,7 @@ function buildMatchQuery(filter: FilterProduct): MatchQuery {
     if (filter.ids && filter.ids.length) {
         const ids = filter.ids.map(id => new ObjectId(id));
         match.$and = match.$and
-          ? [...match.$and, { categoriesId: { $in: ids } }]
+          ? [...match.$and, { _id: { $in: ids } }]
           : [{ _id: { $in: ids } }];
     }
 
@@ -138,20 +138,20 @@ async function find(filter: FilterProduct): Promise<Product[]> {
         ...buildProjection(filter),
         ...productFieldsProjection
     };
-
     const queryRaw = ProductSchema
       .aggregate()
       .match(match)
       .project(projectField);
 
     const matchPostProjection = buildMatchQueryPostProjection(filter);
-
-    return queryRaw
+    const queryBeforeLimit = queryRaw
       .match(matchPostProjection)
       .sort(sortBy)
-      .skip(+filter.perPage * Math.max(+filter.currentPage - 1, 0))
-      .limit(+filter.perPage)
-      ;
+      .skip((filter.perPage ?? 1) * Math.max((filter.currentPage ?? 1) - 1, 0));
+    const results: Product[] = await (filter?.perPage ? queryBeforeLimit.limit(+filter.perPage) : queryBeforeLimit);
+    return results.map(p => {
+        return { ...p, priceWithDiscount: p.price * (1 - p.percentOff / 100) };
+    });
 }
 
 async function findCount(filter: FilterProduct): Promise<number> {

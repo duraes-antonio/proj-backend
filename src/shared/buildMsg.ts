@@ -1,3 +1,5 @@
+import { ItemStock, Message } from '../controllers/base/response.functions';
+
 export const validationErrorMsg = {
     maxLen(fieldName: string, maxLenght: number): string {
         return `O campo '${fieldName}' deve possuir no máximo ${maxLenght} caracteres`;
@@ -29,60 +31,75 @@ export const validationErrorMsg = {
 };
 
 export const serviceDataMsg = {
-    created(entity?: string): { message: string } {
+    created(entity?: string): Message {
         return {
             message: `O item ${entity ? entity : ''} foi criado com êxito!`
         };
     },
-    custom(msg: string): { message: string } {
+    custom(msg: string): Message {
         return { message: msg };
     },
-    deniedAccess(): { message: string } {
+    deniedAccess(): Message {
         return { message: 'Acesso negado' };
     },
-    deniedAccessItem(): { message: string } {
+    deniedAccessItem(): Message {
         return { message: 'O usuário atual não possui acesso ao item solicitado' };
     },
-    duplicate(entity: string, propName: string, propValue: string | number): { message: string } {
+    duplicate(entity: string, propName: string, propValue: string | number): Message {
         return {
             message:
               `O item ${entity}, de ${propName} '${propValue}' já existe`
         };
     },
-    fieldsInvalid(fields: string[]): { message: string } {
+    fieldsInvalid(fields: string[]): Message {
         return { message: `Os seguintes campos não são permitidos: ${fields.map(f => `"${f}"`).join(', ')}.` };
     },
-    invalidId(id: string): { message: string } {
+    invalidId(id: string): Message {
         return { message: `O ID '${id}' não é válido para um documento` };
     },
-    onlyAdmin(): { message: string } {
+    onlyAdmin(): Message {
         return { message: 'Somente administradores podem acessar o item solicitado' };
     },
-    notFound(entity: string, propName: string, propValue: string | number): { message: string } {
+    notEnoughStock(nameAvailable: ItemStock[]): Message {
+        const bodyMsg = nameAvailable
+          .map(nameQuantiy => {
+              return `'${nameQuantiy.productName}' (disponível: ${nameQuantiy.quantityAvailable})`;
+          });
+        return {
+            message: `Os seguintes items não estão disponíveis na quantidade solicitada ${bodyMsg.join(', ')}.`
+        };
+    },
+    notFound(entity: string, propName: string, propValue: string | number): Message {
         return {
             message: `O item ${entity}, de ${propName} '${propValue}' não foi encontrado`
         };
     },
-    success(): { message: string } {
+    notFoundMany(entity: string, propName: string, propValues: (string | number)[]): Message {
+        const ids = propValues.map(id => `'${id}'`).join(', ');
+        return {
+            message: `Não foram encontrados itens ${entity}, com ${propName} igual a ${ids}.`
+        };
+    },
+    success(): Message {
         return {
             message: 'Requisição executada com êxito!'
         };
     },
-    tokenEmpty(): string {
-        return 'Não foi possível encontrar o token de acesso';
+    tokenEmpty(): Message {
+        return { message: 'Não foi possível encontrar o token de acesso' };
     },
-    tokenExpired(): { message: string } {
+    tokenExpired(): Message {
         return { message: 'O token atual está expirado. Realize o login novamente' };
     },
-    tokenInvalid(): { message: string } {
+    tokenInvalid(): Message {
         return { message: 'O token atual é inválido' };
     },
-    unknown(): { message: string } {
+    unknown(): Message {
         return {
             message: 'Houve um erro desconhecido ao tentar realizar a operação. Contate o Administrador do sistema'
         };
     },
-    wrongPassword(): { message: string } {
+    wrongPassword(): Message {
         return { message: 'A senha digitada está incorreta' };
     }
 };

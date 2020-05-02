@@ -3,25 +3,17 @@ import { App } from '../../src/app';
 import { Review, ReviewAdd, ReviewPatch } from '../../src/domain/models/review';
 import { clearDatabase } from '../../utils/database';
 import { EReviewSort, FilterReview } from '../../src/domain/models/filters/filter-review';
-import { UserAdd } from '../../src/domain/models/user';
-import { EUserRole } from '../../src/domain/enum/role.enum';
 import { serviceDataMsg, validationErrorMsg } from '../../src/shared/buildMsg';
 import { generators } from '../../utils/generators';
 import { reviewSizes } from '../../src/shared/fieldSize';
 import { utilService } from '../../src/shared/util';
 import { StringOptional, testRest } from '../shared-methods-http';
-import { invalidIds, sharedDataTest, TestObject } from '../shared-data';
+import { invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
 
 const appInstance = new App();
 const app = appInstance.express;
 const route = '/review';
 
-const user: UserAdd = {
-    email: 'gseis@gmail.com',
-    name: 'Antônio',
-    password: '12345678',
-    roles: [EUserRole.CUSTOMER]
-};
 const payload: ReviewAdd = {
     comment: 'Teste de comentário',
     productId: '5e768fc2176dedb9cee19e6e',
@@ -46,7 +38,7 @@ let token: string;
 
 beforeAll(async () => {
     await clearDatabase(await appInstance.databaseInstance);
-    token = await sharedDataTest.getTokenValid(user, app);
+    token = await sharedDataTest.getTokenValid(usersAdd.joao, app);
 });
 
 describe('delete', () => {

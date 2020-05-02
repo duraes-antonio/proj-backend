@@ -4,11 +4,10 @@ import { Registable } from './auditable';
 export interface Product extends ProductAdd, Registable {
     readonly avgReview: number;
     readonly priceWithDiscount: number;
-    readonly visible: boolean;
 }
 
 export interface ProductAdd {
-    readonly amountAvailable: number;
+    readonly quantity: number;
     readonly categoriesId: string[];
     readonly desc: string;
     readonly freeDelivery: boolean;
@@ -18,6 +17,7 @@ export interface ProductAdd {
     readonly urlMainImage?: string;
     readonly cost: number;
     readonly height: number;
+    readonly visible: boolean;
     readonly width: number;
     readonly length: number;
     readonly weight: number;

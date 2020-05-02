@@ -27,7 +27,7 @@ const productAdd: ProductAdd = {
     title: 'Produto de teste',
     desc: 'Descrição de teste',
     price: 150,
-    amountAvailable: 100,
+    quantity: 100,
     percentOff: 10,
     freeDelivery: true,
     categoriesId: [],
@@ -35,7 +35,8 @@ const productAdd: ProductAdd = {
     height: 1,
     length: 1,
     weight: 1,
-    width: 1
+    width: 1,
+    visible: true
 };
 
 const invalidDataPatchPost: TestObject<object>[] = [

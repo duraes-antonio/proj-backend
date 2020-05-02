@@ -61,9 +61,13 @@ export class PipelineValidation {
         return !this.errors.length;
     }
 
-    hasValue(field: string, value: any): PipelineValidation {
-        this.isEmpty(value, field);
-        return this;
+    hasValue<T>(field: string, value: T | T[]): PipelineValidation {
+        return this.checkValuesAndFillError<T>(
+          value,
+          (v: T) => validation.hasValue(v),
+          () => this.fnEmpty(field),
+          () => this.fnEmpty(field)
+        );
     }
 
     atMaxLen(
@@ -87,8 +91,8 @@ export class PipelineValidation {
         return this;
     }
 
-    atLeastLenList(
-      field: string, value: ArrayLike<any>, minLenght: number,
+    atLeastLenList<T>(
+      field: string, value: ArrayLike<T>, minLenght: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
         if (!this.isEmpty(value, field)
@@ -109,8 +113,8 @@ export class PipelineValidation {
         return this;
     }
 
-    atMaxLenList(
-      field: string, value: ArrayLike<any>, minLenght: number,
+    atMaxLenList<T>(
+      field: string, value: ArrayLike<T>, minLenght: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
         if (!this.isEmpty(value, field)
@@ -122,23 +126,27 @@ export class PipelineValidation {
     }
 
     atMaxValue(
-      field: string, value: number, maxVal: number,
+      field: string, value: number | number[], maxVal: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
-        if (!this.isEmpty(value, field) && !validation.atMaxValue(value, maxVal)) {
-            this.errors.push(fnMsg(field, maxVal));
-        }
-        return this;
+        return this.checkValuesAndFillError<number>(
+          value,
+          (v: number) => validation.atMaxValue(v, maxVal),
+          () => fnMsg(field, maxVal),
+          () => this.fnEmpty(field)
+        );
     }
 
     atLeastValue(
-      field: string, value: number, minVal: number,
-      fnMsg: (field: string, max: number) => string
+      field: string, value: number | number[], minVal: number,
+      fnMsg: (field: string, min: number) => string
     ): PipelineValidation {
-        if (!this.isEmpty(value, field) && !validation.atLeastValue(value, minVal)) {
-            this.errors.push(fnMsg(field, minVal));
-        }
-        return this;
+        return this.checkValuesAndFillError<number>(
+          value,
+          (v: number) => validation.atLeastValue(v, minVal),
+          () => fnMsg(field, minVal),
+          () => this.fnEmpty(field)
+        );
     }
 
     validCEP(field: string, cep: string, fnMsg: (field: string) => string): PipelineValidation {
@@ -160,6 +168,45 @@ export class PipelineValidation {
             this.errors.push(fnMsg(field));
         }
         return this;
+    }
+
+    private checkValuesAndFillError<T>(
+      value: T | T[], fnValidate: (v: T) => boolean,
+      fnMsg: () => string, fnMsgEmpty: () => string
+    ): PipelineValidation {
+        const newErrors = this.getMsgsErrorsPure(
+          value, fnValidate, (v) => this._isEmpty(v, this._ignoreUndefined),
+          fnMsg, fnMsgEmpty
+        );
+        newErrors.forEach(msgError => this.errors.push(msgError));
+        return this;
+    }
+
+    private getMsgsErrorsPure<T>(
+      values: T | T[], fnCheckValidT: (v: T) => boolean, fnCheckIsEmpty: (v: T) => boolean,
+      fnMsg: () => string, fnMsgEmpty: () => string
+    ): string[] {
+        const pipelineMsgsError = (value: T): string | undefined => {
+            if (fnCheckIsEmpty(value)) {
+                return fnMsgEmpty();
+            } else if (value !== undefined && !fnCheckValidT(value)) {
+                return fnMsg();
+            }
+        };
+
+        if (values instanceof Array) {
+            return values
+              .map(item => pipelineMsgsError(item))
+              .filter(msg => !!msg)
+              .map((msg, i: number) => `${i + 1}º Item: ${msg}`);
+        } else {
+            const msg = pipelineMsgsError(values);
+            return !!msg ? [msg] : [];
+        }
+    }
+
+    private _isEmpty<T>(value: T, ignoreUndefined: boolean): boolean {
+        return !(validation.hasValue(value) || (value === undefined && ignoreUndefined));
     }
 
     private isEmpty(value: any, field: string): boolean {

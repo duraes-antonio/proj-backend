@@ -16,6 +16,8 @@ import { marketRoutes } from './routes/list-items/market.route';
 import { listMarketsRoutes } from './routes/list-items/market-list.route';
 import { listSlidesRoutes } from './routes/list-items/slide-list.route';
 import { slideRoutes } from './routes/list-items/slide.route';
+import { shippingRoutes } from './routes/shipping.route';
+import { orderRoutes } from './routes/order.route';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
@@ -39,7 +41,7 @@ export class App {
 
     private database(connectionString: string): Promise<Mongoose> {
         return mongoose.connect(
-          connectionString,
+          `${connectionString}?retryWrites=false`,
           {
               useNewUrlParser: true,
               useCreateIndex: true,
@@ -65,9 +67,11 @@ export class App {
         this.express.use('/list-product', listProductsRoutes);
         this.express.use('/list-slide', listSlidesRoutes);
         this.express.use('/market', marketRoutes);
+        this.express.use('/order', orderRoutes);
         this.express.use('/payment', paymentRoutes);
         this.express.use('/product', productRoutes);
         this.express.use('/review', reviewRoutes);
+        this.express.use('/shipping', shippingRoutes);
         this.express.use('/slide', slideRoutes);
         this.express.use('/user', userRoutes);
     }
