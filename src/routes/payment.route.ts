@@ -35,10 +35,8 @@ router.post(
   '/pag-seguro/notifications',
   async (req: Request, res: Response) => {
       try {
-          console.log(req);
           console.log(req.params, '******PARAMS');
           console.log(req.query, '******QUERY');
-          console.log(req.body, '******BODY');
           const strParams = Object.keys(req.params).map(key => {
               return `{${key}: ${req.params[key]}}`;
           });
