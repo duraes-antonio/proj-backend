@@ -71,7 +71,7 @@ describe('get', () => {
         fnCheck: (reviews: Review[]) => boolean;
     };
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         await clearDatabase(await appInstance.databaseInstance);
         await Promise.all(reviews
           .map(async r => await testRest.postAndMatch(app, route, r, token))
