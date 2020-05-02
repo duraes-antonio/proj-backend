@@ -124,6 +124,16 @@ function getTestForCustomStrFields<T>(fields: string[], objectSizes: any): TestO
     ).flat();
 }
 
+export const cmp = <T>(obj1: T, obj2: T, fnAccessProp: (obj: T) => string | number): number => {
+    if (fnAccessProp(obj1) < fnAccessProp(obj2)) {
+        return -1;
+    } else if (fnAccessProp(obj1) > fnAccessProp(obj2)) {
+        return 1;
+    }
+    return 0;
+};
+
+
 type UserAddTest = {
     admin: UserAdd;
     joao: UserAdd;

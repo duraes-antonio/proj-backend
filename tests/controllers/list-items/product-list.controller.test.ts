@@ -6,7 +6,7 @@ import { clearDatabase } from '../../../utils/database';
 import { generators } from '../../../utils/generators';
 import { listSizes } from '../../../src/shared/fieldSize';
 import { StringOptional, testRest } from '../../shared-methods-http';
-import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
+import { cmp, invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
 import { Product, ProductAdd } from '../../../src/domain/models/product';
 
 const appInstance = new App();
@@ -89,7 +89,10 @@ describe('get', () => {
 
     it('valid ', async () => {
         await testRest.getAndMatch(
-          app, route, {}, [listProductAdd, listProductAddAdmin], tokenAdmin
+          app, route, {}, [listProductAdd, listProductAddAdmin],
+          tokenAdmin,
+          (a: ListAdd<Product>, b: ListAdd<Product>) =>
+            cmp(a, b, (obj: ListAdd<Product>) => obj.title)
         );
     });
 });
