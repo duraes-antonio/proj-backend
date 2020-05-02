@@ -39,7 +39,7 @@ router.post(
               to: 'garotoseis@gmail.com',
               from: 'garotoseis@gmail.com',
               subject: 'requisição PAGSEGURO',
-              body: req.query
+              body: `<span>${req.query.toString()}</span>`
           });
           paymentService.updateStatusPagSeguro(req.query.notificationCode);
       } catch (e) {
