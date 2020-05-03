@@ -38,7 +38,8 @@ router.post(
           await paymentService.updateStatusPagSeguro(req.query.notificationCode);
           return responseFunctions.success(res);
       } catch (e) {
-          throw e;
+          console.log(e.message, (e as Error).stack);
+          return responseFunctions.unknown(res, e);
       }
   });
 
