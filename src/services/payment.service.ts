@@ -207,7 +207,6 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
           await orderService.update(jsFromXML.reference[0], { paymentStatus: paymentStatus });
       })
       .catch((err: Error) => {
-          console.log(err);
           throw err;
       });
 };
