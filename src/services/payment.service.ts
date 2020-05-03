@@ -189,11 +189,11 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
 const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
     const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
     try {
-        const notificationXML = await axios.get(
+        const notificationXML = (await axios.get(
           `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`
-        );
-        const jsFromXML = xml2js.parseString(notificationXML);
-        const statusTransaction: PagSeguroStatusTransaction = +jsFromXML.status;
+        )).data;
+        const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
+        const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
         const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
         mapTransacToPayment.set(PagSeguroStatusTransaction.AGUARDANDO_PAGAMENTO, PaymentStatus.PENDING);
         mapTransacToPayment.set(PagSeguroStatusTransaction.CANCELADA, PaymentStatus.CANCELED);
@@ -201,7 +201,7 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
         mapTransacToPayment.set(PagSeguroStatusTransaction.DISPONIVEL, PaymentStatus.APPROVED);
         mapTransacToPayment.set(PagSeguroStatusTransaction.EM_ANALISE, PaymentStatus.PENDING);
         const paymentStatus = mapTransacToPayment.get(statusTransaction);
-        await orderService.update(jsFromXML.reference, { paymentStatus: paymentStatus });
+        await orderService.update(jsFromXML.reference[0], { paymentStatus: paymentStatus });
     } catch (e) {
         throw new UnknownError(e.message);
     }
