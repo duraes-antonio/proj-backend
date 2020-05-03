@@ -1,6 +1,6 @@
 'use strict';
 
-import { EUserRole } from '../../enum/role.enum';
+import { EUserRole } from '../../enum/role';
 import { Registable } from '../auditable';
 
 export interface ListAdd<T> {

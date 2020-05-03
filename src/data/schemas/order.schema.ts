@@ -3,7 +3,7 @@ import { Document, model, Model, Schema } from 'mongoose';
 import { orderSizes } from '../../shared/fieldSize';
 import { ECollectionsName } from '../collections-name.enum';
 import { Order } from '../../domain/models/order';
-import { EStateOrder } from '../../domain/enum/state-order';
+import { EStateOrder } from '../../domain/enum/order';
 import { DeliveryOptionType } from '../../domain/models/shipping/delivery';
 import { PaymentMethod, PaymentStatus } from '../../domain/enum/payment';
 

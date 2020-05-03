@@ -1,6 +1,6 @@
 'use strict';
 import { Registable } from './auditable';
-import { EUserRole } from '../enum/role.enum';
+import { EUserRole } from '../enum/role';
 
 export interface User extends Registable, UserAdd {
     readonly avatarUrl?: string;

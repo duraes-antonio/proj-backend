@@ -2,7 +2,7 @@
 
 import { ItemOrder, ItemOrderAdd } from './item-order';
 import { Address } from './address';
-import { EStateOrder } from '../enum/state-order';
+import { EStateOrder } from '../enum/order';
 import { DeliveryOptionType } from './shipping/delivery';
 import { Registable } from './auditable';
 import { PaymentMethod, PaymentStatus } from '../enum/payment';

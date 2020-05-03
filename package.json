@@ -25,7 +25,8 @@
     "node-correios": "^3.0.2",
     "paypal-rest-sdk": "^1.8.1",
     "query-string": "^6.12.1",
-    "run-rs": "^0.6.2"
+    "run-rs": "^0.6.2",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.8.3",
@@ -41,6 +42,7 @@
     "@types/paypal-rest-sdk": "^1.7.5",
     "@types/query-string": "^6.3.0",
     "@types/supertest": "^2.0.8",
+    "@types/xml2js": "^0.4.5",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "eslint": "^6.8.0",

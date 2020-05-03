@@ -1,7 +1,7 @@
 'use strict';
 import { NextFunction, Request, Response } from 'express';
 import { tokenService } from './token.service';
-import { EUserRole } from '../domain/enum/role.enum';
+import { EUserRole } from '../domain/enum/role';
 import { serviceDataMsg } from '../shared/buildMsg';
 import { Message, responseFunctions } from '../controllers/base/response.functions';
 import { User } from '../domain/models/user';

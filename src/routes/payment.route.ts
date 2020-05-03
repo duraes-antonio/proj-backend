@@ -3,7 +3,6 @@ import { Request, Response, Router } from 'express';
 import { Customer, paymentService } from '../services/payment.service';
 import { User } from '../domain/models/user';
 import { tokenService } from '../services/token.service';
-import { emailService } from '../services/email.service';
 
 const router = Router();
 
@@ -35,21 +34,6 @@ router.post(
   '/pag-seguro/notifications',
   async (req: Request, res: Response) => {
       try {
-          console.log(req.params, '******PARAMS');
-          console.log(req.query, '******QUERY');
-          const strParams = Object.keys(req.params).map(key => {
-              return `{${key}: ${req.params[key]}}`;
-          });
-          const strQuery = Object.keys(req.query).map(key => {
-              return `{${key}: ${req.query[key]}}`;
-          });
-
-          await emailService.sendEmail({
-              to: 'garotoseis@gmail.com',
-              from: 'garotoseis@gmail.com',
-              subject: 'requisição PAGSEGURO',
-              body: `<span>${strParams}, ${strQuery}</span>`
-          });
           return await paymentService.updateStatusPagSeguro(req.query.notificationCode);
       } catch (e) {
           return res.status(500).send(e);

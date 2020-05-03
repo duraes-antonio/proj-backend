@@ -7,7 +7,7 @@ import { StringOptional, testRest } from '../shared-methods-http';
 import { productSizes } from '../../src/shared/fieldSize';
 import { generators } from '../../utils/generators';
 import { FilterProduct } from '../../src/domain/models/filters/filter-product';
-import { EProductSort } from '../../src/domain/enum/product-sort.enum';
+import { EProductSort } from '../../src/domain/enum/product-sort';
 
 const appInstance = new App();
 const app = appInstance.express;

@@ -1,5 +1,5 @@
 import { UserAdd } from '../src/domain/models/user';
-import { EUserRole } from '../src/domain/enum/role.enum';
+import { EUserRole } from '../src/domain/enum/role';
 import { App } from '../src/app';
 import { serviceDataMsg, validationErrorMsg } from '../src/shared/buildMsg';
 import { StringOptional } from './shared-methods-http';

@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 import { ECollectionsName } from './collections-name.enum';
-import { EUserRole } from '../domain/enum/role.enum';
+import { EUserRole } from '../domain/enum/role';
 import { listSizes } from '../shared/fieldSize';
 
 export const buildListSchema = (collectionName: ECollectionsName): Schema => {

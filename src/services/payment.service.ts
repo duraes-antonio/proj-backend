@@ -5,7 +5,7 @@ import { ItemOrder } from '../domain/models/item-order';
 import { productRepository } from '../data/repository/product.repository';
 import { config } from './config/config';
 import { orderService } from './order.service';
-import { PaymentMethod } from '../domain/enum/payment';
+import { PagSeguroStatusTransaction, PaymentMethod, PaymentStatus } from '../domain/enum/payment';
 import { DeliveryOptionType } from '../domain/models/shipping/delivery';
 import { UnknownError } from '../domain/helpers/error';
 
@@ -13,6 +13,7 @@ import { UnknownError } from '../domain/helpers/error';
 const axios = require('axios');
 const mercadoPago = require('mercadopago');
 const queryString = require('query-string');
+const xml2js = require('xml2js');
 
 export type Customer = {
     name: string;
@@ -141,6 +142,7 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
             currency: 'BRL',
             receiverEmail: config.pagSeguro.email,
             extraAmount: '0.00',
+            reference: order.id.toString(),
 
             // Dados sobre items do pedido
             ...queryPostItems,
@@ -168,11 +170,8 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
         const configRequest = {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         };
-
-
         res = await axios.post(url, queryString.stringify(queryPost), configRequest);
     } catch (e) {
-        console.log(e);
         throw new UnknownError({ msg: e.message, name: e.name, data: (e as Error).stack });
     }
 
@@ -193,7 +192,16 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
         const notificationXML = await axios.get(
           `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`
         );
-        console.log(notificationXML, '******XML');
+        const jsFromXML = xml2js.parseString(notificationXML);
+        const statusTransaction: PagSeguroStatusTransaction = +jsFromXML.status;
+        const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
+        mapTransacToPayment.set(PagSeguroStatusTransaction.AGUARDANDO_PAGAMENTO, PaymentStatus.PENDING);
+        mapTransacToPayment.set(PagSeguroStatusTransaction.CANCELADA, PaymentStatus.CANCELED);
+        mapTransacToPayment.set(PagSeguroStatusTransaction.DEVOLVIDA, PaymentStatus.RETURNED);
+        mapTransacToPayment.set(PagSeguroStatusTransaction.DISPONIVEL, PaymentStatus.APPROVED);
+        mapTransacToPayment.set(PagSeguroStatusTransaction.EM_ANALISE, PaymentStatus.PENDING);
+        const paymentStatus = mapTransacToPayment.get(statusTransaction);
+        await orderService.update(jsFromXML.reference, { paymentStatus: paymentStatus });
     } catch (e) {
         throw new UnknownError(e.message);
     }

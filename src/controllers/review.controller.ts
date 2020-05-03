@@ -10,7 +10,7 @@ import { Messages } from '../shared/consts/messages';
 import { Review } from '../domain/models/review';
 import { ReviewSchema } from '../data/schemas/review.schema';
 import { reviewService } from '../services/review.service';
-import { EUserRole } from '../domain/enum/role.enum';
+import { EUserRole } from '../domain/enum/role';
 import { User } from '../domain/models/user';
 
 export const entityName = 'Avaliação';

@@ -1,7 +1,7 @@
 'use strict';
 import { App } from '../../../src/app';
 import { ListAdd } from '../../../src/domain/models/lists-item/list';
-import { EUserRole } from '../../../src/domain/enum/role.enum';
+import { EUserRole } from '../../../src/domain/enum/role';
 import { clearDatabase } from '../../../utils/database';
 import { generators } from '../../../utils/generators';
 import { listSizes } from '../../../src/shared/fieldSize';
