@@ -3,6 +3,7 @@ import { Request, Response, Router } from 'express';
 import { Customer, paymentService } from '../services/payment.service';
 import { User } from '../domain/models/user';
 import { tokenService } from '../services/token.service';
+import { responseFunctions } from '../controllers/base/response.functions';
 
 const router = Router();
 
@@ -34,9 +35,10 @@ router.post(
   '/pag-seguro/notifications',
   async (req: Request, res: Response) => {
       try {
-          return await paymentService.updateStatusPagSeguro(req.query.notificationCode);
+          await paymentService.updateStatusPagSeguro(req.query.notificationCode);
+          return responseFunctions.success(res);
       } catch (e) {
-          return res.status(500).send(e);
+          throw e;
       }
   });
 
