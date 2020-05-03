@@ -19,12 +19,11 @@ import { slideRoutes } from './routes/list-items/slide.route';
 import { shippingRoutes } from './routes/shipping.route';
 import { orderRoutes } from './routes/order.route';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires */
 const express = require('express');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const mongoose = require('mongoose');
+const multer = require('multer');
 
 export class App {
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -57,6 +56,8 @@ export class App {
     }
 
     private routes(): void {
+        this.express.use(express.urlencoded({ extended: true }));
+        this.express.use(multer().array());
         this.express.use(indexRoutes);
         this.express.use('/address', addressRoutes);
         this.express.use('/auth', authRoutes);
