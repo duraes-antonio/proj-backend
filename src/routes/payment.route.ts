@@ -34,19 +34,11 @@ router.post('/pag-seguro', async (req: Request, res: Response) => {
 router.post(
   '/pag-seguro/notifications',
   async (req: Request, res: Response) => {
-      console.log(req, 'REQ');
-      console.log(req.query, 'QUERY');
-      console.log(req.params, 'PARAM');
-      console.log(req.body, 'BODY');
-      console.log(req.url, 'URL');
-      console.log(req.route, 'ROUTE');
-      console.log(req.originalUrl, 'originalUrl');
-      console.log((req as any).parameters, 'parameters');
       try {
-          await paymentService.updateStatusPagSeguro(req.query.notificationCode);
+          await paymentService.updateStatusPagSeguro(req.body.notificationCode);
           return responseFunctions.success(res);
       } catch (e) {
-          return responseFunctions.unknown(res, e);
+          return responseFunctions.unknown(res, e.message);
       }
   });
 
