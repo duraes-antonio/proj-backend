@@ -190,9 +190,9 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
     const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
     const urlGetNotif = `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
     let notificationXML;
-    axios.get(urlGetNotif)
-      .then(async (data: any) => {
-          notificationXML = data;
+    return axios.get(urlGetNotif)
+      .then(async (response: any) => {
+          notificationXML = response.data;
           const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
           const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
           const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
