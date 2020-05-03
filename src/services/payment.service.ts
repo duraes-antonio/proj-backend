@@ -202,7 +202,10 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
           mapTransacToPayment.set(PagSeguroStatusTransaction.DISPONIVEL, PaymentStatus.APPROVED);
           mapTransacToPayment.set(PagSeguroStatusTransaction.EM_ANALISE, PaymentStatus.PENDING);
           const paymentStatus = mapTransacToPayment.get(statusTransaction);
-          await orderService.update(jsFromXML.reference[0], { paymentStatus: paymentStatus });
+
+          if (paymentStatus) {
+              await orderService.update(jsFromXML.reference[0], { paymentStatus });
+          }
       })
       .catch((err: Error) => {
           throw err;
