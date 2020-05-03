@@ -192,6 +192,7 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
         const notificationXML = (await axios.get(
           `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`
         )).data;
+        console.log(notificationXML, 'XML');
         const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
         const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
         const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
@@ -203,7 +204,7 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
         const paymentStatus = mapTransacToPayment.get(statusTransaction);
         await orderService.update(jsFromXML.reference[0], { paymentStatus: paymentStatus });
     } catch (e) {
-        console.log(e.message, (e as Error).stack);
+        console.log(e.message, e.stack);
         throw e;
     }
 };
