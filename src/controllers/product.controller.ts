@@ -34,7 +34,7 @@ async function get(req: Request, res: Response, next: NextFunction): Promise<Res
 }
 
 async function getCount(req: Request, res: Response, next: NextFunction): Promise<Response<number>> {
-    const filter = req.query && Object.keys(req.query).length ? req.query : req.body;
+    const filter = req.query && Object.keys(req.query).length ? req.query.filter || req.query : req.body;
     return responseFunctions.success(res, await prodRepo.findCount(filter));
 }
 
