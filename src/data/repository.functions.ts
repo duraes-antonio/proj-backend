@@ -73,8 +73,8 @@ async function find<T>(
           .populate(populateFields ?? '')
           .lean()
           .sort(sort ? sort : {})
-          .skip((f.currentPage - 1) * f.perPage)
-          .limit(f.perPage);
+          .skip((+f.currentPage - 1) * +f.perPage)
+          .limit(+f.perPage);
     } else {
         res = await model.find(query ?? {})
           .populate(populateFields ?? '')

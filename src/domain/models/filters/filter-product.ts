@@ -4,10 +4,10 @@ import { EProductSort } from '../../enum/product-sort';
 
 export interface FilterProduct extends FilterBasic {
     avgReview?: number[];
-    categoriesId?: string[];
+    categoriesId?: string | string[];
     discounts?: number[][];
     freeDelivery?: boolean;
-    ids?: string[];
+    ids?: string | string[];
     priceMax?: number;
     priceMin?: number;
     text?: string;

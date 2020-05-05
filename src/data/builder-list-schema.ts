@@ -38,18 +38,6 @@ export const buildListSchema = (collectionName: ECollectionsName): Schema => {
           localField: 'itemsId',
           foreignField: '_id'
       });
-    schema.method('transform', function() {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
-        console.log(this);
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
-        const obj = this.toObject();
-        obj.id = obj._id;
-        delete obj._id;
-        return obj;
-    });
     return schema;
 };
 

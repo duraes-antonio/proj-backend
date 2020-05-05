@@ -5,7 +5,7 @@ import { serviceDataMsg } from '../src/shared/buildMsg';
 
 export type StringOptional = string | null | undefined;
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires*/
 const supertest = require('supertest');
 
 const _delete = async (app: App, route: string, id: StringOptional, token?: string): Promise<Request> => {
@@ -19,6 +19,7 @@ const get = async (app: App, route: string, filter: (FilterBasic | object), toke
     return supertest(app)
       .get(route)
       .set('Authorization', token ?? '')
+      .query(filter)
       .send(filter);
 };
 

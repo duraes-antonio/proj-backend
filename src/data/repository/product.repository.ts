@@ -4,6 +4,7 @@ import { FilterProduct } from '../../domain/models/filters/filter-product';
 import { EProductSort } from '../../domain/enum/product-sort';
 import { ObjectId } from 'bson';
 import { ProductSchema } from '../schemas/product.schema';
+import { utilService } from '../../shared/util';
 
 interface MatchQuery {
     categoriesId?: any;
@@ -35,28 +36,30 @@ function buildMatchQuery(filter: FilterProduct): MatchQuery {
     const match: MatchQuery = {};
 
     if (!!filter.freeDelivery) {
-        match.freeDelivery = filter.freeDelivery;
+        match.freeDelivery = filter.freeDelivery.toString().toLowerCase() === 'true';
     }
 
     if (filter.priceMin) {
-        match.$and = [{ price: { $gte: filter.priceMin } }];
+        match.$and = [{ price: { $gte: +filter.priceMin } }];
     }
 
     if (filter.priceMax) {
         match.$and = match.$and
-          ? [...match.$and, { price: { $lte: filter.priceMax } }]
-          : [{ price: { $lte: filter.priceMax } }];
+          ? [...match.$and, { price: { $lte: +filter.priceMax } }]
+          : [{ price: { $lte: +filter.priceMax } }];
     }
 
     if (filter.categoriesId && filter.categoriesId.length) {
-        const categIds = filter.categoriesId.map(id => new ObjectId(id));
+        const idsCopy = filter.categoriesId instanceof Array ? [...filter.categoriesId] : [filter.categoriesId];
+        const categIds = idsCopy.map(id => new ObjectId(id));
         match.$and = match.$and
           ? [...match.$and, { categoriesId: { $in: categIds } }]
           : [{ categoriesId: { $in: categIds } }];
     }
 
     if (filter.ids && filter.ids.length) {
-        const ids = filter.ids.map(id => new ObjectId(id));
+        const idsCopy = filter.ids instanceof Array ? [...filter.ids] : [filter.ids];
+        const ids = idsCopy.map(id => new ObjectId(id));
         match.$and = match.$and
           ? [...match.$and, { _id: { $in: ids } }]
           : [{ _id: { $in: ids } }];
@@ -93,12 +96,15 @@ function buildProjection(filter: FilterProduct): any {
     };
 
     if (filter.discounts && filter.discounts.length) {
+        const discounts: (number | string)[][] = filter.discounts[0] instanceof Array
+          ? filter.discounts
+          : utilService.chunckArray(filter.discounts as any[], 2);
         projectField.discountOk = {
-            $or: filter.discounts.map(pair => {
+            $or: discounts.map(pair => {
                 return {
                     $and: [
-                        { $gte: ['$percentOff', pair[0]] },
-                        { $lte: ['$percentOff', pair[1]] }
+                        { $gte: ['$percentOff', +pair[0]] },
+                        { $lte: ['$percentOff', +pair[1]] }
                     ]
                 };
             })
@@ -147,8 +153,8 @@ async function find(filter: FilterProduct): Promise<Product[]> {
     const queryBeforeLimit = queryRaw
       .match(matchPostProjection)
       .sort(sortBy)
-      .skip((filter.perPage ?? 1) * Math.max((filter.currentPage ?? 1) - 1, 0));
-    const results: Product[] = await (filter?.perPage ? queryBeforeLimit.limit(+filter.perPage) : queryBeforeLimit);
+      .skip((+filter.perPage ?? 1) * Math.max((+filter.currentPage ?? 1) - 1, 0));
+    const results: Product[] = await (+(filter?.perPage) ? queryBeforeLimit.limit(+filter.perPage) : queryBeforeLimit);
     return results.map(p => {
         return { ...p, priceWithDiscount: p.price * (1 - p.percentOff / 100) };
     });
@@ -162,12 +168,12 @@ async function findCount(filter: FilterProduct): Promise<number> {
         ...buildProjection(filter)
     };
 
-    const queryRaw = ProductSchema
+    const res = await ProductSchema
       .aggregate()
       .match(match)
       .project(projectField)
       .match(buildMatchQueryPostProjection(filter));
-    return (await queryRaw).length;
+    return res.length;
 }
 
 export const productRepository = {

@@ -168,9 +168,10 @@ const payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promis
         request.headers['prefer'] = 'return=representation';
         request.requestBody(buildPayloadPaypal(customer, order, 'BRL'));
         const response = await payPalClient.execute(request);
-        orderService.update(order.id, { transactionId: response.result.id });
+        await orderService.update(order.id, { transactionId: response.result.id });
         return response.result.id;
     } catch (e) {
+        console.log(e);
         throw e;
     }
 };
@@ -205,10 +206,10 @@ const updateStatusPaypal = async (orderPaypalId: string): Promise<void> => {
     const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(orderPaypalId);
     request.requestBody({});
     const payPalClient = new paypalCheckoutSdk.core.PayPalHttpClient(getEnvironmentPaypal());
-    const response = await payPalClient.client().execute(request);
-    console.log(response);
-    console.log(response.status);
-    console.log(response.purchase_units);
+    const response = await payPalClient.execute(request);
+    console.log(response, 'RESPONSE\n\n');
+    console.log(response.status, 'STATUS\n\n');
+    console.log(response.purchase_units, 'P UNITS\n\n');
     console.log(response.purchase_units[0]?.reference_id);
     const mapTransacToPayment = new Map<PayPalStatusPayment, PaymentStatus>();
     mapTransacToPayment.set(PayPalStatusPayment.COMPLETED, PaymentStatus.APPROVED);

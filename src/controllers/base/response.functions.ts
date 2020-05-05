@@ -55,7 +55,8 @@ function notFoundMany(
 }
 
 function success<T>(res: Response, data?: T): Response<T> {
-    const dataReturn = !data ? '' : (data instanceof Object ? data : { data });
+    const dataReturn = (data !== null && data !== undefined)
+      ? (data instanceof Object ? data : { data }) : '';
     return res.status(200).send(dataReturn);
 }
 

@@ -20,7 +20,6 @@ router.post('/paypal', async (req: Request, res: Response) => {
 router.post(
   '/paypal/notifications',
   async (req: Request, res: Response) => {
-      console.log(req.body, req.query);
       try {
           await paymentService.updateStatusPaypal(req.body);
           return responseFunctions.success(res);
