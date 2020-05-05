@@ -202,8 +202,9 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
       });
 };
 
-const updateStatusPaypal = async (orderPaypalId: string): Promise<void> => {
-    const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(orderPaypalId);
+const updateStatusPaypal = async (orderId: string): Promise<void> => {
+    const order = await orderService.findById(orderId);
+    const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(order?.transactionId);
     request.requestBody({});
     const payPalClient = new paypalCheckoutSdk.core.PayPalHttpClient(getEnvironmentPaypal());
     const response = await payPalClient.execute(request);
