@@ -69,9 +69,11 @@ const productSchema = new Schema({
         type: Number
     },
     priceWithDiscount: {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
-        default: (): number => this.price * (1 - this.percentOff / 100),
+        default: function(): number {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // @ts-ignore
+            return this.price * (1 - this.percentOff / 100);
+        },
         min: 0,
         required: true,
         trim: true,
