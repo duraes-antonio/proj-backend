@@ -1,7 +1,5 @@
 'use strict';
-
 export enum PaymentMethod {
-    MERCADO_PAGO = 'mercado_pago',
     PAG_SEGURO = 'pag_seguro',
     PAYPAL = 'paypal'
 }
@@ -15,7 +13,7 @@ export enum PaymentStatus {
     RETURNED = 'returned'
 }
 
-export enum PagSeguroStatusTransaction {
+export enum PagSeguroStatusPayment {
     AGUARDANDO_PAGAMENTO = 1,
     EM_ANALISE = 2,
     PAGA = 3,
@@ -23,4 +21,12 @@ export enum PagSeguroStatusTransaction {
     EM_DISPUTA = 5,
     DEVOLVIDA = 6,
     CANCELADA = 7,
+}
+
+export enum PayPalStatusPayment {
+    COMPLETED = 'COMPLETED',
+    DECLINED = 'DECLINED',
+    PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED',
+    PENDING = 'PENDING',
+    REFUNDED = 'REFUNDED',
 }

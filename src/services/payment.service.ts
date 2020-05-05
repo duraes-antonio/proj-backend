@@ -3,7 +3,7 @@ import { Order, OrderInput } from '../domain/models/order';
 import { ItemOrder } from '../domain/models/item-order';
 import { config } from './config/config';
 import { orderService } from './order.service';
-import { PagSeguroStatusTransaction, PaymentMethod, PaymentStatus } from '../domain/enum/payment';
+import { PagSeguroStatusPayment, PaymentMethod, PaymentStatus, PayPalStatusPayment } from '../domain/enum/payment';
 import { DeliveryOptionType } from '../domain/models/shipping/delivery';
 import { AxiosResponse } from 'axios';
 import { EEnv } from '../config';
@@ -168,6 +168,7 @@ const payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promis
         request.headers['prefer'] = 'return=representation';
         request.requestBody(buildPayloadPaypal(customer, order, 'BRL'));
         const response = await payPalClient.execute(request);
+        orderService.update(order.id, { transactionId: response.result.id });
         return response.result.id;
     } catch (e) {
         throw e;
@@ -182,13 +183,13 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
       .then(async (response: AxiosResponse) => {
           notificationXML = response.data;
           const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
-          const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
-          const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
-          mapTransacToPayment.set(PagSeguroStatusTransaction.AGUARDANDO_PAGAMENTO, PaymentStatus.PENDING);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.CANCELADA, PaymentStatus.CANCELED);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.DEVOLVIDA, PaymentStatus.RETURNED);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.DISPONIVEL, PaymentStatus.APPROVED);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.EM_ANALISE, PaymentStatus.PENDING);
+          const statusTransaction: PagSeguroStatusPayment = +(jsFromXML.status[0]);
+          const mapTransacToPayment = new Map<PagSeguroStatusPayment, PaymentStatus>();
+          mapTransacToPayment.set(PagSeguroStatusPayment.AGUARDANDO_PAGAMENTO, PaymentStatus.PENDING);
+          mapTransacToPayment.set(PagSeguroStatusPayment.CANCELADA, PaymentStatus.CANCELED);
+          mapTransacToPayment.set(PagSeguroStatusPayment.DEVOLVIDA, PaymentStatus.RETURNED);
+          mapTransacToPayment.set(PagSeguroStatusPayment.DISPONIVEL, PaymentStatus.APPROVED);
+          mapTransacToPayment.set(PagSeguroStatusPayment.EM_ANALISE, PaymentStatus.PENDING);
           const paymentStatus = mapTransacToPayment.get(statusTransaction);
 
           if (paymentStatus) {
@@ -200,30 +201,25 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
       });
 };
 
-const updateStatusPaypal = async (notifCode: string): Promise<void> => {
-    const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
-    const urlGetNotif = `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
-    let notificationXML;
-    return axios.get(urlGetNotif)
-      .then(async (response: AxiosResponse) => {
-          notificationXML = response.data;
-          const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
-          const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
-          const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
-          mapTransacToPayment.set(PagSeguroStatusTransaction.AGUARDANDO_PAGAMENTO, PaymentStatus.PENDING);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.CANCELADA, PaymentStatus.CANCELED);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.DEVOLVIDA, PaymentStatus.RETURNED);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.DISPONIVEL, PaymentStatus.APPROVED);
-          mapTransacToPayment.set(PagSeguroStatusTransaction.EM_ANALISE, PaymentStatus.PENDING);
-          const paymentStatus = mapTransacToPayment.get(statusTransaction);
+const updateStatusPaypal = async (orderPaypalId: string): Promise<void> => {
+    const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(orderPaypalId);
+    request.requestBody({});
+    const payPalClient = new paypalCheckoutSdk.core.PayPalHttpClient(getEnvironmentPaypal());
+    const response = await payPalClient.client().execute(request);
+    console.log(response);
+    console.log(response.status);
+    console.log(response.purchase_units);
+    console.log(response.purchase_units[0]?.reference_id);
+    const mapTransacToPayment = new Map<PayPalStatusPayment, PaymentStatus>();
+    mapTransacToPayment.set(PayPalStatusPayment.COMPLETED, PaymentStatus.APPROVED);
+    mapTransacToPayment.set(PayPalStatusPayment.DECLINED, PaymentStatus.CANCELED);
+    mapTransacToPayment.set(PayPalStatusPayment.PENDING, PaymentStatus.PENDING);
+    mapTransacToPayment.set(PayPalStatusPayment.REFUNDED, PaymentStatus.RETURNED);
+    const paymentStatus = mapTransacToPayment.get(response.status);
 
-          if (paymentStatus) {
-              await orderService.update(jsFromXML.reference[0], { paymentStatus });
-          }
-      })
-      .catch((err: Error) => {
-          throw err;
-      });
+    if (paymentStatus) {
+        await orderService.update(response.purchase_units[0].reference_id, { paymentStatus });
+    }
 };
 
 export const paymentService = {
