@@ -8,15 +8,28 @@ import { responseFunctions } from '../controllers/base/response.functions';
 const router = Router();
 
 router.post('/paypal', async (req: Request, res: Response) => {
-    res.send(await paymentService.payWithPaypal(req.body));
+    try {
+        const user: User = tokenService.decodeFromReq(req);
+        const codeTransaction = await paymentService.payWithPaypal(user, req.body);
+        res.send({ data: codeTransaction });
+    } catch (e) {
+        return res.status(e.code).send(e.message);
+    }
 });
 
-router.post('/mercado-pago', async (req: Request, res: Response) => {
-    res.send(await paymentService.payWithMercadoPago());
-});
+router.post(
+  '/paypal/notifications',
+  async (req: Request, res: Response) => {
+      console.log(req.body, req.query);
+      try {
+          await paymentService.updateStatusPaypal(req.body);
+          return responseFunctions.success(res);
+      } catch (e) {
+          return res.status(e.code).send(e.message);
+      }
+  });
 
 router.post('/pag-seguro', async (req: Request, res: Response) => {
-
     try {
         const user: User = tokenService.decodeFromReq(req);
         const customer: Customer = {
@@ -27,7 +40,7 @@ router.post('/pag-seguro', async (req: Request, res: Response) => {
         const codeTransaction = await paymentService.payWithPagSeguro(customer, req.body);
         res.send({ data: codeTransaction });
     } catch (e) {
-        throw e;
+        return res.status(e.code).send(e.message);
     }
 });
 
@@ -38,7 +51,7 @@ router.post(
           await paymentService.updateStatusPagSeguro(req.body.notificationCode);
           return responseFunctions.success(res);
       } catch (e) {
-          return responseFunctions.unknown(res, e.message);
+          return res.status(e.code).send(e.message);
       }
   });
 

@@ -21,7 +21,7 @@ const productSchema = new Schema({
     },
     categoriesId: {
         default: [],
-        required: true,
+        required: false,
         type: [Schema.Types.ObjectId],
         ref: ECollectionsName.CATEGORY
     },
@@ -69,7 +69,9 @@ const productSchema = new Schema({
         type: Number
     },
     priceWithDiscount: {
-        default: 0,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        default: (): number => this.price * (1 - this.percentOff / 100),
         min: 0,
         required: true,
         trim: true,
@@ -112,6 +114,14 @@ const productSchema = new Schema({
         type: Date
     }
 });
+
+productSchema.virtual(
+  'categories',
+  {
+      foreignField: '_id',
+      localField: 'categoriesId',
+      ref: ECollectionsName.CATEGORY
+  });
 
 productSchema.index({ title: 'text', desc: 'text' });
 

@@ -1,8 +1,10 @@
 'use strict';
 import { Registable } from './auditable';
+import { Category } from './category';
 
 export interface Product extends ProductAdd, Registable {
     readonly avgReview: number;
+    readonly categories: Category[];
     readonly priceWithDiscount: number;
 }
 

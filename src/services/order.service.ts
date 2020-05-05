@@ -23,7 +23,7 @@ import {
 import { PaymentMethod, PaymentStatus } from '../domain/enum/payment';
 
 const validate = (order: OrderInput, ignoreUndefined = false): PipelineValidation => {
-    const itemsQuantity = order.items.map(item => item.quantity);
+    const itemsQuantity = order.items?.map(item => item.quantity);
     return new PipelineValidation(msg.empty, ignoreUndefined)
       .hasValue('addressTargetId', order.addressTargetId)
       .hasValue('optionDeliveryType', order.addressTargetId)
@@ -108,7 +108,7 @@ const create = async (
             costDelivery: chosenDeliveryOpt.cost,
             daysForDelivery: chosenDeliveryOpt.timeDays,
             itemsId: itemsSaveds.map(item => item.id),
-            userId: addressTarget.userId,
+            userId: addressTarget.userId.toString(),
             paymentMethod,
             paymentStatus
         };
@@ -120,15 +120,24 @@ const create = async (
 };
 
 // TODO: Chamar serviço genérico
-const findById = async (id: string): Promise<Order | null> => {
-    return repoFns.findById(
+const findById = async (id: string, throwNotFound = false): Promise<Order | null> => {
+    const order = await repoFns.findById(
       id, OrderSchema,
       {
           path: 'items addressTarget',
           populate: {
-              path: 'product'
+              path: 'product',
+              populate: {
+                  path: 'categories'
+              }
           }
       });
+
+    if (throwNotFound && !order) {
+        throw new NotFoundError('Pedido', 'id', id);
+    }
+
+    return order;
 };
 
 const update = async (id: string, patchObject: OrderPatch): Promise<Order | null> => {

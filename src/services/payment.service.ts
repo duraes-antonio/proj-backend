@@ -1,17 +1,16 @@
-import paypal from 'paypal-rest-sdk';
-import { Order, OrderAdd, OrderInput } from '../domain/models/order';
-import { Product } from '../domain/models/product';
+'use strict';
+import { Order, OrderInput } from '../domain/models/order';
 import { ItemOrder } from '../domain/models/item-order';
-import { productRepository } from '../data/repository/product.repository';
 import { config } from './config/config';
 import { orderService } from './order.service';
 import { PagSeguroStatusTransaction, PaymentMethod, PaymentStatus } from '../domain/enum/payment';
 import { DeliveryOptionType } from '../domain/models/shipping/delivery';
-import { UnknownError } from '../domain/helpers/error';
+import { AxiosResponse } from 'axios';
+import { EEnv } from '../config';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const axios = require('axios');
-const mercadoPago = require('mercadopago');
+const paypalCheckoutSdk = require('@paypal/checkout-server-sdk');
 const queryString = require('query-string');
 const xml2js = require('xml2js');
 
@@ -23,158 +22,131 @@ export type Customer = {
     phone: string;
 }
 
-mercadoPago.configure({
-    'access_token': config.mercadoPago.accessToken
-});
-
-// TODO: Desenvolver implementação
-const payWithMercadoPago = async (): Promise<{ data: string }> => {
-    const preference = {
-        items: [
+const buildPayloadPaypal = (customer: Customer, order: Order, currency: string): object => {
+    const costItems = order.items
+      .map(item => item.quantity * item.product.priceWithDiscount)
+      .reduce((p: number, c: number) => p + c);
+    return {
+        'intent': 'CAPTURE',
+        'application_context': {
+            'brand_name': 'YugiShop',
+            'locale': 'pt-BT',
+            'shipping_preference': 'SET_PROVIDED_ADDRESS',
+            'user_action': 'CONTINUE'
+        },
+        'purchase_units': [
             {
-                'title': 'Meu produto',
-                'unit_price': 100,
-                'quantity': 1
+                'reference_id': order.id,
+                description: order.items.slice(0, 3)
+                  .map(i => i.product.title)
+                  .join(', '),
+                'custom_id': order.id,
+                'soft_descriptor': 'Yugi-Shop',
+                amount: {
+                    'currency_code': currency,
+                    value: (costItems + order.costDelivery).toFixed(2),
+                    breakdown: {
+                        'item_total': {
+                            'currency_code': currency,
+                            value: costItems.toFixed(2)
+                        },
+                        shipping: {
+                            'currency_code': currency,
+                            value: order.costDelivery.toFixed(2)
+                        }
+                    }
+                },
+                items: order.items.map((item: ItemOrder) => {
+                    return {
+                        name: item.product.title,
+                        description: item.product.desc,
+                        quantity: item.quantity,
+                        category: item.product.categories.length
+                          ? item.product.categories
+                            .map(c => c.title)
+                            .join(', ')
+                          : undefined,
+                        'unit_amount': {
+                            'currency_code': currency,
+                            value: item.product.priceWithDiscount
+                        }
+                    };
+                }),
+                shipping: {
+                    name: {
+                        'full_name': customer.name
+                    },
+                    address: {
+                        'address_line_1': `${order.addressTarget.number} ${order.addressTarget.street}`,
+                        'admin_area_2': order.addressTarget.city,
+                        'admin_area_1': order.addressTarget.state,
+                        'postal_code': order.addressTarget.zipCode,
+                        'country_code': 'BR'
+                    }
+                }
             }
         ]
     };
-
-    const response = await mercadoPago.preferences.create(preference);
-    return { data: response.body.id };
 };
 
-// TODO: Desenvolver implementação
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-const payWithPaypal = async (order: OrderAdd): Promise<string> => {
-    /*TODO:
-       - Adicionar items a uma cesta;
-       - Calcular preço de cada item;
-       - Calcular preço de entrega de cada item;
-       - Total (custo de entrega + custo de itens)
-       */
-    // TODO: Obter produtos
-    const prods: Product[] = await productRepository.find(
-      {
-          currentPage: 1,
-          perPage: 1000
-      });
+const getEnvironmentPaypal = (): object => {
+    const clientId = process.env.PAYPAL_CLIENT_ID || config.paypal.clientId;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET || config.paypal.secret;
 
-    const cart = prods.map(p => {
-        return {
-            'currency': 'BRL',
-            'name': p.title,
-            'price': (p.price * (100 - p.percentOff) / 100).toFixed(2),
-            'sku': p.id,
-            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-            // @ts-ignore
-            'quantity': order.items
-              .find(i => i.productId === p.id.toString())
-              .quantity
-        };
-    });
-    const itemsTotalPrice = cart
-      .map(p => +p.quantity * +p.price)
-      .reduce((p, c) => p + c);
-    /*TODO: Calcular frete por item*/
-    const deliveryCost = 25.75;
-    const payment = {
-        'intent': 'sale',
-        'payer': { 'payment_method': 'paypal' },
-        'redirect_urls': {
-            'return_url': 'http://localhost:4200/home',
-            'cancel_url': 'http://localhost:4200/home'
-        },
-        'transactions': [{
-            'item_list': {
-                'items': cart
-            },
-            'amount': {
-                'currency': 'BRL',
-                /*TODO: Caluclar o total*/
-                'total': (deliveryCost + itemsTotalPrice).toFixed(2),
-                'details': {
-                    'subtotal': itemsTotalPrice.toFixed(2),
-                    'shipping': deliveryCost.toFixed(2)
-                }
-            },
-            'description': `${prods.length} itens`
-        }]
-    };
-    const ppConfig = paypal.configure({
-        'client_id': config.paypal.clientId,
-        'client_secret': config.paypal.secret,
-        'mode': config.paypal.mode
-    });
-    const res = await paypal.payment.create(
-      payment,
-      (err, p) => {
-          if (err) {
-              console.log(err);
-              return err;
-          } else {
-              console.log(p);
-              return p;
-          }
-      });
-    const x = 10;
+    if (process.env.NODE_ENV === EEnv.PROD) {
+        return new paypalCheckoutSdk.core.LiveEnvironment(clientId, clientSecret);
+    }
+
+    return new paypalCheckoutSdk.core.SandboxEnvironment(clientId, clientSecret);
 };
 
 /*O ambiente sandbox só aceita emails com pós-fixo '@sandbox.pagseguro.com.br'*/
 const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
+    const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
+    const order = await orderService.findById(orderId) as Order;
+    const url = `${config.pagSeguro.urlCheckout}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
+    const queryPostItems: any = {};
 
-    let res, order;
+    order.items.forEach((item: ItemOrder, index: number) => {
+        queryPostItems[`itemId${index + 1}`] = item.productId;
+        queryPostItems[`itemDescription${index + 1}`] = item.product.title;
+        queryPostItems[`itemAmount${index + 1}`] = (item.product.price * (1 - item.product.percentOff / 100)).toFixed(2);
+        queryPostItems[`itemQuantity${index + 1}`] = item.quantity;
+    });
+    const queryPost = {
+        // Dados de pagamento
+        currency: 'BRL',
+        receiverEmail: config.pagSeguro.email,
+        extraAmount: '0.00',
+        reference: order.id.toString(),
 
-    try {
-        const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
-        order = await orderService.findById(orderId) as Order;
-        const url = `${config.pagSeguro.urlCheckout}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
-        const queryPostItems: any = {};
+        // Dados sobre items do pedido
+        ...queryPostItems,
 
-        order.items.forEach((item: ItemOrder, index: number) => {
-            queryPostItems[`itemId${index + 1}`] = item.productId;
-            queryPostItems[`itemDescription${index + 1}`] = item.product.title;
-            queryPostItems[`itemAmount${index + 1}`] = (item.product.price * (1 - item.product.percentOff / 100)).toFixed(2);
-            queryPostItems[`itemQuantity${index + 1}`] = item.quantity;
-        });
-        const queryPost = {
-            // Dados de pagamento
-            currency: 'BRL',
-            receiverEmail: config.pagSeguro.email,
-            extraAmount: '0.00',
-            reference: order.id.toString(),
+        // Dados do comprador
+        senderName: customer.name,
+        senderCPF: customer.cpf,
+        senderAreaCode: customer.codeArea,
+        senderPhone: customer.phone,
+        senderEmail: customer.email,
 
-            // Dados sobre items do pedido
-            ...queryPostItems,
-
-            // Dados do comprador
-            senderName: customer.name,
-            senderCPF: customer.cpf,
-            senderAreaCode: customer.codeArea,
-            senderPhone: customer.phone,
-            senderEmail: customer.email,
-
-            // Dados de entrega
-            shippingAddressRequired: true,
-            shippingAddressStreet: order.addressTarget.street,
-            shippingAddressNumber: order.addressTarget.number,
-            shippingAddressComplement: '',
-            shippingAddressDistrict: order.addressTarget.neighborhood,
-            shippingAddressPostalCode: order.addressTarget.zipCode,
-            shippingAddressCity: order.addressTarget.city,
-            shippingAddressState: order.addressTarget.state,
-            shippingAddressCountry: 'BRA',
-            shippingType: order.optionDeliveryType === DeliveryOptionType.PAC ? 1 : 2,
-            shippingCost: order.costDelivery.toFixed(2)
-        };
-        const configRequest = {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        };
-        res = await axios.post(url, queryString.stringify(queryPost), configRequest);
-    } catch (e) {
-        throw new UnknownError({ msg: e.message, name: e.name, data: (e as Error).stack });
-    }
-
+        // Dados de entrega
+        shippingAddressRequired: true,
+        shippingAddressStreet: order.addressTarget.street,
+        shippingAddressNumber: order.addressTarget.number,
+        shippingAddressComplement: '',
+        shippingAddressDistrict: order.addressTarget.neighborhood,
+        shippingAddressPostalCode: order.addressTarget.zipCode,
+        shippingAddressCity: order.addressTarget.city,
+        shippingAddressState: order.addressTarget.state,
+        shippingAddressCountry: 'BRA',
+        shippingType: order.optionDeliveryType === DeliveryOptionType.PAC ? 1 : 2,
+        shippingCost: order.costDelivery.toFixed(2)
+    };
+    const configRequest = {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    };
+    const res = await axios.post(url, queryString.stringify(queryPost), configRequest);
     const arrMatchesIds = /<code>([\da-zA-Z]+)<\/code>/.exec(res.data);
 
     if (!arrMatchesIds) {
@@ -186,12 +158,54 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
     return transactionId;
 };
 
+const payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
+    try {
+        const orderId = (await orderService.create(orderInput, PaymentMethod.PAYPAL)).id;
+        const order = await orderService.findById(orderId, true) as Order;
+
+        const request = new paypalCheckoutSdk.orders.OrdersCreateRequest();
+        const payPalClient = new paypalCheckoutSdk.core.PayPalHttpClient(getEnvironmentPaypal());
+        request.headers['prefer'] = 'return=representation';
+        request.requestBody(buildPayloadPaypal(customer, order, 'BRL'));
+        const response = await payPalClient.execute(request);
+        return response.result.id;
+    } catch (e) {
+        throw e;
+    }
+};
+
 const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
     const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
     const urlGetNotif = `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
     let notificationXML;
     return axios.get(urlGetNotif)
-      .then(async (response: any) => {
+      .then(async (response: AxiosResponse) => {
+          notificationXML = response.data;
+          const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
+          const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
+          const mapTransacToPayment = new Map<PagSeguroStatusTransaction, PaymentStatus>();
+          mapTransacToPayment.set(PagSeguroStatusTransaction.AGUARDANDO_PAGAMENTO, PaymentStatus.PENDING);
+          mapTransacToPayment.set(PagSeguroStatusTransaction.CANCELADA, PaymentStatus.CANCELED);
+          mapTransacToPayment.set(PagSeguroStatusTransaction.DEVOLVIDA, PaymentStatus.RETURNED);
+          mapTransacToPayment.set(PagSeguroStatusTransaction.DISPONIVEL, PaymentStatus.APPROVED);
+          mapTransacToPayment.set(PagSeguroStatusTransaction.EM_ANALISE, PaymentStatus.PENDING);
+          const paymentStatus = mapTransacToPayment.get(statusTransaction);
+
+          if (paymentStatus) {
+              await orderService.update(jsFromXML.reference[0], { paymentStatus });
+          }
+      })
+      .catch((err: Error) => {
+          throw err;
+      });
+};
+
+const updateStatusPaypal = async (notifCode: string): Promise<void> => {
+    const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
+    const urlGetNotif = `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
+    let notificationXML;
+    return axios.get(urlGetNotif)
+      .then(async (response: AxiosResponse) => {
           notificationXML = response.data;
           const jsFromXML = (await xml2js.parseStringPromise(notificationXML)).transaction;
           const statusTransaction: PagSeguroStatusTransaction = +(jsFromXML.status[0]);
@@ -213,8 +227,8 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
 };
 
 export const paymentService = {
-    payWithMercadoPago,
     payWithPagSeguro,
     payWithPaypal,
-    updateStatusPagSeguro
+    updateStatusPagSeguro,
+    updateStatusPaypal
 };
