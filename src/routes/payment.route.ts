@@ -24,7 +24,7 @@ router.post(
           console.log(req.body);
           console.log(req.body.resource, 'RESOURCE');
           console.log(Object.keys(req.body), 'KEYS');
-          await paymentService.updateStatusPaypal(req.body.resource.custom_id);
+          await paymentService.updateStatusPaypal(req.body.resource['custom_id']);
           return responseFunctions.success(res);
       } catch (e) {
           return res.status(e.code).send(e.message);

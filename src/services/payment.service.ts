@@ -204,6 +204,8 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
 
 const updateStatusPaypal = async (orderId: string): Promise<void> => {
     const order = await orderService.findById(orderId);
+    console.log(order, 'PEDIDO');
+    console.log(order?.transactionId, 'TRANSACTION ID');
     const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(order?.transactionId);
     request.requestBody({});
     const payPalClient = new paypalCheckoutSdk.core.PayPalHttpClient(getEnvironmentPaypal());
