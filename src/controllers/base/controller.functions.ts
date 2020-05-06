@@ -34,8 +34,9 @@ async function get<T>(
   bdFind: (filter: FilterBasic) => Promise<T[]>
 ): Promise<Response<T[]>> {
     try {
-        const filterQuery = req.query.filter ? JSON.parse(req.query.filter) : req.query;
-        const filter = Object.keys(filterQuery).length ? filterQuery : {};
+        const filterFromReq = req.query.filter ? JSON.parse(req.query.filter) : req.query;
+        const filter: FilterBasic = Object.keys(filterFromReq).length
+          ? filterFromReq : { currentPage: 1, perPage: 100 };
         const objs: T[] = await bdFind(filter);
         return resFunc.success(res, objs);
     } catch (err) {

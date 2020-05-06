@@ -204,23 +204,19 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
 
 const updateStatusPaypal = async (orderId: string): Promise<void> => {
     const order = await orderService.findById(orderId);
-    console.log(order?.transactionId, 'TRANSACTION ID');
     const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(order?.transactionId);
     request.requestBody({});
     const payPalClient = new paypalCheckoutSdk.core.PayPalHttpClient(getEnvironmentPaypal());
     const response = await payPalClient.execute(request);
-    console.log(response, 'RESPONSE\n\n');
-    console.log(response.status, 'STATUS\n\n');
-    console.log(response.purchase_units, 'P UNITS\n\n');
     const mapTransacToPayment = new Map<PayPalStatusPayment, PaymentStatus>();
     mapTransacToPayment.set(PayPalStatusPayment.COMPLETED, PaymentStatus.APPROVED);
     mapTransacToPayment.set(PayPalStatusPayment.DECLINED, PaymentStatus.CANCELED);
     mapTransacToPayment.set(PayPalStatusPayment.PENDING, PaymentStatus.PENDING);
     mapTransacToPayment.set(PayPalStatusPayment.REFUNDED, PaymentStatus.RETURNED);
-    const paymentStatus = mapTransacToPayment.get(response.status);
+    const paymentStatus = mapTransacToPayment.get(response.result.status);
 
     if (paymentStatus) {
-        await orderService.update(response.purchase_units[0].reference_id, { paymentStatus });
+        await orderService.update(orderId, { paymentStatus });
     }
 };
 
