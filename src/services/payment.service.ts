@@ -90,11 +90,12 @@ const buildPayloadPaypal = (customer: Customer, order: Order, currency: string):
 };
 
 const getEnvironmentPaypal = (): object => {
-    const clientId = process.env.PAYPAL_CLIENT_ID || config.paypal.clientId;
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET || config.paypal.secret;
+    const clientId = config.paypal.clientId;
+    const clientSecret = config.paypal.secret;
 
+    // TODO: Substituir SandboxEnvironment por LiveEnvironment e credenciais de prod
     if (process.env.NODE_ENV === EEnv.PROD) {
-        return new paypalCheckoutSdk.core.LiveEnvironment(clientId, clientSecret);
+        return new paypalCheckoutSdk.core.SandboxEnvironment(clientId, clientSecret);
     }
 
     return new paypalCheckoutSdk.core.SandboxEnvironment(clientId, clientSecret);
@@ -171,7 +172,6 @@ const payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promis
         await orderService.update(order.id, { transactionId: response.result.id });
         return response.result.id;
     } catch (e) {
-        console.log(e);
         throw e;
     }
 };
@@ -204,7 +204,6 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
 
 const updateStatusPaypal = async (orderId: string): Promise<void> => {
     const order = await orderService.findById(orderId);
-    console.log(order, 'PEDIDO');
     console.log(order?.transactionId, 'TRANSACTION ID');
     const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(order?.transactionId);
     request.requestBody({});
@@ -213,7 +212,6 @@ const updateStatusPaypal = async (orderId: string): Promise<void> => {
     console.log(response, 'RESPONSE\n\n');
     console.log(response.status, 'STATUS\n\n');
     console.log(response.purchase_units, 'P UNITS\n\n');
-    console.log(response.purchase_units[0]?.reference_id);
     const mapTransacToPayment = new Map<PayPalStatusPayment, PaymentStatus>();
     mapTransacToPayment.set(PayPalStatusPayment.COMPLETED, PaymentStatus.APPROVED);
     mapTransacToPayment.set(PayPalStatusPayment.DECLINED, PaymentStatus.CANCELED);

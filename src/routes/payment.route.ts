@@ -21,9 +21,7 @@ router.post(
   '/paypal/notifications',
   async (req: Request, res: Response) => {
       try {
-          console.log(req.body);
           console.log(req.body.resource, 'RESOURCE');
-          console.log(Object.keys(req.body), 'KEYS');
           await paymentService.updateStatusPaypal(req.body.resource['custom_id']);
           return responseFunctions.success(res);
       } catch (e) {
