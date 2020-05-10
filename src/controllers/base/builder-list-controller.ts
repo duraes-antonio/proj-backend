@@ -15,12 +15,12 @@ const buildRouter = <T>(entityName: string, schema: Model<Document & List<T>>): 
         listController.delete(req, res, next, entityName, schema)
     );
     router.get(
-      '/', tokenS.verify,
+      '/',
       (req: Request, res: Response, next: NextFunction) =>
         listController.get(req, res, next, entityName, schema)
     );
     router.get(
-      '/:id', tokenS.verify,
+      '/:id',
       (req: Request, res: Response, next: NextFunction) =>
         listController.getById(req, res, next, entityName, schema)
     );
