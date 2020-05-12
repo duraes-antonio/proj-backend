@@ -26,6 +26,13 @@ export class DuplicatedError extends ErrorGeneric {
     }
 }
 
+export class DuplicatedErrorCustom extends ErrorGeneric {
+
+    constructor(message: string) {
+        super(409, message);
+    }
+}
+
 export class EmptyTokenError extends ErrorGeneric {
     constructor() {
         super(401, msgServ.tokenEmpty().message);

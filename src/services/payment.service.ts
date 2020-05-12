@@ -7,6 +7,7 @@ import { PagSeguroStatusPayment, PaymentMethod, PaymentStatus, PayPalStatusPayme
 import { DeliveryOptionType } from '../domain/models/shipping/delivery';
 import { AxiosResponse } from 'axios';
 import { EEnv } from '../config';
+import { productService } from './product.service';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const axios = require('axios');
@@ -102,17 +103,18 @@ const getEnvironmentPaypal = (): object => {
 };
 
 /*O ambiente sandbox só aceita emails com pós-fixo '@sandbox.pagseguro.com.br'*/
-const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
+const _payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
     const orderId = (await orderService.create(orderInput, PaymentMethod.PAG_SEGURO)).id;
     const order = await orderService.findById(orderId) as Order;
     const url = `${config.pagSeguro.urlCheckout}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
     const queryPostItems: any = {};
 
-    order.items.forEach((item: ItemOrder, index: number) => {
-        queryPostItems[`itemId${index + 1}`] = item.productId;
-        queryPostItems[`itemDescription${index + 1}`] = item.product.title;
-        queryPostItems[`itemAmount${index + 1}`] = (item.product.price * (1 - item.product.percentOff / 100)).toFixed(2);
-        queryPostItems[`itemQuantity${index + 1}`] = item.quantity;
+    order.items.forEach(({ product, quantity }: ItemOrder, index: number) => {
+        queryPostItems[`itemId${index + 1}`] = product.id;
+        queryPostItems[`itemDescription${index + 1}`] = product.title;
+        queryPostItems[`itemAmount${index + 1}`] = productService.calculateRealPrice(product.price, product.percentOff)
+          .toFixed(2);
+        queryPostItems[`itemQuantity${index + 1}`] = quantity;
     });
     const queryPost = {
         // Dados de pagamento
@@ -159,7 +161,7 @@ const payWithPagSeguro = async (customer: Customer, orderInput: OrderInput): Pro
     return transactionId;
 };
 
-const payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
+const _payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promise<string> => {
     try {
         const orderId = (await orderService.create(orderInput, PaymentMethod.PAYPAL)).id;
         const order = await orderService.findById(orderId, true) as Order;
@@ -176,7 +178,7 @@ const payWithPaypal = async (customer: Customer, orderInput: OrderInput): Promis
     }
 };
 
-const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
+const _updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
     const urlNotifGet = `${config.pagSeguro.urlGetNotific}/${notifCode}`;
     const urlGetNotif = `${urlNotifGet}?email=${config.pagSeguro.email}&token=${config.pagSeguro.token}`;
     let notificationXML;
@@ -202,7 +204,7 @@ const updateStatusPagSeguro = async (notifCode: string): Promise<void> => {
       });
 };
 
-const updateStatusPaypal = async (orderId: string): Promise<void> => {
+const _updateStatusPaypal = async (orderId: string): Promise<void> => {
     const order = await orderService.findById(orderId);
     const request = new paypalCheckoutSdk.orders.OrdersCaptureRequest(order?.transactionId);
     request.requestBody({});
@@ -221,8 +223,8 @@ const updateStatusPaypal = async (orderId: string): Promise<void> => {
 };
 
 export const paymentService = {
-    payWithPagSeguro,
-    payWithPaypal,
-    updateStatusPagSeguro,
-    updateStatusPaypal
+    payWithPagSeguro: _payWithPagSeguro,
+    payWithPaypal: _payWithPaypal,
+    updateStatusPagSeguro: _updateStatusPagSeguro,
+    updateStatusPaypal: _updateStatusPaypal
 };

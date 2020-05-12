@@ -28,6 +28,7 @@ export interface Order extends OrderAdd, Registable {
     readonly dateDelivery?: Date;
     readonly items: ItemOrder[];
     readonly itemsId: string[];
+    readonly productsId: string[];
     readonly paymentStatus: PaymentStatus;
     readonly state: EStateOrder;
     readonly transactionId: string;

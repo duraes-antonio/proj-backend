@@ -21,6 +21,7 @@ import {
     UnknownError
 } from '../domain/helpers/error';
 import { PaymentMethod, PaymentStatus } from '../domain/enum/payment';
+import { orderRepository } from '../data/repository/order.repository';
 
 const validate = (order: OrderInput, ignoreUndefined = false): PipelineValidation => {
     const itemsQuantity = order.items?.map(item => item.quantity);
@@ -103,19 +104,20 @@ const create = async (
     itemsSaveds = await repoFns.createMany(itemsOrder, ItemOrderSchema) as ItemOrder[];
 
     try {
-        const orderAdd: OrderAdd = {
+        const orderAdd: OrderAdd & { productsId: string[] } = {
             ...orderInput,
             costDelivery: chosenDeliveryOpt.cost,
             daysForDelivery: chosenDeliveryOpt.timeDays,
             itemsId: itemsSaveds.map(item => item.id),
-            userId: addressTarget.userId.toString(),
+            productsId: itemsSaveds.map(item => item.productId),
             paymentMethod,
+            userId: addressTarget.userId.toString(),
             paymentStatus
         };
         return await repoFns.create(orderAdd, OrderSchema) as Order;
     } catch (err) {
         await repoFns.deleteMany(itemsSaveds.map(i => i.id), ItemOrderSchema);
-        throw new UnknownError();
+        throw new UnknownError(err);
     }
 };
 
@@ -140,6 +142,10 @@ const findById = async (id: string, throwNotFound = false): Promise<Order | null
     return order;
 };
 
+const _productPurchased = async (productId: string, userId: string): Promise<boolean> => {
+    return await orderRepository.productPurchased(userId, productId);
+};
+
 const update = async (id: string, patchObject: OrderPatch): Promise<Order | null> => {
     return repoFns.findAndUpdate<Order>(id, patchObject, OrderSchema);
 };
@@ -147,6 +153,7 @@ const update = async (id: string, patchObject: OrderPatch): Promise<Order | null
 export const orderService = {
     create,
     findById,
+    productPurchased: _productPurchased,
     validate,
     update
 };

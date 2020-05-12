@@ -1,4 +1,5 @@
 'use strict';
+
 export enum PaymentMethod {
     PAG_SEGURO = 'pag_seguro',
     PAYPAL = 'paypal'

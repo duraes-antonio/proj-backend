@@ -126,7 +126,7 @@ export class PipelineValidation {
     }
 
     atMaxValue(
-      field: string, value: number | number[], maxVal: number,
+      field: string, value: undefined | number | number[], maxVal: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
         return this.checkValuesAndFillError<number>(
@@ -138,7 +138,7 @@ export class PipelineValidation {
     }
 
     atLeastValue(
-      field: string, value: number | number[], minVal: number,
+      field: string, value: undefined | number | number[], minVal: number,
       fnMsg: (field: string, min: number) => string
     ): PipelineValidation {
         return this.checkValuesAndFillError<number>(
@@ -171,7 +171,7 @@ export class PipelineValidation {
     }
 
     private checkValuesAndFillError<T>(
-      value: T | T[], fnValidate: (v: T) => boolean,
+      value: undefined | T | T[], fnValidate: (v: T) => boolean,
       fnMsg: () => string, fnMsgEmpty: () => string
     ): PipelineValidation {
         const newErrors = this.getMsgsErrorsPure(
@@ -183,10 +183,10 @@ export class PipelineValidation {
     }
 
     private getMsgsErrorsPure<T>(
-      values: T | T[], fnCheckValidT: (v: T) => boolean, fnCheckIsEmpty: (v: T) => boolean,
-      fnMsg: () => string, fnMsgEmpty: () => string
+      values: undefined | T | T[], fnCheckValidT: (v: T) => boolean,
+      fnCheckIsEmpty: (v?: T) => boolean, fnMsg: () => string, fnMsgEmpty: () => string
     ): string[] {
-        const pipelineMsgsError = (value: T): string | undefined => {
+        const pipelineMsgsError = (value?: T): string | undefined => {
             if (fnCheckIsEmpty(value)) {
                 return fnMsgEmpty();
             } else if (value !== undefined && !fnCheckValidT(value)) {
@@ -209,7 +209,7 @@ export class PipelineValidation {
         return !(validation.hasValue(value) || (value === undefined && ignoreUndefined));
     }
 
-    private isEmpty(value: any, field: string): boolean {
+    private isEmpty<T>(value: T, field: string): boolean {
         if (!validation.hasValue(value)) {
             if (!this._ignoreUndefined || value !== undefined) {
                 this.errors.push(this.fnEmpty(field));

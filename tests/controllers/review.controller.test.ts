@@ -3,7 +3,7 @@ import { App } from '../../src/app';
 import { Review, ReviewAdd, ReviewPatch } from '../../src/domain/models/review';
 import { clearDatabase } from '../../utils/database';
 import { EReviewSort, FilterReview } from '../../src/domain/models/filters/filter-review';
-import { serviceDataMsg, validationErrorMsg } from '../../src/shared/buildMsg';
+import { validationErrorMsg } from '../../src/shared/buildMsg';
 import { generators } from '../../utils/generators';
 import { reviewSizes } from '../../src/shared/fieldSize';
 import { utilService } from '../../src/shared/util';
@@ -157,7 +157,7 @@ describe('patch', () => {
         { rating: reviewSizes.ratingMax }
     ])
     (
-      'valid',
+      'valid - %s',
       async (review: ReviewPatch) => {
           const res = await testRest.patch(app, route, reviewSaved.id, review, token);
           expect(res.status).toBe(200);
@@ -204,24 +204,9 @@ describe('patch', () => {
             data: { rating: reviewSizes.ratingMax + 1 },
             message: validationErrorMsg.maxValue('rating', reviewSizes.ratingMax),
             expectStatus: 400
-        },
-        {
-            data: { productId: null },
-            message: serviceDataMsg.fieldsInvalid(['productId']).message,
-            expectStatus: 400
-        },
-        {
-            data: { userId: '151515' },
-            message: serviceDataMsg.fieldsInvalid(['userId']).message,
-            expectStatus: 400
-        },
-        {
-            data: { inexist: null },
-            message: serviceDataMsg.fieldsInvalid(['inexist']).message,
-            expectStatus: 400
         }
     ])
-    ('invalid',
+    ('invalid - %s',
       async (test: TestObject<ReviewPatch>) => {
           const res = await testRest.patch(app, route, reviewSaved.id, test.data, token);
           expect(res.status).toBe(test.expectStatus);

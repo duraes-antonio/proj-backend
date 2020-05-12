@@ -20,8 +20,7 @@ const productSchema = new Schema({
         type: Number
     },
     categoriesId: {
-        default: [],
-        required: false,
+        required: true,
         type: [Schema.Types.ObjectId],
         ref: ECollectionsName.CATEGORY
     },
@@ -32,7 +31,6 @@ const productSchema = new Schema({
         type: Number
     },
     desc: {
-        index: true,
         maxlength: productSizes.descMax,
         required: true,
         trim: true,
@@ -76,11 +74,9 @@ const productSchema = new Schema({
         },
         min: 0,
         required: true,
-        trim: true,
         type: Number
     },
     title: {
-        index: true,
         maxlength: productSizes.titleMax,
         required: true,
         trim: true,
@@ -125,7 +121,7 @@ productSchema.virtual(
       ref: ECollectionsName.CATEGORY
   });
 
-productSchema.index({ title: 'text', desc: 'text' });
+productSchema.index({ '$**': 'text' });
 
 export const ProductSchema: Model<ProductDBModel> = model<ProductDBModel>(ECollectionsName.PRODUCT, productSchema);
 

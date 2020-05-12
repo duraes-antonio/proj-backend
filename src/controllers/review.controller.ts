@@ -1,86 +1,77 @@
 'use strict';
-import { serviceDataMsg } from '../shared/buildMsg';
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
-import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { tokenService } from '../services/token.service';
-import { EReviewSort, FilterReview } from '../domain/models/filters/filter-review';
-import { reviewRepository } from '../data/repository/review.repository';
-import { Messages } from '../shared/consts/messages';
-import { Review } from '../domain/models/review';
-import { ReviewSchema } from '../data/schemas/review.schema';
 import { reviewService } from '../services/review.service';
-import { EUserRole } from '../domain/enum/role';
-import { User } from '../domain/models/user';
+import { responseFunctions } from './base/response.functions';
 
 export const entityName = 'Avaliação';
 
-async function delete_(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const userData = tokenService.decodeFromReq(req);
-    const conditions = userData.roles.includes(EUserRole.ADMIN) ? {} : { 'userId': userData.id };
-    return ctrlFunc.delete(req, res, next, entityName,
-      (id) => repoFunc.delete(id, ReviewSchema, conditions)
-    );
-}
-
-async function post(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const tokenData: User = tokenService.decodeFromReq(req);
-    const has: boolean = await reviewRepository.has(tokenData.id, req.body.productId);
-
-    if (has) {
-        return res.status(409).send(serviceDataMsg.custom(Messages.REVIEW_DUPLICATED));
+const _delete = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+    try {
+        const userData = tokenService.decodeFromReq(req);
+        await reviewService.delete(req.params.id, userData.id, userData.roles);
+        return responseFunctions.success(res);
+    } catch (e) {
+        return res.status(e.code).send(e.message);
     }
+};
 
-    const data: Review = {
-        ...req.body,
-        date: new Date(),
-        userId: tokenData.id
-    };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    return await ctrlFunc.post<Review>(
-      req, res, next,
-      () => repoFunc.create(data, ReviewSchema),
-      reviewService.validate
-    );
-}
+const _post = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+    try {
+        const userData = tokenService.decodeFromReq(req);
+        const review = await reviewService.create(userData.id, req.body);
+        return responseFunctions.created(res, review);
+    } catch (e) {
+        return res.status(e.code).send(e.messages ?? e.message);
+    }
+};
 
-async function get(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const sortObj = {
-        [EReviewSort.OLDEST]: { createdAt: 1 },
-        [EReviewSort.NEWEST]: { createdAt: -1 },
-        [EReviewSort.RATING_LOW]: { rating: 1 },
-        [EReviewSort.RATING_HIGH]: { rating: -1 }
-    };
-    const f: FilterReview = req.body;
-    return ctrlFunc.get<Review>(
-      req, res, next,
-      () => repoFunc.find(ReviewSchema, f, sortObj[f.sortBy])
-    );
-}
+const _get = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+    try {
+        const reviews = await reviewService.find(ctrlFunc.extractFilter(req));
+        return responseFunctions.success(res, reviews);
+    } catch (e) {
+        return res.status(e.code).send(e.message);
+    }
+};
 
-async function getById(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    return ctrlFunc.getById<Review>(
-      req, res, next, entityName,
-      (id) => repoFunc.findById(id, ReviewSchema)
-    );
-}
+const _getById = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+    try {
+        const review = await reviewService.findById(req.params.id);
+        return responseFunctions.success(res, review);
+    } catch (e) {
+        return res.status(e.code).send(e.message);
+    }
+};
 
-async function patch(req: Request, res: Response, next: NextFunction): Promise<Response> {
+const _getByUserProduct = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+    const productId = req.params.productId;
+    const userId = req.params.userId;
+
+    try {
+        const review = await reviewService.findByUserProduct(productId, userId);
+        return responseFunctions.success(res, review);
+    } catch (e) {
+        return res.status(e.status ?? 500).send(e.message);
+    }
+};
+
+const _patch = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
     const userData = tokenService.decodeFromReq(req);
-    return ctrlFunc.patch<Review>(
-      req, res, next, entityName,
-      (obj) => reviewService.validate(obj, true),
-      (id, obj) =>
-        repoFunc.findAndUpdate(id, obj, ReviewSchema, { userId: userData.id }),
-      ['comment', 'rating', 'title']
-    );
-}
+    try {
+        const review = await reviewService.update(req.params.id, userData.id, req.body);
+        return responseFunctions.success(res, review);
+    } catch (e) {
+        return res.status(e.code).send(e.messages ?? e.message);
+    }
+};
 
 export const reviewController = {
-    delete: delete_,
-    get,
-    getById: getById,
-    post,
-    patch
+    delete: _delete,
+    get: _get,
+    getById: _getById,
+    getByUserProduct: _getByUserProduct,
+    post: _post,
+    patch: _patch
 };

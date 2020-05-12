@@ -32,6 +32,11 @@ function validate<T>(prod: ProductAdd, ignoreUndefined = false): PipelineValidat
       ;
 }
 
+const _calcPriceWithDiscount = (price: number, percentOff: number): number => {
+    return price * (1 - percentOff / 100);
+};
+
 export const productService = {
+    calculateRealPrice: _calcPriceWithDiscount,
     validate
 };

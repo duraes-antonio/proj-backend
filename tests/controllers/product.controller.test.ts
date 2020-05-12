@@ -8,6 +8,7 @@ import { productSizes } from '../../src/shared/fieldSize';
 import { generators } from '../../utils/generators';
 import { FilterProduct } from '../../src/domain/models/filters/filter-product';
 import { EProductSort } from '../../src/domain/enum/product-sort';
+import { productService } from '../../src/services/product.service';
 
 const appInstance = new App();
 const app = appInstance.express;
@@ -319,12 +320,13 @@ describe('get', () => {
 
     it('price_min', async () => {
         const filter: FilterProduct = {
-            priceMin: 150,
+            priceMin: 600,
             priceMax: undefined,
             currentPage: 1,
             perPage: 20
         };
-        const dataMatch = products.filter(p => !filter.priceMin || p.price >= filter.priceMin);
+        const dataMatch = products
+          .filter(p => productService.calculateRealPrice(p.price, p.percentOff) >= (filter.priceMin as number));
         await testRest.getAndMatch(
           app, route, filter, dataMatch, token,
           (a, b) => cmp((p) => p.price, a, b)
@@ -333,11 +335,12 @@ describe('get', () => {
 
     it('price_max', async () => {
         const filter: FilterProduct = {
-            priceMax: 450,
+            priceMax: 700,
             currentPage: 1,
             perPage: 20
         };
-        const dataMatch = products.filter(p => !filter.priceMax || p.price <= filter.priceMax);
+        const dataMatch = products
+          .filter(p => productService.calculateRealPrice(p.price, p.percentOff) <= (filter.priceMax as number));
         await testRest.getAndMatch(
           app, route, filter, dataMatch, token,
           (a, b) => cmp((p) => p.price, a, b)
@@ -352,9 +355,10 @@ describe('get', () => {
             perPage: 20
         };
         const dataMatch = products
-          .filter(p => filter.priceMin && filter.priceMax &&
-            p.price >= filter.priceMin && p.price <= filter.priceMax
-          );
+          .filter(p => {
+              const priceReal = productService.calculateRealPrice(p.price, p.percentOff);
+              return priceReal >= (filter.priceMin as number) && priceReal <= (filter.priceMax as number);
+          });
         await testRest.getAndMatch(
           app, route, filter, dataMatch, token,
           (a, b) => cmp((p) => p.price, a, b)

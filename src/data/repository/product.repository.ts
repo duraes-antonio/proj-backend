@@ -1,16 +1,42 @@
 'use strict';
 import { Product } from '../../domain/models/product';
-import { FilterProduct } from '../../domain/models/filters/filter-product';
 import { EProductSort } from '../../domain/enum/product-sort';
 import { ObjectId } from 'bson';
 import { ProductSchema } from '../schemas/product.schema';
 import { utilService } from '../../shared/util';
+import { FilterBasic } from '../../domain/models/filters/filter-basic';
+import { FilterProduct } from '../../domain/models/filters/filter-product';
+import { CategorySchema } from '../schemas/category.schema';
+import { Category } from '../../domain/models/category';
+import { repositoryFunctions } from '../repository.functions';
+import { productService } from '../../services/product.service';
 
 interface MatchQuery {
     categoriesId?: any;
     freeDelivery?: boolean;
     $and?: any[];
     $text?: any;
+}
+
+export interface FilterForSearch extends FilterBasic {
+    avgReview: number[];
+    categories: Category[];
+    categoriesId: string[];
+    discounts: number[][];
+    freeDelivery: boolean;
+    priceMax: number;
+    priceMin: number;
+    text?: string;
+    sortBy?: EProductSort;
+    result: Product[];
+}
+
+export interface ProductResume {
+    avgInt: number;
+    categoriesId: string[];
+    percentOff: number;
+    freeDelivery: boolean;
+    priceWithDiscount: number;
 }
 
 const productFieldsProjection = {
@@ -40,13 +66,13 @@ function buildMatchQuery(filter: FilterProduct): MatchQuery {
     }
 
     if (filter.priceMin) {
-        match.$and = [{ price: { $gte: +filter.priceMin } }];
+        match.$and = [{ priceWithDiscount: { $gte: +filter.priceMin } }];
     }
 
     if (filter.priceMax) {
         match.$and = match.$and
-          ? [...match.$and, { price: { $lte: +filter.priceMax } }]
-          : [{ price: { $lte: +filter.priceMax } }];
+          ? [...match.$and, { priceWithDiscount: { $lte: +filter.priceMax } }]
+          : [{ priceWithDiscount: { $lte: +filter.priceMax } }];
     }
 
     if (filter.categoriesId && filter.categoriesId.length) {
@@ -128,7 +154,6 @@ function buildSortParams(): Map<EProductSort, any> {
 
 const sortOptions = buildSortParams();
 
-
 async function find(filter: FilterProduct): Promise<Product[]> {
     const match = buildMatchQuery(filter);
     let sortBy = sortOptions.get(EProductSort.NEWEST);
@@ -156,7 +181,7 @@ async function find(filter: FilterProduct): Promise<Product[]> {
       .skip((+filter.perPage ?? 1) * Math.max((+filter.currentPage ?? 1) - 1, 0));
     const results: Product[] = await (+(filter?.perPage) ? queryBeforeLimit.limit(+filter.perPage) : queryBeforeLimit);
     return results.map(p => {
-        return { ...p, priceWithDiscount: p.price * (1 - p.percentOff / 100) };
+        return { ...p, priceWithDiscount: productService.calculateRealPrice(p.price, p.percentOff) };
     });
 }
 
@@ -176,7 +201,52 @@ async function findCount(filter: FilterProduct): Promise<number> {
     return res.length;
 }
 
+// TODO: Refatorar e tipar querys
+async function findFilterData(filter: FilterProduct): Promise<FilterForSearch> {
+    const match = buildMatchQuery(filter);
+    const projectField: object = {
+        ...buildProjection(filter),
+        categoriesId: 1,
+        percentOff: 1,
+        freeDelivery: 1,
+        priceWithDiscount: 1
+    };
+    const queryRaw = ProductSchema
+      .aggregate()
+      .match(match)
+      .project(projectField);
+    const matchPostProjection = buildMatchQueryPostProjection(filter);
+    const productsResume: ProductResume[] = await queryRaw.match(matchPostProjection);
+    const categoriesId = Array.from(new Set(productsResume.map(p => p.categoriesId).flat()));
+    const categories = (await CategorySchema
+        .find({ _id: { $in: categoriesId } })
+    ).map((objectDoc: any) => repositoryFunctions.insertFieldId(objectDoc._doc));
+    const productsComplete = await find(filter);
+    const filterFilled: FilterForSearch = {
+        avgReview: [0, 1, 2, 3, 4, 5]
+          .filter(rating => productsResume.some(p => p.avgInt === rating)),
+        categories,
+        categoriesId: categoriesId,
+        currentPage: filter.currentPage,
+        discounts: [[1, 10], [11, 25], [26, 40], [41, 60], [61, 80], [81, 99]]
+          .filter(desc =>
+            productsResume.some(p =>
+              p.percentOff >= desc[0] && p.percentOff <= desc[1]
+            )
+          ),
+        freeDelivery: productsResume.some(p => p.freeDelivery),
+        perPage: filter.perPage,
+        priceMin: Math.min(...productsResume.map(p => p.priceWithDiscount)),
+        priceMax: Math.max(...productsResume.map(p => p.priceWithDiscount)),
+        result: productsComplete,
+        text: filter.text
+    };
+    return filterFilled;
+
+}
+
 export const productRepository = {
+    find,
     findCount,
-    find
+    findFilterData
 };

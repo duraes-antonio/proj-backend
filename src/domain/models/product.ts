@@ -8,7 +8,7 @@ export interface Product extends ProductAdd, Registable {
     readonly priceWithDiscount: number;
 }
 
-export interface ProductAdd {
+export interface ProductAdd extends ProductPatch {
     readonly quantity: number;
     readonly categoriesId: string[];
     readonly desc: string;
@@ -17,10 +17,28 @@ export interface ProductAdd {
     readonly price: number;
     readonly title: string;
     readonly urlMainImage?: string;
+    readonly mainImage?: Express.Multer.File;
     readonly cost: number;
     readonly height: number;
     readonly visible: boolean;
     readonly width: number;
     readonly length: number;
     readonly weight: number;
+}
+
+export interface ProductPatch {
+    readonly categoriesId?: string[];
+    readonly desc?: string;
+    readonly freeDelivery?: boolean;
+    readonly percentOff?: number;
+    readonly price?: number;
+    readonly title?: string;
+    readonly urlMainImage?: string;
+    readonly mainImage?: Express.Multer.File;
+    readonly cost?: number;
+    readonly height?: number;
+    readonly visible?: boolean;
+    readonly width?: number;
+    readonly length?: number;
+    readonly weight?: number;
 }

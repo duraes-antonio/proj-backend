@@ -3,10 +3,11 @@ import { NextFunction, Request, Response } from 'express';
 import { Product, ProductAdd } from '../domain/models/product';
 import { controllerFunctions as ctrlFunc } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { productRepository as prodRepo } from '../data/repository/product.repository';
+import { FilterForSearch, productRepository as prodRepo } from '../data/repository/product.repository';
 import { ProductSchema } from '../data/schemas/product.schema';
 import { productService } from '../services/product.service';
 import { responseFunctions } from './base/response.functions';
+import { fileUploadService } from '../services/file-upload.service';
 
 export const entityName = 'Produto';
 
@@ -40,9 +41,14 @@ async function getCount(req: Request, res: Response, next: NextFunction): Promis
 
 async function getById(req: Request, res: Response, next: NextFunction): Promise<Response<Product>> {
     return await ctrlFunc.getById<Product>(
-      req, res, next, entityName,
-      (id) => repoFunc.findById(id, ProductSchema)
+      req, res, next, entityName, (id) =>
+        repoFunc.findById(id, ProductSchema, ['categories', 'categoriesId'])
     );
+}
+
+async function getFilter(req: Request, res: Response, next: NextFunction): Promise<Response<FilterForSearch>> {
+    const filterFromReq = req.query.filter ? JSON.parse(req.query.filter) : req.query;
+    return responseFunctions.success(res, await prodRepo.findFilterData(filterFromReq));
 }
 
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<Product>> {
@@ -57,11 +63,23 @@ async function patch(req: Request, res: Response, next: NextFunction): Promise<R
       ]);
 }
 
+async function postImageTemp(req: Request, res: Response, next: NextFunction): Promise<Response> {
+
+    try {
+        const urlImageSaved = await fileUploadService.uploadImage(req.file);
+        return responseFunctions.success(res, urlImageSaved);
+    } catch (e) {
+        return res.status(e.status ?? 500).send(e.message);
+    }
+}
+
 export const productController = {
     delete: delete_,
     get,
     getById,
     getCount,
+    getFilter,
+    patch,
     post,
-    patch
+    postImageTemp
 };

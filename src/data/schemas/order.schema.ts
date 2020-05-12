@@ -53,6 +53,12 @@ const orderSchema = new Schema({
         required: true,
         type: String
     },
+    productsId: {
+        minlength: 1,
+        ref: ECollectionsName.PRODUCT,
+        required: true,
+        type: [Schema.Types.ObjectId]
+    },
     state: {
         default: EStateOrder.CREATED,
         enum: Object.values(EStateOrder),

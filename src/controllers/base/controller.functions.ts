@@ -4,6 +4,10 @@ import { responseFunctions as resFunc } from './response.functions';
 import { PipelineValidation } from '../../shared/validations';
 import { FilterBasic } from '../../domain/models/filters/filter-basic';
 
+function extractFilter<T extends FilterBasic>(req: Request): T | undefined {
+    return req.query.filter ? JSON.parse(req.query.filter) : req.query;
+}
+
 function validIdHex(id: string): boolean {
     return /^[0-9a-fA-F]{24}$/.test(id);
 }
@@ -155,6 +159,7 @@ async function postAndReturnCreated<T>(
 
 export const controllerFunctions = {
     delete: delete_,
+    extractFilter,
     get,
     getById,
     patch,

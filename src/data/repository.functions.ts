@@ -1,7 +1,8 @@
 'use strict';
-import { Document, Model } from 'mongoose';
+import { Document, FilterQuery, Model } from 'mongoose';
 import { FilterBasic } from '../domain/models/filters/filter-basic';
 import { ObjectId } from 'bson';
+import { utilService } from '../shared/util';
 
 const insertFieldId = (value: any): any => {
 
@@ -33,39 +34,39 @@ const insertFieldId = (value: any): any => {
     }
 };
 
-async function createMany<T>(payload: T[], model: Model<Document & T>): Promise<T[]> {
+const createMany = async <T>(payload: T[], model: Model<Document & T>): Promise<T[]> => {
     const saveds: any = await model.insertMany(payload, { rawResult: true });
     return saveds.ops
       .map((item: Document & T) => {
           return { ...item, id: item._id.toString() };
       });
-}
+};
 
-async function create<T>(obj: T, model: Model<Document & T>): Promise<T> {
+const create = async <T>(obj: T, model: Model<Document & T>): Promise<T> => {
     const saved = await new model({
         ...obj,
         createdAt: new Date()
     }).save();
     return insertFieldId((saved as any)._doc);
-}
+};
 
-async function delete_<T>(id: string, model: Model<Document & T>, conditions?: object): Promise<T | null> {
+const delete_ = async <T>(id: string, model: Model<Document & T>, conditions?: object): Promise<T | null> => {
     const q: object = conditions ? { ...conditions, _id: id } : { _id: id };
     return model.findOneAndDelete(q);
-}
+};
 
-async function deleteMany<T>(ids: string[], model: Model<Document & T & any>): Promise<object> {
+const deleteMany = async <T>(ids: string[], model: Model<Document & T & any>): Promise<object> => {
     return model.deleteMany({
         _id: {
             $in: [ids.map(id => new ObjectId(id))]
         }
     });
-}
+};
 
-async function find<T>(
+const find = async <T>(
   model: Model<Document & T>, f?: FilterBasic, sort?: object,
-  query?: object, populateFields?: string
-): Promise<T[]> {
+  query?: object, populateFields?: string | object
+): Promise<T[]> => {
     let res: any[];
 
     if (f) {
@@ -82,45 +83,61 @@ async function find<T>(
           .sort(sort ? sort : {});
     }
     return insertFieldId(res);
-}
+};
 
-async function findById<T>(
-  id: string, model: Model<Document & T>, populateFields?: string | object
-): Promise<T | null> {
-    const obj: any = await model.findById(id)
-      .populate(populateFields ?? '')
-      .lean();
+const findById = async <T>(
+  id: string, model: Model<Document & T>, populateFields?: string | string[] | object
+): Promise<T | null> => {
+    let obj;
+    if (populateFields && populateFields instanceof Array) {
+        let query: any = model.findById(id);
+        populateFields.forEach(fieldName => {
+            if (fieldName) {
+                query = query.populate(fieldName);
+            }
+        });
+        obj = await query.lean();
+    } else {
+        obj = await model.findById(id)
+          .populate(populateFields ?? '')
+          .lean();
+    }
     return obj ? insertFieldId(obj) : null;
-}
+};
 
-async function findAndUpdate<T>(
-  id: string, obj: any, model: Model<Document & T>, conditions?: any
-): Promise<T | null> {
+const findAndUpdate = async <T>(
+  id: string, objPatch: any, model: Model<Document & T>,
+  conditions?: FilterQuery<Document & T>
+): Promise<T | null> => {
     let updated: any;
+    const clearPatch = utilService.fromObjectIgnore(objPatch, undefined);
 
     if (conditions) {
         updated = await model.findOneAndUpdate(
           { _id: new ObjectId(id), ...conditions },
-          { $set: { ...obj } },
+          { $set: clearPatch },
           { new: true }
         );
     } else {
         updated = await model.findByIdAndUpdate(
-          id,
-          { $set: { ...obj } },
-          { new: true }
+          id, { $set: clearPatch }, { new: true }
         );
     }
     return updated?._doc ? insertFieldId(updated._doc) : null;
-}
+};
+
+const has = async <T>(model: Model<Document & T>, query: object): Promise<boolean> => {
+    return await model.exists(query);
+};
 
 export const repositoryFunctions = {
     create: create,
     createMany,
     delete: delete_,
-    deleteMany,
+    deleteMany: deleteMany,
     find: find,
     findById: findById,
     findAndUpdate: findAndUpdate,
+    has: has,
     insertFieldId
 };

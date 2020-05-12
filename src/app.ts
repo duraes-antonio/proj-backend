@@ -57,7 +57,6 @@ export class App {
 
     private routes(): void {
         this.express.use(express.urlencoded({ extended: true }));
-        this.express.use(multer().array());
         this.express.use(indexRoutes);
         this.express.use('/address', addressRoutes);
         this.express.use('/auth', authRoutes);
