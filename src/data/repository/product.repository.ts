@@ -12,6 +12,7 @@ import { repositoryFunctions } from '../repository.functions';
 import { productService } from '../../services/product.service';
 
 interface MatchQuery {
+    createdAt?: any;
     categoriesId?: any;
     freeDelivery?: boolean;
     $and?: any[];
@@ -60,6 +61,8 @@ const productFieldsProjection = {
 
 function buildMatchQuery(filter: FilterProduct): MatchQuery {
     const match: MatchQuery = {};
+    const dateStart = filter.dateStart ? new Date(filter.dateStart) : null;
+    const dateEnd = filter.dateEnd ? new Date(filter.dateEnd) : null;
 
     if (!!filter.freeDelivery) {
         match.freeDelivery = filter.freeDelivery.toString().toLowerCase() === 'true';
@@ -74,6 +77,16 @@ function buildMatchQuery(filter: FilterProduct): MatchQuery {
           ? [...match.$and, { priceWithDiscount: { $lte: +filter.priceMax } }]
           : [{ priceWithDiscount: { $lte: +filter.priceMax } }];
     }
+
+    if (dateStart) {
+        match.$and = match.$and
+          ? [...match.$and, { createdAt: { $gte: dateStart } }]
+          : [{ createdAt: { $gte: dateStart } }];
+    }
+
+    match.$and = match.$and
+      ? [...match.$and, { createdAt: { $lte: dateEnd ?? new Date() } }]
+      : [{ createdAt: { $lte: dateEnd ?? new Date() } }];
 
     if (filter.categoriesId && filter.categoriesId.length) {
         const idsCopy = filter.categoriesId instanceof Array ? [...filter.categoriesId] : [filter.categoriesId];
