@@ -1,7 +1,7 @@
 'use strict';
 import { Category, CategoryAdd } from '../domain/models/category';
 import { NextFunction, Request, Response } from 'express';
-import { controllerFunctions as ctrlFunc } from './base/controller.functions';
+import { controllerFunctions as ctrlFunc, extractFilter } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { categoryRepository as categRepo } from '../data/repository/category.repository';
 import { FilterCategory } from '../domain/models/filters/filter-category';
@@ -45,6 +45,16 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
     );
 }
 
+// TODO: Refatorar
+async function getFilter(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    try {
+        const re = await categoryService.getFilter(extractFilter(req));
+        return res.status(200).send(re);
+    } catch (e) {
+        return res.status(e.code ?? 500).send(e.message);
+    }
+}
+
 async function patch(req: Request, res: Response, next: NextFunction): Promise<Response<Category>> {
     return ctrlFunc.patch<Category>(
       req, res, next, entityName, categoryService.validate,
@@ -57,6 +67,7 @@ export const categoryController = {
     delete: delete_,
     get,
     getCount,
+    getFilter,
     getById,
     post,
     patch

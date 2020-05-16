@@ -4,7 +4,7 @@ import { responseFunctions as resFunc } from './response.functions';
 import { PipelineValidation } from '../../shared/validations';
 import { FilterBasic } from '../../domain/models/filters/filter-basic';
 
-function extractFilter<T extends FilterBasic>(req: Request): T | undefined {
+export function extractFilter<T extends FilterBasic>(req: Request): T | undefined {
     return req.query.filter ? JSON.parse(req.query.filter) : req.query;
 }
 

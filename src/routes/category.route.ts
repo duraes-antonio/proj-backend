@@ -9,6 +9,7 @@ const router = Router();
 router.delete('/:id', [tokenS.verify, authService.allowAdmin], catCtrl.delete);
 router.get('/', catCtrl.get);
 router.get('/count', catCtrl.getCount);
+router.get('/search', catCtrl.getFilter);
 router.get('/:id', catCtrl.getById);
 router.post('/', [tokenS.verify, authService.allowAdmin], catCtrl.post);
 router.patch('/:id', [tokenS.verify, authService.allowAdmin], catCtrl.patch);
