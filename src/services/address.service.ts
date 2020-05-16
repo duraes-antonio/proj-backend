@@ -1,6 +1,6 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { addressSizes as addrSize } from '../shared/fieldSize';
+import { addressSizes as addrSize } from '../shared/consts/fieldSize';
 import { AddressAdd } from '../domain/models/address';
 
 function validate(addr: AddressAdd, allowUndefined = false): PipelineValidation {

@@ -3,7 +3,7 @@ import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { StringOptional, testRest } from '../shared-methods-http';
 import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
-import { userSizes } from '../../src/shared/fieldSize';
+import { userSizes } from '../../src/shared/consts/fieldSize';
 
 const appInstance = new App();
 const app = appInstance.express;

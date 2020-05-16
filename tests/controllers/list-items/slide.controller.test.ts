@@ -6,7 +6,7 @@ import { testRest } from '../../shared-methods-http';
 import { generators } from '../../../utils/generators';
 import { FilterBasic } from '../../../src/domain/models/filters/filter-basic';
 import { Slide, SlideAdd } from '../../../src/domain/models/lists-item/slide';
-import { slideSizes } from '../../../src/shared/fieldSize';
+import { slideSizes } from '../../../src/shared/consts/fieldSize';
 
 const appInstance = new App();
 const app = appInstance.express;

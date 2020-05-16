@@ -6,7 +6,7 @@ import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } 
 import { StringOptional, testRest } from '../shared-methods-http';
 import { validationErrorMsg } from '../../src/shared/buildMsg';
 import { generators } from '../../utils/generators';
-import { addressSizes } from '../../src/shared/fieldSize';
+import { addressSizes } from '../../src/shared/consts/fieldSize';
 
 const appInstance = new App();
 const app = appInstance.express;

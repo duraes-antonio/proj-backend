@@ -5,7 +5,7 @@ import { clearDatabase } from '../../utils/database';
 import { EReviewSort, FilterReview } from '../../src/domain/models/filters/filter-review';
 import { validationErrorMsg } from '../../src/shared/buildMsg';
 import { generators } from '../../utils/generators';
-import { reviewSizes } from '../../src/shared/fieldSize';
+import { reviewSizes } from '../../src/shared/consts/fieldSize';
 import { utilService } from '../../src/shared/util';
 import { StringOptional, testRest } from '../shared-methods-http';
 import { invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';

@@ -1,7 +1,7 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
 import { ECollectionsName } from '../../collections-name.enum';
-import { linkSizes } from '../../../shared/fieldSize';
+import { linkSizes } from '../../../shared/consts/fieldSize';
 import { Link } from '../../../domain/models/lists-item/link';
 
 const linkSchema = new Schema({

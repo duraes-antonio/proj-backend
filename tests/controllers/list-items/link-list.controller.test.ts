@@ -5,7 +5,7 @@ import { Link, LinkAdd } from '../../../src/domain/models/lists-item/link';
 import { EUserRole } from '../../../src/domain/enum/role';
 import { clearDatabase } from '../../../utils/database';
 import { generators } from '../../../utils/generators';
-import { listSizes } from '../../../src/shared/fieldSize';
+import { listSizes } from '../../../src/shared/consts/fieldSize';
 import { StringOptional, testRest } from '../../shared-methods-http';
 import { cmp, invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../../shared-data';
 

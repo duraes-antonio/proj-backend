@@ -1,6 +1,6 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
-import { productSizes } from '../../shared/fieldSize';
+import { productSizes } from '../../shared/consts/fieldSize';
 import { ECollectionsName } from '../collections-name.enum';
 import { Product } from '../../domain/models/product';
 

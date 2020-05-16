@@ -1,7 +1,7 @@
 import { PipelineValidation } from '../../shared/validations';
 import { validationErrorMsg as msg } from '../../shared/buildMsg';
 import { MarketAdd } from '../../domain/models/lists-item/market';
-import { marketSizes } from '../../shared/fieldSize';
+import { marketSizes } from '../../shared/consts/fieldSize';
 
 function validate(data: MarketAdd, ignoreUndefined = false): PipelineValidation {
     return new PipelineValidation(msg.empty, ignoreUndefined)

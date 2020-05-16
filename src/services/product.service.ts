@@ -1,6 +1,6 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { productSizes as prodSizes } from '../shared/fieldSize';
+import { productSizes as prodSizes } from '../shared/consts/fieldSize';
 import { ProductAdd } from '../domain/models/product';
 
 function validate<T>(prod: ProductAdd, ignoreUndefined = false): PipelineValidation {

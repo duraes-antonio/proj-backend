@@ -1,7 +1,7 @@
 import { Review, ReviewAdd, ReviewPatch } from '../domain/models/review';
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { reviewSizes as sizes } from '../shared/fieldSize';
+import { reviewSizes as sizes } from '../shared/consts/fieldSize';
 import { reviewRepository } from '../data/repository/review.repository';
 import { DuplicatedErrorCustom, NotFoundError } from '../domain/helpers/error';
 import { EUserRole } from '../domain/enum/role';

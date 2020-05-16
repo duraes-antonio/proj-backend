@@ -1,7 +1,7 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
 import { Order, OrderAdd, OrderInput, OrderPatch } from '../domain/models/order';
-import { itemOrderSizes, orderSizes } from '../shared/fieldSize';
+import { itemOrderSizes, orderSizes } from '../shared/consts/fieldSize';
 import { ItemOrder, ItemOrderAdd } from '../domain/models/item-order';
 import { ItemStock } from '../controllers/base/response.functions';
 import { FilterProduct } from '../domain/models/filters/filter-product';

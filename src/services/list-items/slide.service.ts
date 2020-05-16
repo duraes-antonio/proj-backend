@@ -1,7 +1,7 @@
 import { PipelineValidation } from '../../shared/validations';
 import { validationErrorMsg as msg } from '../../shared/buildMsg';
 import { SlideAdd } from '../../domain/models/lists-item/slide';
-import { slideSizes } from '../../shared/fieldSize';
+import { slideSizes } from '../../shared/consts/fieldSize';
 
 function validate(data: SlideAdd, ignoreUndefined = false): PipelineValidation {
     return new PipelineValidation(msg.empty, ignoreUndefined)

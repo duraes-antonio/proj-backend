@@ -1,6 +1,6 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
-import { addressSizes } from '../../shared/fieldSize';
+import { addressSizes } from '../../shared/consts/fieldSize';
 import { Address } from '../../domain/models/address';
 import { ECollectionsName } from '../collections-name.enum';
 

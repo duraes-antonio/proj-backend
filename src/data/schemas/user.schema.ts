@@ -1,5 +1,5 @@
 'use strict';
-import { userSizes } from '../../shared/fieldSize';
+import { userSizes } from '../../shared/consts/fieldSize';
 import { EUserRole } from '../../domain/enum/role';
 import { ECollectionsName } from '../collections-name.enum';
 import { Document, model, Model, Schema } from 'mongoose';

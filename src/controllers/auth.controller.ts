@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { serviceDataMsg, validationErrorMsg as msg } from '../shared/buildMsg';
 import { PipelineValidation } from '../shared/validations';
-import { userSizes } from '../shared/fieldSize';
+import { userSizes } from '../shared/consts/fieldSize';
 import { cryptService as cryptS } from '../services/crypt.service';
 import { tokenService as tokenS } from '../services/token.service';
 import { userRepository } from '../data/repository/user.repository';

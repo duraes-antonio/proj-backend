@@ -1,7 +1,7 @@
 'use strict';
 import { Document, model, Model, Schema } from 'mongoose';
 import { ECollectionsName } from '../collections-name.enum';
-import { reviewSizes } from '../../shared/fieldSize';
+import { reviewSizes } from '../../shared/consts/fieldSize';
 import { Review } from '../../domain/models/review';
 
 const reviewSchema = new Schema({

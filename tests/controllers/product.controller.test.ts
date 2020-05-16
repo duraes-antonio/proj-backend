@@ -4,7 +4,7 @@ import { Product, ProductAdd } from '../../src/domain/models/product';
 import { clearDatabase } from '../../utils/database';
 import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
 import { StringOptional, testRest } from '../shared-methods-http';
-import { productSizes } from '../../src/shared/fieldSize';
+import { productSizes } from '../../src/shared/consts/fieldSize';
 import { generators } from '../../utils/generators';
 import { FilterProduct } from '../../src/domain/models/filters/filter-product';
 import { EProductSort } from '../../src/domain/enum/product-sort';

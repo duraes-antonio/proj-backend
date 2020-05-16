@@ -1,6 +1,6 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { categorySizes } from '../shared/fieldSize';
+import { categorySizes } from '../shared/consts/fieldSize';
 import { CategoryAdd, CategoryFilterFilled } from '../domain/models/category';
 import { FilterCategory } from '../domain/models/filters/filter-category';
 import { categoryRepository } from '../data/repository/category.repository';

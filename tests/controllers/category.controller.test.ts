@@ -3,7 +3,7 @@ import { App } from '../../src/app';
 import { clearDatabase } from '../../utils/database';
 import { Category, CategoryAdd } from '../../src/domain/models/category';
 import { FilterCategory } from '../../src/domain/models/filters/filter-category';
-import { categorySizes } from '../../src/shared/fieldSize';
+import { categorySizes } from '../../src/shared/consts/fieldSize';
 import { invalidFieldsPatch, invalidIds, sharedDataTest, TestObject, usersAdd } from '../shared-data';
 import { testRest } from '../shared-methods-http';
 import { generators } from '../../utils/generators';

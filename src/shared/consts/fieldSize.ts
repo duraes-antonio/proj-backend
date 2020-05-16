@@ -15,7 +15,7 @@ export const addressSizes = {
 
 export const categorySizes = {
     titleMin: 2,
-    titleMax: 128
+    titleMax: 64
 };
 
 export const itemOrderSizes = {

@@ -1,6 +1,6 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msgServ } from '../shared/buildMsg';
-import { userSizes } from '../shared/fieldSize';
+import { userSizes } from '../shared/consts/fieldSize';
 import { UserAdd } from '../domain/models/user';
 
 function validate(user: UserAdd, ignoreUndefined = false): PipelineValidation {
