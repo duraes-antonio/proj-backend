@@ -53,12 +53,12 @@ function parseQuery(filter: FilterCategory): CategoryQuery {
 }
 
 async function find(filter: FilterCategory): Promise<Category[]> {
-    const sort = categorySortOptions.get(filter.sortBy);
+    const sort = categorySortOptions.get(filter.sortBy ?? ECategorySort.NEWEST);
     const queryResult = await CategorySchema.find(
       parseQuery(filter),
       { 'score': { '$meta': 'textScore' } }
     ).select({ id: 1, title: 1, createdAt: 1 })
-      .sort((sort ?? { title: 1 }))
+      .sort(sort)
       .skip(+filter.perPage * (+filter.currentPage - 1))
       .limit(+filter.perPage)
       .lean();
