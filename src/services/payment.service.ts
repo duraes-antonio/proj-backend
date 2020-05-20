@@ -60,16 +60,12 @@ const buildPayloadPaypal = (customer: Customer, order: Order, currency: string):
                 items: order.items.map((item: ItemOrder) => {
                     return {
                         name: item.product.title,
-                        description: item.product.desc,
+                        description: '',
                         quantity: item.quantity,
-                        category: item.product.categories.length
-                          ? item.product.categories
-                            .map(c => c.title)
-                            .join(', ')
-                          : undefined,
+                        category: 'PHYSICAL_GOODS',
                         'unit_amount': {
                             'currency_code': currency,
-                            value: item.product.priceWithDiscount
+                            value: item.product.priceWithDiscount.toFixed(2)
                         }
                     };
                 }),
