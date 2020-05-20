@@ -61,6 +61,8 @@ const userSchema = new Schema({
     }
 });
 
+userSchema.index({ '$**': 'text' });
+
 export const UserSchema: Model<UserDBModel> = model<UserDBModel>(ECollectionsName.USER, userSchema);
 
 export interface UserDBModel extends Document, User {
