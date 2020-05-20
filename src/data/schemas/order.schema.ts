@@ -85,9 +85,9 @@ const orderSchema = new Schema({
 orderSchema.virtual(
   'items',
   {
-      ref: ECollectionsName.ITEM_ORDER,
+      foreignField: '_id',
       localField: 'itemsId',
-      foreignField: '_id'
+      ref: ECollectionsName.ITEM_ORDER
   });
 orderSchema.virtual(
   'addressTarget',
@@ -96,6 +96,14 @@ orderSchema.virtual(
       justOne: true,
       localField: 'addressTargetId',
       ref: ECollectionsName.ADDRESS
+  });
+orderSchema.virtual(
+  'user',
+  {
+      foreignField: '_id',
+      justOne: true,
+      localField: 'userId',
+      ref: ECollectionsName.USER
   });
 
 export const OrderSchema: Model<OrderDBModel> = model<OrderDBModel>(ECollectionsName.ORDER, orderSchema);

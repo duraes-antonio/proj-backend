@@ -1,6 +1,6 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msg } from '../shared/buildMsg';
-import { Order, OrderAdd, OrderInput, OrderPatch } from '../domain/models/order';
+import { Order, OrderAdd, OrderFilterFilled, OrderInput, OrderPatch } from '../domain/models/order';
 import { itemOrderSizes, orderSizes } from '../shared/consts/fieldSize';
 import { ItemOrder, ItemOrderAdd } from '../domain/models/item-order';
 import { ItemStock } from '../controllers/base/response.functions';
@@ -22,6 +22,8 @@ import {
 } from '../domain/helpers/error';
 import { PaymentMethod, PaymentStatus } from '../domain/enum/payment';
 import { orderRepository } from '../data/repository/order.repository';
+import { FilterOrder } from '../domain/models/filters/filter-order';
+import { FilterBasic } from '../domain/models/filters/filter-basic';
 
 const validate = (order: OrderInput, ignoreUndefined = false): PipelineValidation => {
     const itemsQuantity = order.items?.map(item => item.quantity);
@@ -122,7 +124,7 @@ const create = async (
 };
 
 // TODO: Chamar serviço genérico
-const findById = async (id: string, throwNotFound = false): Promise<Order | null> => {
+const _findById = async (id: string, throwNotFound = false): Promise<Order | null> => {
     const order = await repoFns.findById(
       id, OrderSchema,
       {
@@ -146,14 +148,20 @@ const _productPurchased = async (productId: string, userId: string): Promise<boo
     return await orderRepository.productPurchased(userId, productId);
 };
 
+const _search = async (filter?: FilterOrder): Promise<OrderFilterFilled> => {
+    const newFilter: FilterBasic = filter ?? ({ currentPage: 1, perPage: 15 });
+    return orderRepository.findFilterData(newFilter);
+};
+
 const update = async (id: string, patchObject: OrderPatch): Promise<Order | null> => {
     return repoFns.findAndUpdate<Order>(id, patchObject, OrderSchema);
 };
 
 export const orderService = {
     create,
-    findById,
+    findById: _findById,
     productPurchased: _productPurchased,
+    search: _search,
     validate,
     update
 };

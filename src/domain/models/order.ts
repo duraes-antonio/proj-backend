@@ -2,10 +2,11 @@
 
 import { ItemOrder, ItemOrderAdd } from './item-order';
 import { Address } from './address';
-import { EStateOrder } from '../enum/order';
+import { EStateOrder, OrderOptionsSort } from '../enum/order';
 import { DeliveryOptionType } from './shipping/delivery';
 import { Registable } from './auditable';
 import { PaymentMethod, PaymentStatus } from '../enum/payment';
+import { FilterBasic } from './filters/filter-basic';
 
 export interface OrderInput {
     readonly addressTargetId: string;
@@ -38,4 +39,19 @@ export interface OrderPatch {
     readonly paymentStatus?: PaymentStatus;
     readonly state?: EStateOrder;
     readonly transactionId?: string;
+}
+
+export interface OrderForView extends Registable {
+    customerName: string;
+    customerUrlImg: string;
+    costItems: number;
+    costShipping: number;
+    orderStatus: EStateOrder;
+    paymentStatus: PaymentStatus;
+}
+
+export interface OrderFilterFilled extends FilterBasic {
+    count: number;
+    result: OrderForView[];
+    sortBy?: OrderOptionsSort;
 }
