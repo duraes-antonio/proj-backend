@@ -1,12 +1,12 @@
 'use strict';
 import { NextFunction, Request, Response } from 'express';
-import { controllerFunctions as ctrlFunc } from './base/controller.functions';
+import { controllerFunctions as ctrlFunc, extractFilter } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
 import { responseFunctions as resFunc, responseFunctions as respFunc } from './base/response.functions';
 import { userRepository } from '../data/repository/user.repository';
 import { cryptService } from '../services/crypt.service';
 import { tokenService } from '../services/token.service';
-import { User, UserAdd } from '../domain/models/user';
+import { User, UserAdd, UserSearch } from '../domain/models/user';
 import { UserSchema } from '../data/schemas/user.schema';
 import { userService } from '../services/user.service';
 
@@ -31,6 +31,14 @@ async function getById(req: Request, res: Response, next: NextFunction): Promise
       req, res, next, entityName,
       (id: string) => repoFunc.findById<User>(id, UserSchema)
     );
+}
+
+async function search(req: Request, res: Response, next: NextFunction): Promise<Response<UserSearch>> {
+    try {
+        return res.status(200).send(await userService.search(extractFilter(req)));
+    } catch (e) {
+        return res.status(e.code ?? 500).send(e.messages ?? e.message);
+    }
 }
 
 async function post(req: Request, res: Response, next: NextFunction): Promise<Response> {
@@ -72,5 +80,6 @@ export const userController = {
     get,
     getById,
     post,
-    patch
+    patch,
+    search
 };
