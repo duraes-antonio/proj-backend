@@ -4,9 +4,7 @@ import { UserOptionsSort } from '../../enum/user';
 import { EUserRole } from '../../enum/role';
 
 export interface FilterUser extends FilterBasic {
-    name?: string;
-    dateEnd?: Date;
-    dateStart?: Date;
+    text?: string;
     roles?: EUserRole[];
     sortBy?: UserOptionsSort;
 }
