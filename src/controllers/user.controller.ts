@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { controllerFunctions as ctrlFunc, extractFilter } from './base/controller.functions';
 import { repositoryFunctions as repoFunc } from '../data/repository.functions';
-import { responseFunctions as resFunc, responseFunctions as respFunc } from './base/response.functions';
+import { responseFunctions as respFunc } from './base/response.functions';
 import { userRepository } from '../data/repository/user.repository';
 import { cryptService } from '../services/crypt.service';
 import { tokenService } from '../services/token.service';
@@ -46,7 +46,7 @@ async function post(req: Request, res: Response, next: NextFunction): Promise<Re
     const pipe = userService.validate(req.body);
 
     if (!pipe.valid) {
-        return resFunc.badRequest(res, pipe.errors);
+        return respFunc.badRequest(res, pipe.errors);
     }
 
     if (await userRepository.hasWithEmail(req.body.email)) {
@@ -76,10 +76,20 @@ async function patch(req: Request, res: Response, next: NextFunction): Promise<R
     );
 }
 
+async function patchRoles(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    try {
+        const roles = req.body;
+        return respFunc.success(res, await userService.update(req.params.id, { roles }));
+    } catch (e) {
+        return res.status(e.code ?? 500).send(e.messages ?? e.message);
+    }
+}
+
 export const userController = {
     get,
     getById,
     post,
     patch,
+    patchRoles,
     search
 };

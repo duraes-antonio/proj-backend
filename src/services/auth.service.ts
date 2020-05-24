@@ -20,12 +20,11 @@ function allowAdmin(req: Request, res: Response, next: NextFunction):
     }
 }
 
-async function checkIsOwner<T>(
-  req: Request, res: Response, entity: T, entityOwnerId: string
-): Promise<Response | void> {
+async function checkIsOwner(req: Request, res: Response): Promise<Response | void> {
     const tokenData: User = tokenService.decodeFromReq(req);
+    const targetId: string = req.params.id;
 
-    if (entityOwnerId !== tokenData.id) {
+    if (targetId !== tokenData.id) {
         return responseFunctions.forbidden(res);
     }
     return;
