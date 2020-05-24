@@ -38,7 +38,7 @@ function _buildDateFilter(fieldName: string, dateStart?: Date, dateEnd?: Date): 
 }
 
 function _buildInArrayFilter(fieldName: string, arrayOptions?: any[]): object {
-    return arrayOptions && arrayOptions.length ? { [name]: arrayOptions } : {};
+    return arrayOptions && arrayOptions.length ? { [fieldName]: { $in: arrayOptions } } : {};
 }
 
 function _buildSortParam(fieldName: string, direction: DirectionSort): object {
@@ -46,7 +46,7 @@ function _buildSortParam(fieldName: string, direction: DirectionSort): object {
 }
 
 function _buildSkipParam(perPage?: number, currentPage?: number): number {
-    return (perPage && currentPage && perPage > 0 && currentPage > 0) ? perPage * currentPage : 0;
+    return (perPage && currentPage && perPage > 0 && currentPage > 0) ? perPage * (currentPage - 1) : 0;
 }
 
 function _buildLimitParam(limit?: number): number {
