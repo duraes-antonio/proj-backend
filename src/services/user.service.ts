@@ -1,7 +1,7 @@
 import { PipelineValidation } from '../shared/validations';
 import { validationErrorMsg as msgServ } from '../shared/buildMsg';
 import { userSizes } from '../shared/consts/fieldSize';
-import { UserAdd, UserSearch } from '../domain/models/user';
+import { User, UserAdd, UserPatch, UserSearch } from '../domain/models/user';
 import { userRepository } from '../data/repository/user.repository';
 import { FilterUser } from '../domain/models/filters/filter-user';
 import { UserOptionsSort } from '../domain/enum/user';
@@ -15,16 +15,21 @@ function validate(user: UserAdd, ignoreUndefined = false): PipelineValidation {
       .atLeastLen('password', user.password, userSizes.passwordMin, msgServ.minLen);
 }
 
-export const search = async (filter?: FilterUser): Promise<UserSearch> => {
-    const newFilter: FilterUser = filter ?? {
+const _search = async (filter?: FilterUser): Promise<UserSearch> => {
+    const newFilter: FilterUser = filter ?? ({
         perPage: 15,
         currentPage: 1,
         sortBy: UserOptionsSort.NAME
-    };
-    return await userRepository.findForSearch(newFilter);
+    });
+    return userRepository.findForSearch(newFilter);
+};
+
+const _update = async (id: string, userPatch: UserPatch): Promise<User | null> => {
+    return userRepository.update(id, userPatch);
 };
 
 export const userService = {
-    search,
+    search: _search,
+    update: _update,
     validate
 };
