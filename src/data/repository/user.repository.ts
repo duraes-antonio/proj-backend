@@ -1,7 +1,6 @@
 'use strict';
-
 import { UserSchema } from '../schemas/user.schema';
-import { User, UserSearch } from '../../domain/models/user';
+import { User, UserPatch, UserSearch } from '../../domain/models/user';
 import { repositoryFunctions as repoFns } from '../repository.functions';
 import { FilterUser } from '../../domain/models/filters/filter-user';
 import { mongoQueryUtils as queryUtil } from '../mongo-query-utils';
@@ -10,7 +9,7 @@ import { ECollectionsName } from '../collections-name.enum';
 
 const userOptionsSortObject: { [key in UserOptionsSort]: { [key: string]: number } } = {
     [UserOptionsSort.NAME]: { 'name': 1 },
-    [UserOptionsSort.NEWEST]: { 'createdAt': -11 },
+    [UserOptionsSort.NEWEST]: { 'createdAt': -1 },
     [UserOptionsSort.OLDEST]: { 'createdAt': 1 },
     [UserOptionsSort.QUANTITY_PURCHASES]: { 'quantityPurchases': -1 }
 };
@@ -26,7 +25,7 @@ async function hasWithEmail(email: string): Promise<boolean> {
 
 const _findForSearch = async (filter: FilterUser): Promise<UserSearch> => {
     const queryFindConditions = {
-        ...queryUtil.buildTextFilter(filter.name),
+        ...queryUtil.buildTextFilter(filter.text),
         ...queryUtil.buildDateFilter('createdAt', filter.dateStart, filter.dateEnd),
         ...queryUtil.buildInArrayFilter('roles', filter.roles)
     };
@@ -40,16 +39,32 @@ const _findForSearch = async (filter: FilterUser): Promise<UserSearch> => {
           foreignField: 'userId',
           as: 'orders'
       })
-      .sort(userOptionsSortObject[filter.sortBy ?? UserOptionsSort.NEWEST]);
+      .project({
+          avatarUrl: 1,
+          createdAt: 1,
+          id: '$_id',
+          _id: 0,
+          name: 1,
+          roles: 1,
+          quantityPurchases: { $size: '$orders' }
+      })
+      .sort(userOptionsSortObject[filter.sortBy ?? UserOptionsSort.NEWEST])
+      .skip(queryUtil.buildSkipParam(filter.perPage, filter.currentPage))
+      .limit(queryUtil.buildLimitParam(filter.perPage));
     return {
         ...filter,
         count: countUsersMathes,
-        result: []
+        result: users
     };
+};
+
+const _update = async (id: string, userPatch: UserPatch): Promise<User | null> => {
+    return repoFns.findAndUpdate(id, userPatch, UserSchema);
 };
 
 export const userRepository = {
     findByEmail: findByEmail,
     hasWithEmail: hasWithEmail,
-    findForSearch: _findForSearch
+    findForSearch: _findForSearch,
+    update: _update
 };
