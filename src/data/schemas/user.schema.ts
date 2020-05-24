@@ -50,7 +50,7 @@ const userSchema = new Schema({
     },
     roles: {
         default: [EUserRole.CUSTOMER],
-        enum: [EUserRole.ADMIN, EUserRole.CUSTOMER],
+        enum: Object.values(EUserRole),
         type: [String]
     },
 
