@@ -33,6 +33,7 @@ const _findFilterData = async (filter: FilterOrder): Promise<OrderFilterFilled> 
     };
 
     try {
+        const sortParam: OrderOptionsSort = filter.sortBy ?? OrderOptionsSort.NEWEST;
         const orders = await OrderSchema
           .aggregate([
               {
@@ -108,7 +109,7 @@ const _findFilterData = async (filter: FilterOrder): Promise<OrderFilterFilled> 
                   }
               }
           ])
-          .sort(sortOptionColumn[filter.sortBy ?? OrderOptionsSort.NEWEST]);
+          .sort(sortOptionColumn[sortParam]);
         return {
             ...filter,
             count: orders.length,
