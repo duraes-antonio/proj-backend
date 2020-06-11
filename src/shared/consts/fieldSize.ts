@@ -99,7 +99,7 @@ export const reviewSizes = {
 export const slideSizes = {
     btnTitleMin: 2,
     btnTitleMax: 64,
-    descMin: 16,
+    descMin: 4,
     descMax: 512,
     imageUrlMin: 16,
     imageUrlMax: 2048,
@@ -107,7 +107,7 @@ export const slideSizes = {
     indexMax: 16,
     titleMin: 4,
     titleMax: 256,
-    urlMin: 16,
+    urlMin: 8,
     urlMax: 2048
 };
 

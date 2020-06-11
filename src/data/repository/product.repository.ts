@@ -23,6 +23,7 @@ export interface FilterForSearch extends FilterBasic {
     avgReview: number[];
     categories: Category[];
     categoriesId: string[];
+    count: number;
     discounts: number[][];
     freeDelivery: boolean;
     priceMax: number;
@@ -240,6 +241,7 @@ async function findFilterData(filter: FilterProduct): Promise<FilterForSearch> {
           .filter(rating => productsResume.some(p => p.avgInt === rating)),
         categories,
         categoriesId: categoriesId,
+        count: productsResume.length,
         currentPage: filter.currentPage,
         discounts: [[1, 10], [11, 25], [26, 40], [41, 60], [61, 80], [81, 99]]
           .filter(desc =>
