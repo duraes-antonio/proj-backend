@@ -78,7 +78,7 @@ function generateToken(data: User | UserDBModel): string {
           roles: [...data.roles]
       } as User,
       config.saltKey,
-      { expiresIn: 60 * 60 }
+      { expiresIn: 4 * 60 * 60 }
     );
 }
 
