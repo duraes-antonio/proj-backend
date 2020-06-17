@@ -4,18 +4,8 @@ import { ECollectionsName } from '../../collections-name.enum';
 import { Slide } from '../../../domain/models/lists-item/slide';
 
 const slideSchema = new Schema({
-    btnTitle: {
-        required: false,
-        trim: true,
-        type: String
-    },
-    desc: {
-        required: false,
-        trim: true,
-        type: String
-    },
     imageUrl: {
-        required: true,
+        required: false,
         trim: true,
         type: String
     },

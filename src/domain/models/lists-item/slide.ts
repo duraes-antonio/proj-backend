@@ -1,14 +1,18 @@
 'use strict';
 import { Registable } from '../auditable';
 
-export interface SlideAdd {
-    readonly btnTitle?: string;
-    readonly desc?: string;
-    readonly imageUrl: string;
+export interface SlidePatch {
+    readonly index?: number;
     readonly title?: string;
-    readonly url: string;
-    readonly index: number;
+    readonly url?: string;
 }
 
-export interface Slide extends SlideAdd, Registable {
+export interface SlideBase {
+    readonly index: number;
+    readonly title: string;
+    readonly url: string;
+}
+
+export interface Slide extends SlideBase, Registable {
+    readonly imageUrl?: string;
 }

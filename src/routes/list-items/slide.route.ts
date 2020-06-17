@@ -1,40 +1,21 @@
 'use strict';
-import { NextFunction, Request, Response, Router } from 'express';
+import { Router } from 'express';
 import { tokenService as tokenS } from '../../services/token.service';
 import { authService as authS } from '../../services/auth.service';
-import { SlideAdd } from '../../domain/models/lists-item/slide';
-import { SlideSchema } from '../../data/schemas/list-items/slide.schema';
-import { slideService } from '../../services/list-items/slide.service';
-import { builderGenericController as buildCtrl } from '../../controllers/base/builder-generic-controller';
+import { slideController as slideCtrl } from '../../controllers/lists/slide.controller';
+import { paths } from '../../shared/consts/path';
+import multer from 'multer';
 
 const router = Router();
-const entityName = 'Slide';
+const upload = multer({ dest: paths.imageUpload });
 
-router.delete(
-  '/:id', [tokenS.verify, authS.allowAdmin],
-  (req: Request, res: Response, next: NextFunction) =>
-    buildCtrl.delete(req, res, next, SlideSchema, entityName)
-);
-
-router.get('/', (req: Request, res: Response, next: NextFunction) =>
-  buildCtrl.get(req, res, next, SlideSchema, entityName)
-);
-
-router.post(
-  '/', [tokenS.verify, authS.allowAdmin],
-  (req: Request, res: Response, next: NextFunction) =>
-    buildCtrl.post(req, res, next, SlideSchema, slideService.validate)
-);
-
+router.delete('/:id', [tokenS.verify, authS.allowAdmin], slideCtrl.delete);
+router.post('/', [tokenS.verify, authS.allowAdmin], slideCtrl.post);
+router.patch('/:id', [tokenS.verify, authS.allowAdmin], slideCtrl.patch);
 router.patch(
-  '/:id', [tokenS.verify, authS.allowAdmin],
-  (req: Request, res: Response, next: NextFunction) =>
-    buildCtrl.patch(
-      req, res, next, SlideSchema,
-      (data: SlideAdd) => slideService.validate(data, true),
-      entityName,
-      ['btnTitle', 'desc', 'imageUrl', 'index', 'title', 'url']
-    )
+  '/:id/image',
+  [upload.single('image'), tokenS.verify, authS.allowAdmin],
+  slideCtrl.patchImage
 );
 
 export { router as slideRoutes };

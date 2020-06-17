@@ -1,5 +1,5 @@
 import { utilService as utilS } from './util';
-import { BadRequestError, InvalidIdError } from '../domain/helpers/error';
+import { BadRequestError, InvalidIdError, NotFoundError } from '../domain/helpers/error';
 import { PipelineValidation } from './validations';
 
 const _throwInvalidId = (id: string, fnCheckId: (id: string) => boolean): void => {
@@ -15,7 +15,14 @@ const _throwBadRequest = <T>(patchObject: T, fnCheck: (patch: T) => PipelineVali
     }
 };
 
+const _throwNotFoundId = (obj: any, id: string, entityName: string): void => {
+    if (!obj) {
+        throw new NotFoundError(entityName, 'id', id);
+    }
+};
+
 export const utilThrowError = {
     checkAndThrowBadResquest: _throwBadRequest,
-    checkAndThrowInvalidId: (id: string): void => _throwInvalidId(id, utilS.validIdHexadecimal)
+    checkAndThrowInvalidId: (id: string): void => _throwInvalidId(id, utilS.validIdHexadecimal),
+    checkAndThrowNotFoundId: _throwNotFoundId
 };

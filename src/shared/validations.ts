@@ -114,15 +114,16 @@ export class PipelineValidation {
     }
 
     atMaxLenList<T>(
-      field: string, value: ArrayLike<T>, minLenght: number,
+      field: string, value: ArrayLike<T> | undefined, maxLenght: number,
       fnMsg: (field: string, max: number) => string
     ): PipelineValidation {
-        if (!this.isEmpty(value, field)
-          && !validation.atMaxLenList(value, minLenght)
-        ) {
-            this.errors.push(fnMsg(field, minLenght));
-        }
-        return this;
+        return this.checkValuesAndFillError<ArrayLike<T>>(
+          value,
+          (v: ArrayLike<T>) => validation.atMaxLenList(v, maxLenght),
+          () => fnMsg(field, maxLenght),
+          () => this.fnEmpty(field),
+          true
+        );
     }
 
     atMaxValue(
@@ -172,11 +173,12 @@ export class PipelineValidation {
 
     private checkValuesAndFillError<T>(
       value: undefined | T | T[], fnValidate: (v: T) => boolean,
-      fnMsg: () => string, fnMsgEmpty: () => string
+      fnMsg: () => string, fnMsgEmpty: () => string,
+      checkArrayAsOneElement = false
     ): PipelineValidation {
         const newErrors = this.getMsgsErrorsPure(
           value, fnValidate, (v) => this._isEmpty(v, this._ignoreUndefined),
-          fnMsg, fnMsgEmpty
+          fnMsg, fnMsgEmpty, checkArrayAsOneElement
         );
         newErrors.forEach(msgError => this.errors.push(msgError));
         return this;
@@ -184,9 +186,10 @@ export class PipelineValidation {
 
     private getMsgsErrorsPure<T>(
       values: undefined | T | T[], fnCheckValidT: (v: T) => boolean,
-      fnCheckIsEmpty: (v?: T) => boolean, fnMsg: () => string, fnMsgEmpty: () => string
+      fnCheckIsEmpty: (v?: T) => boolean, fnMsg: () => string, fnMsgEmpty: () => string,
+      checkArrayAsOneElement = false
     ): string[] {
-        const pipelineMsgsError = (value?: T): string | undefined => {
+        const pipelineMsgsError = (value?: any): string | undefined => {
             if (fnCheckIsEmpty(value)) {
                 return fnMsgEmpty();
             } else if (value !== undefined && !fnCheckValidT(value)) {
@@ -194,7 +197,7 @@ export class PipelineValidation {
             }
         };
 
-        if (values instanceof Array) {
+        if (values instanceof Array && !checkArrayAsOneElement) {
             return values
               .map(item => pipelineMsgsError(item))
               .filter(msg => !!msg)
