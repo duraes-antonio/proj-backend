@@ -4,8 +4,9 @@ import { tokenService as tokenS } from '../../services/token.service';
 import { authService as authS } from '../../services/auth.service';
 import { slideController as slideCtrl } from '../../controllers/lists/slide.controller';
 import { paths } from '../../shared/consts/path';
-import multer from 'multer';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const multer = require('multer');
 const router = Router();
 const upload = multer({ dest: paths.imageUpload });
 
