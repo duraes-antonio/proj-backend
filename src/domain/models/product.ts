@@ -1,6 +1,7 @@
 'use strict';
 import { Registable } from './auditable';
 import { Category } from './category';
+import { Dimension } from './shipping/dimension';
 
 export interface Product extends ProductAdd, Registable {
     readonly avgReview: number;
@@ -8,7 +9,7 @@ export interface Product extends ProductAdd, Registable {
     readonly priceWithDiscount: number;
 }
 
-export interface ProductAdd extends ProductPatch {
+export interface ProductAdd extends ProductPatch, Dimension {
     readonly quantity: number;
     readonly categoriesId: string[];
     readonly desc: string;
