@@ -105,7 +105,7 @@ export const slideSizes = {
     imageUrlMax: 2048,
     indexMin: 0,
     indexMax: 16,
-    titleMin: 4,
+    titleMin: 1,
     titleMax: 256,
     urlMin: 8,
     urlMax: 2048
